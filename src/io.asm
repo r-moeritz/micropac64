@@ -2,22 +2,20 @@
         ;; I/O related sub-routines
         ;; ============================================================
 
-        ;; Write char in .Y to screen memory at 16-bit offset 
-        ;; at buf index .X
+        ;; Write char in .Y to screen memory at 16-bit offset from
+        ;; memory block.
         ;; Reads:
         ;;  - .Y (char to print)
         ;;  - .X (buf offset to access memory block)
+        ;; Writes:
+        ;;  - 1st word in memory block at offset
 prtchr: clc
         lda #<scnmem
         adc buf,x
-        inx
-        inx
         sta buf,x
         lda #>scnmem
-        dex
+        inx
         adc buf,x
-        inx
-        inx
         sta buf,x
         dex
         tya

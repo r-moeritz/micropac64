@@ -7,7 +7,8 @@
         ;;  - .A (node index)
         ;;  - .X (offset into buf to access memory block)
         ;; Writes:
-        ;;  - Node address is stored in 1st word of memory block
+        ;;  - Result is stored in 1st word of memory block
+        ;;  - 2nd word of memory block is used as a work area
 nodeadr:
         jsr mula6
         clc
@@ -30,6 +31,7 @@ nodeadr:
         ;; Writes:
         ;;  - pacdis (total distance)
         ;;  - pacrem (distance remaining)
+        ;;  - 1st & 2nd word of memory block are used for calculations
 setnodis:
         lda pacdir
         cmp #w

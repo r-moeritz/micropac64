@@ -7,7 +7,8 @@
         ;;  - .A (pellet table index)
         ;;  - .X (offset to memory block in buf)
         ;; Writes:
-        ;;  - Result is stored in word (lo,hi) of buf at offset .X
+        ;;  - Result is stored in 1st word of buf at offset .X
+        ;;  - 2nd word of buf at offset .X is used as a work area
 pelladr:
         jsr mula5               ;multiply pellet index by 5
         clc
@@ -18,6 +19,7 @@ pelladr:
         lda buf,x               ;load product (hi)
         adc #>pelltbl           ;add pellet table address (hi)
         sta buf,x               ;write sum (hi)
+        dex
         rts
 
         ;; Render the maze & fill it with pellets

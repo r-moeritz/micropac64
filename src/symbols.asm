@@ -6,20 +6,24 @@
         ;; Zero page memory locations
         ;; ------------------------------------------------------------
 
-        ;; 12-byte buffer for use in sub-routines.
-        ;; Divided into 3x 4-byte blocks:
+        ;; 18-byte buffer for use in sub-routines.
+        ;; Divided into 3x 6-byte blocks:
         ;;  - 1st block for game loop
         ;;  - 2nd block for IRQ handler
         ;;  - 3rd block for NMI handler
-buf:            equ $16         ;$16-$21
+buf:            equ $16         ;$16-$27
         ;; 1st word of buffer memory block
 wrd1:           equ buf
-irqwrd1:        equ buf+4
-nmiwrd1:        equ buf+8
+irqwrd1:        equ buf+6
+nmiwrd1:        equ buf+12
         ;; 2nd word of buffer memory block
 wrd2:           equ buf+2
-irqwrd2:        equ buf+6
-nmiwrd2:        equ buf+10
+irqwrd2:        equ buf+8
+nmiwrd2:        equ buf+14
+        ;; 3rd word of buffer memory block
+wrd3:           equ buf+4
+irqwrd3:        equ buf+10
+nmiwrd3:        equ buf+16
 
         ;; Joystick data
 joybtn:         equ $92         ;button value
@@ -108,15 +112,21 @@ sp0loc:         equ $1000/$40   ;sp0mem
         ;; Constants
         ;; ------------------------------------------------------------
 
+        ;; Misc.
 raslin:         equ 250         ;line for raster interrupt
 spxscog:        equ 24          ;sprite x screen origin
 spyscog:        equ 50          ;sprite y screen origin
+
+        ;; Node indexes
 wrpnixw:        equ $1b         ;western warp tunnel node index
 wrpnixe:        equ $21         ;eastern warp tunnel node index
+pacstnd:        equ $31         ;Pac-Man's starting node index
+
+        ;; Character constants
 powpchr:        equ $20         ;power pellet char
 pellchr:        equ $53         ;pellet char
 spcechr:        equ $54         ;space char
-pacstnd:        equ 49          ;Pac-Man's starting node
+
         
         ;; Compass directions
 n:              equ 2
@@ -126,8 +136,8 @@ e:              equ 5
         
         ;; Index into buf to access memory block
         ;; reserved for IRQ handler
-irqblki:        equ 4
+irqblki:        equ 6
 
-        ;; Offset into buf to access memory block
+        ;; Index into buf to access memory block
         ;; reserved for NMI handler
-nmiblki:        equ 8
+nmiblki:        equ 12

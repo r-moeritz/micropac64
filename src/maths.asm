@@ -7,7 +7,8 @@
         ;;  - .A (multiplicand)
         ;;  - .X (offset to memory block in buf)
         ;; Writes:
-        ;;  - Result is stored in word (lo, hi) of buf at offset .X
+        ;;  - Result is stored in 1st word of memory block
+        ;;  - 2nd word of memory block is used as a work area
 mula5:  inx
         inx
         sta buf,x               ;stash original .A in wrd2 (lo)
@@ -45,7 +46,8 @@ mula5:  inx
         ;;  - .A (multiplicand)
         ;;  - .X (offset to memory block in buf)
         ;; Writes:
-        ;;  - Result is stored in word (lo, hi) of buf at offset .X
+        ;;  - Result is stored in 1st word of memory block
+        ;;  - 2nd word of memory block is used as a work area        
 mula6:  inx
         inx
         sta buf,x

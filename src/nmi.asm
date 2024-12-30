@@ -9,13 +9,13 @@ setupnmi:
         sta ti2alo
         sta ti2ahi
         ldbimm 2, ti2blo
-        ldbimm 0, ti2bhi        ;132 ms (pal)
+        ldbimm 0, ti2bhi                ;132 ms (pal)
         ldbimm %00010001, ci2cra
         ldbimm %01010001, ci2crb
         lda ci2icr
         ldbimm %10000010, ci2icr
-        ldbimm 0, pacaix        ;init Pac-Man's animation index
-        ldbimm 0, powpaix       ;init power pellet animation index
+        ldbimm 0, pacaix                ;init Pac-Man's animation index
+        ldbimm 0, powpaix               ;init power pellet animation index
         ldwimm procnmi, nminv
         cli
         rts
@@ -29,7 +29,7 @@ procnmi:
         txa
         pha
         tya
-        pha
+        pha                             ;push .X .Y and .A onto the stack
         lda ci2icr
         and #%00000010
         jeq sysnmi
@@ -39,8 +39,8 @@ procnmi:
         ldy pacaix
         ldwimm pacalst, nmiwrd1
         lda (nmiwrd1),y
-        cmp #$ff
-        beq rstpaca
+        cmp #$ff                        ;reached end of animation?
+        beq rstpaca                     ;yes, restart animation
         adc #sp0loc
         sta sp0ptr
         jmp anipowp
@@ -50,43 +50,39 @@ rstpaca:
         
         ;; Animate power pellets
 anipowp:
-        ldbimm 3, nmiwrd2
-        tax                     ;set loop counter (.X) and stash in nmiwrd2 (lo)
+        ldbimm 3, nmiwrd3               ;stash loop counter in nmiwrd3 (lo)
+        tax                     
         lda powpaix
         beq tic
         dec powpaix
 tocloop:
         bmi finnmi
-        lda powplst,x           ;load pellet index into .A
-        ldx #nmiblki            ;set .X to NMI handler block index
-        jsr pelladr             ;load pellet address into nmiwrd1
-        ldx nmiwrd2             ;restore .X (loop counter) from nmiwrd2 (lo)
-        ldwptr nmiwrd1, 0, nmiwrd2 ;write pellet x,y loc to nmiwrd2 (lo,hi)
-        stx nmiwrd1             ;stash loop counter in nmiwrd1 (lo)
-        ldy #powpchr            ;load power pellet char into .Y
-        ldx #nmiblki+2          ;set .X to NMI handler block hi (nmiwrd2)
-        jsr prtchr              ;print power pellet char
-        dec nmiwrd1             ;decrement loop counter
-        ldx nmiwrd1             ;restore .X (loop counter) from nmiwrd1 (lo)
+        lda powplst,x                   ;load pellet index into .A
+        ldx #nmiblki                    ;set .X to NMI handler mem block index
+        jsr pelladr                     ;load pellet address into nmiwrd1
+        ldwptr nmiwrd1, 0, nmiwrd2      ;write pellet scrn mem offset to nmiwrd2
+        ldy #powpchr                    ;load power pellet char into .Y
+        ldx #nmiblki+2                  ;set .X to index of nmiwrd2
+        jsr prtchr                      ;print power pellet char
+        dec nmiwrd3                     ;decrement loop counter
+        ldx nmiwrd3                     ;restore loop counter from nmiwrd3 (lo)
         jmp tocloop
 tic:    inc powpaix
 ticloop:
         bmi finnmi
-        lda powplst,x           ;load pellet index into .A
-        ldx #nmiblki            ;set .X to NMI handler block index
-        jsr pelladr             ;load pellet address into nmiwrd1
-        ldx nmiwrd2
-        ldwptr nmiwrd1, 0, nmiwrd2 ;write pellet x,y loc to nmiwrd2 (lo,hi)
-        stx nmiwrd1             ;stash loop counter in nmiwrd1 (lo)
-        ldy #spcechr            ;load space char into .Y
-        ldx #nmiblki+2          ;set .X to NMI handler block hi (nmiwrd2)
-        jsr prtchr              ;print power pellet char
-        dec nmiwrd1             ;decrement loop counter
-        ldx nmiwrd1             ;restore .X (loop counter) from nmiwrd1 (lo)
+        lda powplst,x                   ;load pellet index into .A
+        ldx #nmiblki                    ;set .X to NMI handler mem block index
+        jsr pelladr                     ;load pellet address into nmiwrd1
+        ldwptr nmiwrd1, 0, nmiwrd2      ;write pellet scrn mem offset to nmiwrd2
+        ldy #spcechr                    ;load space char into .Y
+        ldx #nmiblki+2                  ;set .X to index of nmiwrd2
+        jsr prtchr                      ;print power pellet char
+        dec nmiwrd3                     ;decrement loop counter
+        ldx nmiwrd3                     ;restore loop counter from nmiwrd3 (lo)
         jmp ticloop
 finnmi: pla
         tay
         pla
         tax
-        pla
+        pla                             ;restore .Y .X and .A from stack
         rti
