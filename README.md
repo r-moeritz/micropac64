@@ -38,9 +38,9 @@ write a shell script to do that.
 Todo
 ----
 
-- Complete code conversion to vasm format, incl. data tables.
-- Include assets when producing binary (they currently need to be
-  loaded into memory individually)
+- ~~Complete code conversion to vasm format, incl. data tables.~~
+- ~~Include assets when producing binary (they currently need to be
+  loaded into memory individually)~~
 - Create separate timers for sprite and power pellet animations (they
   currently share a timer)
 - Much, much more, but I'll probably create issues for all remaining

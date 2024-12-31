@@ -95,12 +95,8 @@ sysnmi:         equ $fe56       ;kernal NMI handler
         ;; Program memory locations
         ;; ------------------------------------------------------------
         
-        ;; Tables
-nodetbl:        equ $080d       ;node table
-pelltbl:        equ $09ab       ;pellet table
-powplst:        equ $0d3c       ;power pellet list
-pacalst:        equ $0d40       ;pac-man animation frames
-        ;; charset at $4000
+charset:        equ $4000       ;character set definition
+mazegfx:        equ $4bf0       ;Pac-Man maze
 coltab:         equ $4800       ;colour table
 scnmem:         equ $4c00       ;screen memory
 colmem:         equ $d800       ;colour memory
