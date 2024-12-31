@@ -2,7 +2,7 @@
         ;; NMI handler sub-routines
         ;; ============================================================
 
-        ;; Setup CIA2 timer NMI
+        ;; Setup handler for CIA2 timer NMI.
 setupnmi:
         sei
         lda #$ff
@@ -23,7 +23,10 @@ setupnmi:
         ;; NMI handler. Here we animate the various in-game objects such as:
         ;;  - Pac-Man (in-game and death animations)
         ;;  - Power pellets (phase)
-        ;;  - The ghosts (regular & fright mode animations)
+        ;;  - The ghosts (regular, fright, and death animations)
+        ;; We also handle timer events such as:
+        ;;  - Fruit (appearance and disappearance)
+        ;;  - Ghosts switching between scatter & chase mode
 procnmi:
         pha
         txa

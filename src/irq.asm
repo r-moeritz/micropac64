@@ -2,7 +2,7 @@
         ;; IRQ handler sub-routines
         ;; ============================================================
 
-        ;; Setup raster IRQ
+        ;; Setup handler for raster IRQ.
 setupirq:
         sei
         ldbimm $7f, ci1icr
@@ -13,12 +13,11 @@ setupirq:
         cli
         rts
 
-        ;; IRQ handler. Here we implement logic for:
+        ;; IRQ handler. Here we implement logic for events such as:
         ;;  - Pac-Man's movement (player controlled but we need to update distance
         ;;    remaining, set next target on reaching target node, etc.)
-        ;;  - Pac-Man's death & remaining lives
-        ;;  - Ghosts (scatter, chase, fright, and eaten modes)
-        ;;  - Fruit (appearance and disappearance)
+        ;;  - Pac-Man's dying & updating remaining lives
+        ;;  - Ghosts going into/out of fright mode, or being eaten
 procirq:
         lda pacrem
         beq setnsrc
