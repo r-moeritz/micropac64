@@ -29,19 +29,25 @@ lifestyles today, most of us simply don't have the kind of time
 available anymore that we had back in the '80s and '90s. Waiting 10
 minutes for your code to assemble before you can test a routine is
 just no longer feasible. So I recently (December 2024) made the
-decision to begin converting the code to vasm. This process is about
-90% complete. I just need to iron out some bugs introduced during the
-conversion and convert the table definitions, but I'll probably just
-write a shell script to do that.
+decision to begin converting the code to vasm. This process is now
+complete and I can hopefully finish the game in 2025.
 
 
-Todo
-----
+Prerequisites
+---
 
-- ~~Complete code conversion to vasm format, incl. data tables.~~
-- ~~Include assets when producing binary (they currently need to be
-  loaded into memory individually)~~
-- Create separate timers for sprite and power pellet animations (they
-  currently share a timer)
-- Much, much more, but I'll probably create issues for all remaining
-  work.
+- vasm v2.0, available from http://sun.hasenbraten.de/vasm/
+- exomizer v3.10, available from https://csdb.dk/release/?id=198340
+- VICE or another Commodore 64 emulator
+
+
+Building
+---
+
+    ./build.sh
+    
+
+Running
+---
+
+    x64sc ./build/micropac64.prg
