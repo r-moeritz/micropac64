@@ -19,7 +19,20 @@ setupirq:
         ;;  - Pac-Man's dying & updating remaining lives
         ;;  - Ghosts going into/out of fright mode, or being eaten
 procirq:
-        lda pacrem
+        lda spbgcl
+        and #%00000001
+        beq chkrem
+        ;; Collision detected between Pac-Man sprite and background.
+        ;; Must be a pellet since fruit and ghosts are sprites!
+        ;; TODO:
+        ;;  1. Get pellet x,y loc
+        ;;  2. Erase pellet (print spcechar to pellet x,y loc)
+        ;;  3. Lookup pellet by x,y loc
+        ;;  4. Is it a power pellet? (state=2)
+        ;;  4.a. Yes, add 50 pts to player's score
+        ;;  4.b. No, add 10 pts to player's score
+        ;;  5. Mark pellet as eaten (set state to 0)
+chkrem: lda pacrem
         beq setnsrc
         lda pacdir
         cmp #w

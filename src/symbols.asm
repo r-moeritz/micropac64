@@ -58,6 +58,7 @@ spena:          equ vic + $15
 vmcsb:          equ vic + $18
 vicirq:         equ vic + $19
 irqmsk:         equ vic + $1a
+spbgcl:         equ vic + $1f
 extcol:         equ vic + $20
 bgcol0:         equ vic + $21
 sp0col:         equ vic + $27

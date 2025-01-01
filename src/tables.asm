@@ -91,7 +91,7 @@ nodetbl:
         ;; Pellet table
         ;; Format:        
         ;;  - word address (screen memory address)
-        ;;  - byte presence (0=eaten, 1=present)
+        ;;  - byte state (0=gone, 1=regular, 2=power pellet)
         ;;  - byte x,y (sprite coordinates of char)
 pelltbl:
         ;; Row 1
