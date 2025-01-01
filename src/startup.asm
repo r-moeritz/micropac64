@@ -5,9 +5,10 @@
         org $0801
 
         ;; BASIC header
-        dw nxl,10
-        db $9e,"3399",0
-nxl:    dw 0
+        word nxl,10
+        byte $9e
+        string "3399"
+nxl:    word 0
 
         ;; Include tables
         include tables.asm
