@@ -7,13 +7,13 @@ setupnmi:
         sei
         lda #$ff
         sta ti2alo
-        sta ti2ahi
-        ldbimm 2, ti2blo
-        ldbimm 0, ti2bhi                ;132 ms (pal)
+        sta ti2ahi                      ;timer A fires every 66.5ms (PAL)
+        ldbimm 5, ti2blo
+        ldbimm 0, ti2bhi                ;timer B fires every 332.5ms (PAL)
         ldbimm %00010001, ci2cra
         ldbimm %01010001, ci2crb
         lda ci2icr
-        ldbimm %10000010, ci2icr
+        ldbimm %10000011, ci2icr        ;allow interrupts from both timers
         ldbimm 0, pacaix                ;init Pac-Man's animation index
         ldbimm 0, powpaix               ;init power pellet animation index
         ldwimm procnmi, nminv
@@ -32,13 +32,17 @@ procnmi:
         txa
         pha
         tya
-        pha                             ;push .X .Y and .A onto the stack
+        pha                             ;push .X, .Y, and .A onto the stack
         lda ci2icr
+        tay
         and #%00000010
+        jne timbev
+        tya
+        and #%00000001
         jeq sysnmi
         
-        ;; Animate Pac-Man
-        inc pacaix
+        ;; Timer A fired: animate Pac-Man
+timaev: inc pacaix
         ldy pacaix
         ldwimm pacalst, nmiwrd1
         lda (nmiwrd1),y
@@ -46,14 +50,14 @@ procnmi:
         beq rstpaca                     ;yes, restart animation
         adc #sp0loc
         sta sp0ptr
-        jmp anipowp
+        jmp finnmi
 rstpaca:
         ldbimm 0, pacaix
         ldbimm sp0loc, sp0ptr
+        jmp finnmi
         
-        ;; Animate power pellets
-anipowp:
-        ldbimm 3, nmiwrd3               ;stash loop counter in nmiwrd3 (lo)
+        ;; Timer B fired: animate power pellets
+timbev: ldbimm 3, nmiwrd3               ;stash loop counter in nmiwrd3 (lo)
         tax                     
         lda powpaix
         beq tic
