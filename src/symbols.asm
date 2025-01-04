@@ -6,24 +6,24 @@
         ;; Zero page memory locations
         ;; ------------------------------------------------------------
 
-        ;; 18-byte buffer for use in sub-routines.
-        ;; Divided into 3x 6-byte blocks:
-        ;;  - 1st block for game loop
-        ;;  - 2nd block for IRQ handler
-        ;;  - 3rd block for NMI handler
-buf:            equ $16         ;$16-$27
-        ;; 1st word of buffer memory block
+        ;; 15-byte buffer for use in sub-routines,
+        ;; divided into 3x blocks of 5 bytes each.
+buf:            equ $16         ;$16-$24
+        
+        ;; Block for game loop
 wrd1:           equ buf
-irqwrd1:        equ buf+6
-nmiwrd1:        equ buf+12
-        ;; 2nd word of buffer memory block
-wrd2:           equ buf+2
-irqwrd2:        equ buf+8
-nmiwrd2:        equ buf+14
-        ;; 3rd word of buffer memory block
-wrd3:           equ buf+4
-irqwrd3:        equ buf+10
-nmiwrd3:        equ buf+16
+wrd2:           equ buf+$02
+tmp:            equ buf+$04
+        
+        ;; Block for IRQ handler
+irqwrd1:        equ buf+$05
+irqwrd2:        equ buf+$07
+irqtmp:         equ buf+$09
+        
+        ;; Block for NMI handler
+nmiwrd1:        equ buf+$0a
+nmiwrd2:        equ buf+$0c
+nmitmp:         equ buf+$0e
 
         ;; Joystick data
 joybtn:         equ $92         ;button value
@@ -37,14 +37,19 @@ pacdir:         equ $a3         ;facing direction
 pacnxd:         equ $a4         ;next direction
 pacdis:         equ $a5         ;distance to target
 pacrem:         equ $a6         ;distance remaining to target
-pacaix:         equ $a7         ;current animation frame index
 
-        ;; Power pellet animation frame index
-powpaix:        equ $a8
+        ;; Scoring, gameplay
+npelrem:        equ $a7          ;number of pellets remaining
+nmenrem:        equ $a8          ;number of remaining "men"
+lvlnum:         equ $a9          ;level number
+score:          equ $f7          ;player's score in BCD (4 bytes: $f8-$fb)
+
+        ;; Animation
+pacaix:         equ $fb          ;Pac-Man animation frame index
+enzraix:        equ $fc          ;energizer animation frame index    
+
+        ;; Still available: $fd,$fe
         
-        ;; Still available: $a9, $f7-$fe
-
-
         ;; Memory-mapped hardware registers
         ;; ------------------------------------------------------------
         
@@ -113,28 +118,41 @@ sp0loc:         equ $1000/$40   ;sp0mem
 raslin:         equ 250         ;line for raster interrupt
 spxscog:        equ 24          ;sprite x screen origin
 spyscog:        equ 50          ;sprite y screen origin
+maxpell:        equ 180         ;maximum number of pellets (incl. energizers)
+maxmen:         equ 3           ;maximum number of "men"
 
+        ;; Screen memory indexes
+scrmsdi:        equ $15c        ;most significant digit of score
+        
         ;; Node indexes
 wrpnixw:        equ $1b         ;western warp tunnel node index
 wrpnixe:        equ $21         ;eastern warp tunnel node index
 pacstnd:        equ $31         ;Pac-Man's starting node index
+gsthmnd:        equ $1e         ;ghost home node
 
         ;; Character constants
-powpchr:        equ $20         ;power pellet char
+spcechr:        equ $20         ;space char
 pellchr:        equ $53         ;pellet char
-spcechr:        equ $54         ;space char
-
+enzrchr:        equ $54         ;energizer char
         
         ;; Compass directions
 n:              equ 2
 s:              equ 3
 w:              equ 4
 e:              equ 5
+
+        ;; Scores, expressed as BCD pairs
+pellpts:        equ %00010000   ;10 pts for pellets
+enzrpts:        equ %01010000   ;50 pts for energizers
+
+        ;; Index into buf to access memory block
+        ;; reservedf for gameloop
+blki:           equ $00
         
         ;; Index into buf to access memory block
         ;; reserved for IRQ handler
-irqblki:        equ 6
+irqblki:        equ $05
 
         ;; Index into buf to access memory block
         ;; reserved for NMI handler
-nmiblki:        equ 12
+nmiblki:        equ $0a

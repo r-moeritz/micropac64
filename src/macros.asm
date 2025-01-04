@@ -59,6 +59,33 @@ jcc:    macro adr
         endm
 
 
+        ;; Stack operations
+        ;; ------------------------------------------------------------
+
+        ;; Push .X onto the stack
+phx:    macro
+        txa
+        pha
+        endm
+
+        ;; Pop the top byte off the stack onto .X
+plx:    macro
+        pla
+        tax
+        endm
+
+        ;; Push .Y onto the stack
+phy:    macro
+        tya
+        pha
+        endm
+
+        ;; Pop the top byte off the stack onto .Y
+ply:    macro
+        pla
+        tay
+        endm
+
         ;; Memory operations
         ;; ------------------------------------------------------------
 

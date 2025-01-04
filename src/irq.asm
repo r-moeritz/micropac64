@@ -14,24 +14,36 @@ setupirq:
         rts
 
         ;; IRQ handler. Here we implement logic for events such as:
-        ;;  - Pac-Man's movement (player controlled but we need to update distance
-        ;;    remaining, set next target on reaching target node, etc.)
+        ;;  - Pac-Man's movement (player controlled but we need to 
+        ;;    update sprite coordinates, distance remaining to target
+        ;;     node, set new target on reaching target node, etc.)
         ;;  - Pac-Man's dying & updating remaining lives
         ;;  - Ghosts going into/out of fright mode, or being eaten
 procirq:
-        lda spbgcl
-        and #%00000001
+        lda spbgcl              ;check for collision
+        and #%00000001          ;between sprite 0 (Pac-Man) and background
         beq chkrem
+        
         ;; Collision detected between Pac-Man sprite and background.
         ;; Must be a pellet since fruit and ghosts are sprites!
-        ;; TODO:
-        ;;  1. Get pellet x,y loc
-        ;;  2. Erase pellet (print spcechar to pellet x,y loc)
-        ;;  3. Lookup pellet by x,y loc
-        ;;  4. Is it a power pellet? (state=2)
-        ;;  4.a. Yes, add 50 pts to player's score
-        ;;  4.b. No, add 10 pts to player's score
-        ;;  5. Mark pellet as eaten (set state to 0)
+        jsr findpel             ;find pellet collided with & mark as eaten
+        lda irqwrd1+1           ;load pellet address hi-byte
+        cmp #$ff                ;pellet found?
+        jeq chkrem              ;nope, check remaining distance
+        ldx #irqblki+4
+        jsr isenzr              ;is it an energizer?
+        bne :+
+        ldx #irqblki+2
+        jsr screnzr             ;yes, score it
+        jmp rmpel
+:       ldx #irqblki+2
+        jsr scrpell             ;no, score as regular pellet
+rmpel:  ldwptr irqwrd1, 0, irqwrd2
+        ldy #spcechr
+        jsr printchr            ;erase pellet
+        dec npelrem             ;decrement remaining pellet count
+        jsr printscr            ;print the score
+        jmp finirq
 chkrem: lda pacrem
         beq setnsrc
         lda pacdir
@@ -63,6 +75,8 @@ setnsrc:
         beq chkcon
         lda (irqwrd1),y
         cmp #$ff
+        beq chkcon
+        cmp #gsthmnd
         beq chkcon
         sta pactar
         sty pacdir

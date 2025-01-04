@@ -91,7 +91,7 @@ nodetbl:
         ;; Pellet table
         ;; Format:        
         ;;  - word address (screen memory address)
-        ;;  - byte state (0=gone, 1=regular, 2=power pellet)
+        ;;  - byte status (0=eaten, 1=not eaten)
         ;;  - byte x,y (sprite coordinates of char)
 pelltbl:
         ;; Row 1
@@ -133,7 +133,7 @@ pelltbl:
         byte 1,$b0,$3a
         ;; Row 2
         word $0051
-        byte 1,$20,$42
+        byte 1,$20,$42          ;energizer
         word $0055
         byte 1,$40,$42
         word $0059
@@ -143,7 +143,7 @@ pelltbl:
         word $005f
         byte 1,$90,$42
         word $0063
-        byte 1,$b0,$42
+        byte 1,$b0,$42          ;energizer
         ;; Row 3
         word $0079
         byte 1,$20,$4a
@@ -356,7 +356,7 @@ pelltbl:
         byte 1,$b0,$c2
         ;; Row 19
         word $02f9
-        byte 1,$20,$ca
+        byte 1,$20,$ca          ;energizer
         word $02fa
         byte 1,$28,$ca
         word $02fb
@@ -386,7 +386,7 @@ pelltbl:
         word $030a
         byte 1,$a8,$ca
         word $030b
-        byte 1,$b0,$ca
+        byte 1,$b0,$ca          ;energizer
         ;; Row 20
         word $0323
         byte 1,$30,$d2
@@ -483,15 +483,48 @@ pelltbl:
         byte 1,$b0,$ea
         ;; End marker
         word $ffff
-        byte $ff
-
-        ;; Power pellet list:        
-        ;; Indexes into pellet table
-powplst:
-        byte $12,$17,$79,$88
+        byte $ff,$ff,$ff
+        
+        ;; Energizer list
+        ;; Index into pelltbl
+enzrlst:
+        byte $12
+        byte $17
+        byte $79
+        byte $88
 
         ;; Pac-Man animation frames:
         ;; Sprite offset values
 pacalst:
         byte $00,$01,$02,$03
         byte $02,$01,$ff
+
+        ;; Index in pelltbl of leftmost+rightmost pellet in row by sprite y loc
+        ;; Format:
+        ;;  - byte y (sprite y loc of row)
+        ;;  - byte ixl (pelltbl index of leftmost pellet in row)
+        ;;  - byte ixr (pelltbl index of rightmost pellet in row)
+plrowix:
+        byte $3a,$00,$11        ;row 1
+        byte $42,$12,$17        ;row 2
+        byte $4a,$18,$1d        ;row 3
+        byte $52,$1e,$30        ;row 4
+        byte $5a,$31,$36        ;row 5
+        byte $62,$37,$3c        ;row 6
+        byte $6a,$3d,$4c        ;row 7
+        byte $72,$4d,$50        ;row 8
+        byte $7a,$51,$52        ;row 9
+        byte $82,$53,$54        ;row 10
+        byte $8a,$55,$56        ;row 11
+        byte $92,$57,$58        ;row 12
+        byte $9a,$59,$5a        ;row 13
+        byte $a2,$5b,$5c        ;row 14
+        byte $aa,$5d,$5e        ;row 15
+        byte $b2,$5f,$60        ;row 16
+        byte $ba,$61,$72        ;row 17
+        byte $c2,$73,$78        ;row 18
+        byte $ca,$79,$88        ;row 19
+        byte $d2,$89,$8e        ;row 20
+        byte $da,$8f,$9e        ;row 21
+        byte $e2,$9f,$a2        ;row 22
+        byte $ea,$a3,$b5        ;row 23

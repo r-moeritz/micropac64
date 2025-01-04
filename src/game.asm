@@ -1,15 +1,18 @@
         ;; ============================================================
-        ;; The main game loop
+        ;; Game-logic related routines
         ;; ============================================================
 
+        ;; Initialize variables when starting a new game
+newgame:
+        ldbimm maxpell, npelrem
+        ldbimm maxmen, nmenrem
+        ldbimm 0, lvlnum
+        jsr rstscr              ;reset score
+        jmp fillmaze            ;fill maze with pellets
+        
+        ;; Main game loop
 gameloop:
         jsr readjoy2
-        ldx #4
-gl0:    ldy #$ff                
-gl1:    dey
-        bne gl1
-        dex
-        bne gl0                 ;delay (value in ms?)
         lda #1
         cmp joyx
         beq move

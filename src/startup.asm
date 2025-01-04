@@ -7,16 +7,14 @@
         ;; BASIC header
         word nxl,10
         byte $9e
-        string "3399"
+        string "2061"
 nxl:    word 0
 
-        ;; Include tables
-        include tables.asm
-        ;; Tables end at $0d47/3399 (hence "3399" in BASIC header)
-
         ;; Program initialization
-        jsr drawmaze
+        jsr initvic
+        jsr fillcolmem
         jsr initsprt
+        jsr newgame
         jsr setupirq
         jsr setupnmi
         jmp gameloop
@@ -31,8 +29,12 @@ nxl:    word 0
         include sprites.asm
         include irq.asm
         include nmi.asm
-        include gameloop.asm       
+        include game.asm
+        include score.asm
 
+        ;; Include tables
+        include tables.asm
+        
         ;; Include assets
         *=charset
         incbin assets/charset,2
