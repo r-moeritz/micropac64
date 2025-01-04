@@ -39,8 +39,9 @@ procnmi:
         and #%00000001
         jeq sysnmi
         
-        ;; Timer A fired: animate Pac-Man
-timaev: inc pacaix
+        ;; Timer A fired: print score & animate Pac-Man
+timaev: jsr printscr                    ;print the score
+        inc pacaix
         ldy pacaix
         ldwimm pacalst, nmiwrd1
         lda (nmiwrd1),y
