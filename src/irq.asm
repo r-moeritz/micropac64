@@ -42,6 +42,7 @@ rmpel:  ldwptr irqwrd1, 0, irqwrd2
         ldy #spcechr
         jsr printchr            ;erase pellet
         dec npelrem             ;decrement remaining pellet count
+        jsr printscr              ;print score
         jmp finirq
 chkrem: lda pacrem
         beq setnsrc

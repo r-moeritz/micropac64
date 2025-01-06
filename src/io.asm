@@ -3,7 +3,7 @@
         ;; ============================================================
 
         ;; Write the player's score to screen memory
-        ;; May only be called from NMI handler!
+        ;; May only be called from IRQ handler!
         ;; Clobbers .A, .X, and .Y
         ;; Reads:
         ;;  - score
@@ -17,9 +17,9 @@ printscr:
         ;; Each digit needs to be extracted and turned into a
         ;; printable character. Then, each digit can be written to
         ;; screen memory using printchr. We skip leading zeroes.
-        ldwimm scrmsdi, nmiwrd1
-        cpwrd nmiwrd1, nmiwrd2
-        ldbimm 0, nmitmp
+        ldwimm scrmsdi, irqwrd1
+        cpwrd irqwrd1, irqwrd2
+        ldbimm 0, irqtmp
         ldx #3
 lpprsc: bmi fiprsc
         ;; print hi-nybble BCD char
@@ -30,38 +30,38 @@ lpprsc: bmi fiprsc
         lsr                     ;shift BCD digit into lo-nybble
         beq :+
         ldy #1
-        sty nmitmp
+        sty irqtmp
         jmp :++
-:       ldy nmitmp
+:       ldy irqtmp
         bne :+
         jmp :++
 :       ora #%00110000          ;convert to printable char
         tay                     ;place char in .Y
         phx                     ;save .X onto stack
-        ldx #nmiblki            ;load block index into .X
+        ldx #irqblki            ;load block index into .X
         jsr printchr            ;print char
         plx                     ;restore .X from stack
-:       inc nmiwrd2
-        cpwrd nmiwrd2, nmiwrd1  ;increment screen memory offset
+:       inc irqwrd2
+        cpwrd irqwrd2, irqwrd1  ;increment screen memory offset
         
         ;; print lo-nybble BCD char
 :       lda score,x
         and #%00001111          ;mask out hi-nybble
         beq :+
         ldy #1        
-        sty nmitmp
+        sty irqtmp
         jmp :++
-:       ldy nmitmp
+:       ldy irqtmp
         bne :+
         jmp :++
 :       ora #%00110000          ;convert to printable char
         tay                     ;place char in .Y
         phx                     ;save .X onto stack
-        ldx #nmiblki            ;load block index into .X
+        ldx #irqblki            ;load block index into .X
         jsr printchr            ;print char
         plx                     ;restore .X from stack
-:       inc nmiwrd2
-        cpwrd nmiwrd2, nmiwrd1  ;increment screen memory offset
+:       inc irqwrd2
+        cpwrd irqwrd2, irqwrd1  ;increment screen memory offset
         dex                     ;decrement .X
         jmp lpprsc
 fiprsc: rts
