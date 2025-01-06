@@ -120,7 +120,7 @@ initvic:
         sta bgcol0
         rts
 
-        ;; Fill colour memory from screen memory
+        ;; Fill colour memory from colour table
 fillcolmem:
         ;; populate colour memory
         ldx #0

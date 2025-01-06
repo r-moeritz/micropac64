@@ -8,8 +8,8 @@ setupnmi:
         lda #$ff
         sta ti2alo
         sta ti2ahi                      ;timer A fires every 66.5ms (PAL)
-        ldbimm 5, ti2blo
-        ldbimm 0, ti2bhi                ;timer B fires every 332.5ms (PAL)
+        ldbimm 4, ti2blo
+        ldbimm 0, ti2bhi                ;timer B fires every 266ms (PAL)
         ldbimm %00010001, ci2cra
         ldbimm %01010001, ci2crb
         lda ci2icr
@@ -41,19 +41,31 @@ procnmi:
         
         ;; Timer A fired: animate Pac-Man
 timaev: lda pacrem
-        jeq finnmi
+        jeq finnmi                      ;don't animate Pac-Man if he's not moving
         inc pacaix
         ldy pacaix
-        ldwimm pacalst, nmiwrd1
+        cpy #6                          ;past final animation?
+        bcc :+
+        ldbimm 0, pacaix                ;yes, reset animation index
+        tay
+:       lda pacdir                      ;no, check Pac-Man's direction
+        cmp #n
+        beq :+
+        cmp #s
+        beq :++
+        cmp #w
+        beq :+++
+        ldwimm pacalste, nmiwrd1        ;east
+        jmp ldanim
+:       ldwimm pacalstn, nmiwrd1        ;north
+        jmp ldanim
+:       ldwimm pacalsts, nmiwrd1        ;south
+        jmp ldanim
+:       ldwimm pacalstw, nmiwrd1        ;west
+ldanim: clc
         lda (nmiwrd1),y
-        cmp #$ff                        ;reached end of animation?
-        beq rstpaca                     ;yes, restart animation
         adc #sp0loc
         sta sp0ptr
-        jmp finnmi
-rstpaca:
-        ldbimm 0, pacaix
-        ldbimm sp0loc, sp0ptr
         jmp finnmi
         
         ;; Timer B fired: animate energizers

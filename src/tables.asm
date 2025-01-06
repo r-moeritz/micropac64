@@ -493,11 +493,17 @@ enzrlst:
         byte $79
         byte $88
 
-        ;; Pac-Man animation frames:
-        ;; Sprite offset values
-pacalst:
-        byte $00,$01,$02,$03
-        byte $02,$01,$ff
+        ;; Pac-Man animation frames
+        ;; Format:
+        ;;  - byte sprite offset values
+pacalstn:                       ;north-facing animation frames
+        byte $00,$07,$08,$09,$08,$07
+pacalsts:                       ;south-facing animation frames
+        byte $00,$0a,$0b,$0c,$0b,$0a
+pacalstw:                       ;west-facing animation frames
+        byte $00,$01,$02,$03,$02,$01
+pacalste:                       ;east-facing animation frames
+        byte $00,$04,$05,$06,$05,$04
 
         ;; Index in pelltbl of leftmost+rightmost pellet in row by sprite y loc
         ;; Format:

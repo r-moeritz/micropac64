@@ -42,11 +42,11 @@ pacrem:         equ $a6         ;distance remaining to target
 npelrem:        equ $a7          ;number of pellets remaining
 nmenrem:        equ $a8          ;number of remaining "men"
 lvlnum:         equ $a9          ;level number
-score:          equ $f7          ;player's score in BCD (4 bytes: $f8-$fb)
+score:          equ $f7          ;player's score in BCD (4 bytes: $f7-$fa)
 
         ;; Animation
 pacaix:         equ $fb          ;Pac-Man animation frame index
-enzraix:        equ $fc          ;energizer animation frame index    
+enzraix:        equ $fc          ;energizer animation frame index
 
         ;; Still available: $fd,$fe
         
@@ -102,8 +102,8 @@ sysnmi:         equ $fe56       ;kernal NMI handler
         ;; ------------------------------------------------------------
         
 charset:        equ $4000       ;character set definition
-mazegfx:        equ $4bf0       ;Pac-Man maze
 coltab:         equ $4800       ;colour table
+mazegfx:        equ $4bf0       ;Pac-Man maze
 scnmem:         equ $4c00       ;screen memory
 colmem:         equ $d800       ;colour memory
 sp0mem:         equ $5000       ;sprite 0 address

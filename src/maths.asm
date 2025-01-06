@@ -88,4 +88,3 @@ mula6:  inx
         sta buf,x
         dex
         rts
-

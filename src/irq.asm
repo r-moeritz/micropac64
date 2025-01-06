@@ -29,9 +29,9 @@ procirq:
         jsr findpel             ;find pellet collided with & mark as eaten
         lda irqwrd1+1           ;load pellet address hi-byte
         cmp #$ff                ;pellet found?
-        jeq chkrem              ;nope, check remaining distance
+        jeq chkrem              ;no, check remaining distance
         ldx #irqblki+4
-        jsr isenzr              ;is it an energizer?
+        jsr isenzr              ;yes, is it an energizer?
         bne :+
         ldx #irqblki+2
         jsr screnzr             ;yes, score it
@@ -42,7 +42,7 @@ rmpel:  ldwptr irqwrd1, 0, irqwrd2
         ldy #spcechr
         jsr printchr            ;erase pellet
         dec npelrem             ;decrement remaining pellet count
-        jsr printscr              ;print score
+        jsr printscr            ;print score
         jmp finirq
 chkrem: lda pacrem
         beq setnsrc
@@ -71,9 +71,9 @@ setnsrc:
         jsr nodeadr             ;load node address into irqwrd1
         ldbptr irqwrd1, 0, sp0x ;store node x loc into sp0x
         ldbptr irqwrd1, 1, sp0y ;store node y loc into sp0y
-        ldy pacnxd
-        beq chkcon
-        lda (irqwrd1),y
+        ldy pacnxd              ;new direction?
+        beq chkcon              ;if not, check for node in current direction
+        lda (irqwrd1),y         ;yes, load node
         cmp #$ff
         beq chkcon
         cmp #gsthmnd
@@ -86,8 +86,8 @@ chkcon: ldy pacdir
         lda (irqwrd1),y
         cmp #$ff
         beq finirq
-        sta pactar
-        jsr setnodis
+        sta pactar              ;set new target...
+        jsr setnodis            ;... and calculate distance
 finirq: ldbimm 0, pacnxd
         ldbimm 1, vicirq        ;acknowledge VIC IRQ
         jmp sysirq
