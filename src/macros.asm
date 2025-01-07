@@ -88,12 +88,14 @@ ply:    macro
         ;; Memory operations
         ;; ------------------------------------------------------------
 
-        ;; Swap bytes via .A and .X
+        ;; Swap bytes via the stack
 swpbyt: macro byt1, byt2
         lda \byt1
-        ldx \byt2
-        sta \byt2
-        stx \byt1
+        pha                     ;load byt1 & push onto the stack
+        lda \byt2
+        sta \byt1               ;load byt2 & save to byt1
+        pla
+        sta \byt2               ;pop byt1 off the stack & save to byt2
         endm
         
         ;; Load immediate value into byte
@@ -139,4 +141,29 @@ cpwrd:  macro src, dst
         sta \dst
         lda \src+1
         sta \dst+1
+        endm
+
+        ;; Increment pointer using X-based, indirect adressing to ensure
+        ;; HB is updated along with LB.
+incptrx: macro ptr
+        clc
+        lda \ptr,x
+        adc #1
+        sta \ptr,x
+        inx
+        lda \ptr,x
+        adc #0
+        sta \ptr,x
+        dex
+        endm
+
+        ;; Increment word to ensure HB is updated along with LB.
+incwrd: macro wrd
+        clc
+        lda \wrd
+        adc #1
+        sta \wrd
+        lda \wrd+1
+        adc #0
+        sta \wrd+1
         endm

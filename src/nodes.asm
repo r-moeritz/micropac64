@@ -64,22 +64,22 @@ chknn:  cmp #n
         bne setnds
         lda pacsrc
         jsr nodeadr
-        inc buf,x               ;advance pointer; we need y coord
+        incptrx buf             ;advance pointer; we need y coord
         lda (buf,x)             ;get source y coord...
         pha                     ;... and stash it on the stack
         lda pactar
         jsr nodeadr             ;get target node address
-        inc buf,x               ;advance pointer; we need y coord
+        incptrx buf             ;advance pointer; we need y coord
         pla                     ;restore source y coord
         jmp calcnd
 setnds: lda pactar
         jsr nodeadr
-        inc buf,x               ;advance pointer; we need y coord
+        incptrx buf             ;advance pointer; we need y coord
         lda (buf,x)             ;get target y coord...
         pha                     ;... and stash it on the stack
         lda pacsrc
         jsr nodeadr
-        inc buf,x               ;advance pointer; we need y coord
+        incptrx buf             ;advance pointer; we need y coord
         pla                     ;restore target y coord
 calcnd: sec
         sbc (buf,x)

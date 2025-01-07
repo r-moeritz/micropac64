@@ -41,7 +41,7 @@ lpprsc: bmi fiprsc
         ldx #irqblki            ;load block index into .X
         jsr printchr            ;print char
         plx                     ;restore .X from stack
-:       inc irqwrd2
+:       incwrd irqwrd2
         cpwrd irqwrd2, irqwrd1  ;increment screen memory offset
         
         ;; print lo-nybble BCD char
@@ -60,7 +60,7 @@ lpprsc: bmi fiprsc
         ldx #irqblki            ;load block index into .X
         jsr printchr            ;print char
         plx                     ;restore .X from stack
-:       inc irqwrd2
+:       incwrd irqwrd2
         cpwrd irqwrd2, irqwrd1  ;increment screen memory offset
         dex                     ;decrement .X
         jmp lpprsc
