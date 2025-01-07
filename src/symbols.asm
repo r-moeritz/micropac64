@@ -91,7 +91,7 @@ ci2crb:         equ cia2 + $0f
         
         ;; Interrupt vectors
 cinv:           equ $0314       ;IRQ vector
-nminv:          equ $0318       ; NMI vector
+nminv:          equ $0318       ;NMI vector
 
         ;; Interrupt routines
 sysirq:         equ $ea7e       ;kernal IRQ handler
