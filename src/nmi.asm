@@ -28,6 +28,7 @@ setupnmi:
         ;;  - Fruit (appearance and disappearance)
         ;;  - Ghosts switching between scatter & chase mode
 procnmi:
+        php
         pha
         phx
         phy                             ;push .A, .X, and .Y onto the stack
@@ -110,4 +111,5 @@ ticloop:
 finnmi: ply
         plx
         pla                             ;restore .Y, .X, and .A from stack
+        plp
         rti
