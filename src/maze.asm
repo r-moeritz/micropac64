@@ -74,8 +74,10 @@ findpel:
 :       lda irqtmp              ;load index of west-most pellet in row
         jsr pelladr             ;load pellet address into irqwrd1
         ldy #3
+        cpbyt sp0x, irqwrd2     ;copy sp0x to irqwrd2 (lo)
+        dec irqwrd2             ;decrement irqwrd2 (lo) to give some leeway
         lda (irqwrd1),y         ;load pellet x loc
-        cmp sp0x
+        cmp irqwrd2
         bcs :+                  ;pellet x loc >= sp0x?
         inc irqtmp              ;no, try next pellet to the east
         jmp :-
@@ -93,7 +95,9 @@ fpckde: cmp #e
         ldx #irqblki
 :       lda irqtmp
         jsr pelladr
-        lda sp0x
+        cpbyt sp0x, irqwrd2     ;copy sp0x to irqwrd2 (lo)
+        inc irqwrd2             ;increment irqwrd2 (lo) to give some leeway
+        lda irqwrd2
         ldy #3
         cmp (irqwrd1),y
         bcs :+                  ;sp0x >= pellet x loc
