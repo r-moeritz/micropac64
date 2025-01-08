@@ -58,6 +58,13 @@ jcc:    macro adr
 :
         endm
 
+        ;; BMI to distant address
+jmi:    macro adr
+        bpl :+
+        jmp \adr
+:
+        endm
+        
         ;; Stack operations
         ;; ------------------------------------------------------------
 

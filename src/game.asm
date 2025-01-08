@@ -9,10 +9,27 @@ newgame:
         ldbimm 0, lvlnum
         jsr rstscr              ;reset score
         jmp fillmaze            ;fill maze with pellets
+
+        ;; Setup next game level
+nextlvl:
+        inc lvlnum
+        jsr fillmaze
+        jsr fillcolmem
+        jsr initsprt
+        ldbimm maxpell, npelrem
+        rts
         
         ;; Main game loop
 gameloop:
-        jsr readjoy2
+        lda npelrem             ;check remaining pellets
+        bne rdinpt              ;if <> 0 read joystick input
+:       ldx #$ff
+:       dex
+        bne :-                  ;delay
+        lda irqtmp              ;check if end level animation finished
+        bne :--                 ;no? wait a bit longer
+        jsr nextlvl 
+rdinpt: jsr readjoy2
         lda #1
         cmp joyx
         beq move

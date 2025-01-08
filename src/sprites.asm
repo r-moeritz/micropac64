@@ -22,6 +22,12 @@ initsprt:
         jsr setnodis            ;calculate distance between source & target
         rts
 
+        ;; Disable all sprites
+dissprt:
+        lda #0
+        sta spena
+        rts
+
         ;; Convert sprite x loc in .A to char x loc
 spx2chx:
         sec

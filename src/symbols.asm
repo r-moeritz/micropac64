@@ -118,7 +118,7 @@ sp0loc:         equ $1000/$40   ;sp0mem
 raslin:         equ 250         ;line for raster interrupt
 spxscog:        equ 24          ;sprite x screen origin
 spyscog:        equ 50          ;sprite y screen origin
-maxpell:        equ 180         ;maximum number of pellets (incl. energizers)
+maxpell:        equ 182         ;maximum number of pellets (incl. energizers)
 maxmen:         equ 3           ;maximum number of "men"
 
         ;; Screen memory indexes
@@ -156,3 +156,8 @@ irqblki:        equ $05
         ;; Index into buf to access memory block
         ;; reserved for NMI handler
 nmiblki:        equ $0a
+
+        ;; The number of pellets that need to be eaten for bonus items
+        ;; to appear the 1st and 2nd time
+nbonpel1:     equ 52
+nbonpel2:     equ 127

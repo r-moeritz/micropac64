@@ -20,6 +20,9 @@ setupirq:
         ;;  - Pac-Man's dying & updating remaining lives
         ;;  - Ghosts going into/out of fright mode, or being eaten
 procirq:
+        lda npelrem
+        jeq finirq              ;don't process IRQ if all pellets eaten
+        
         lda spbgcl              ;check for collision
         and #%00000001          ;between sprite 0 (Pac-Man) and background
         beq chkrem
@@ -41,8 +44,11 @@ procirq:
 rmpel:  ldwptr irqwrd1, 0, irqwrd2
         ldy #spcechr
         jsr printchr            ;erase pellet
-        dec npelrem             ;decrement remaining pellet count
         jsr printscr            ;print score
+        ldbimm 6, irqtmp        ;set number of flashes in irqtmp
+        dec npelrem             ;decrement pellets remaining
+        jne finirq
+        jsr dissprt
         jmp finirq
 chkrem: lda pacrem
         beq setnsrc

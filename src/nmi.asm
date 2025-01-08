@@ -40,8 +40,10 @@ procnmi:
         jeq sysnmi
         
         ;; Timer A fired: animate Pac-Man
-timaev: lda pacrem
-        jeq finnmi                      ;don't animate Pac-Man if he's not moving
+timaev: lda npelrem
+        jeq finnmi                      ;don't animate PM if all pellets eaten
+        lda pacrem
+        jeq finnmi                      ;don't animate PM if he's not moving
         inc pacaix
         ldy pacaix
         cpy #6                          ;past final animation?
@@ -68,13 +70,15 @@ ldanim: clc
         sta sp0ptr
         jmp finnmi
         
-        ;; Timer B fired: animate energizers
-timbev: lda enzraix
+        ;; Timer B fired: animate energizers or flash maze on level end
+timbev: lda npelrem
+        beq flshmaz                     ;all pellets eaten, flash maze
+        lda enzraix
         beq tic
         dec enzraix
         ldy #3
 tocloop:
-        bmi finnmi
+        jmi finnmi
         phy                             ;save loop counter onto stack        
         lda enzrlst,y                   ;load energizer pelltbl index into .A
         ldx #nmiblki
@@ -95,7 +99,7 @@ tocloop:
 tic:    inc enzraix
         ldy #3
 ticloop:
-        bmi finnmi
+        jmi finnmi
         phy                             ;push loop counter onto stack
         lda enzrlst,y                   ;load energizer pelltbl index into .A
         ldx #nmiblki
@@ -107,6 +111,105 @@ ticloop:
         ply                             ;pop loop counter off the stack
         dey
         jmp ticloop
+flshmaz:
+        lda irqtmp                      ;HACK: read number of flashes remaining from irqtmp
+        jeq finnmi
+        ror
+        jcc flshwht                     ;flash white on even, blue on odd
+        ldx #0
+setblu1:
+        lda colmem,x                    ;load value in colmem at pos
+        and #%00001111                  ;mask out high nybble
+        cmp #$01
+        bne :+                          ;is colour = white?
+        lda #$06
+        sta colmem,x                    ;yes, make it blue
+:       inx                     
+        cpx #250
+        bne setblu1
+        ldx #0
+setblu2:
+        lda colmem+250,x                ;load value in colmem at pos
+        and #%00001111                  ;mask out high nybble
+        cmp #$01
+        bne :+                          ;is colour = white?
+        lda #$06
+        sta colmem+250,x                ;yes, make it blue
+:       inx                     
+        cpx #250
+        bne setblu2
+        ldx #0
+setblu3:
+        lda colmem+500,x                ;load value in colmem at pos
+        and #%00001111                  ;mask out high nybble
+        cmp #$01
+        bne :+                          ;is colour = white?
+        lda #$06
+        sta colmem+500,x                ;yes, make it blue
+:       inx                     
+        cpx #250
+        bne setblu3
+        ldx #0
+setblu4:
+        lda colmem+750,x                ;load value in colmem at pos
+        and #%00001111                  ;mask out high nybble
+        cmp #$01
+        bne :+                          ;is colour = white?
+        lda #$06
+        sta colmem+750,x                ;yes, make it blue
+:       inx
+        cpx #250
+        bne setblu4
+        jmp flshfin
+flshwht:
+        ldx #0
+setwht1:
+        lda colmem,x                    ;load value in colmem at pos
+        and #%00001111                  ;mask out high nybble
+        cmp #$06
+        bne :+                          ;is colour = blue?
+        lda #$01
+        sta colmem,x                    ;yes, make it white
+:       inx                     
+        cpx #250
+        bne setwht1
+        ldx #0
+setwht2:
+        lda colmem+250,x                ;load value in colmem at pos
+        and #%00001111                  ;mask out high nybble
+        cmp #$06
+        bne :+                          ;is colour = blue?
+        lda #$01
+        sta colmem+250,x                ;yes, make it white
+:       inx                     
+        cpx #250
+        bne setwht2
+        ldx #0
+setwht3:
+        lda colmem+500,x                ;load value in colmem at pos
+        and #%00001111                  ;mask out high nybble
+        cmp #$06
+        bne :+                          ;is colour = blue?
+        lda #$01
+        sta colmem+500,x                ;yes, make it white
+:       inx                     
+        cpx #250
+        bne setwht3
+        ldx #0
+setwht4:
+        lda colmem+750,x                ;load value in colmem at pos
+        and #%00001111                  ;mask out high nybble
+        cmp #$06
+        bne :+                          ;is colour = blue?
+        lda #$01
+        sta colmem+750,x                ;yes, make it white
+:       inx                     
+        cpx #250
+        bne setwht4
+flshfin:
+        dec irqtmp                      ;decrement flashes remaining
+        
+        ;; Restore machine state & return from NMI
 finnmi: ply
         plx
         pla                             ;restore .Y, .X, and .A from stack
