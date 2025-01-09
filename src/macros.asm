@@ -26,6 +26,20 @@ diva8:  macro
         lsr
         endm
 
+        ;; Add immediate value to byte and store
+adcbimm: macro val, byt
+        clc
+        lda \byt
+        adc #\val
+        sta \byt
+        endm
+
+sbcbimm: macro val, byt
+        sec
+        lda \byt
+        sbc #\val
+        sta \byt
+        endm
         
         ;; Conditional jumps
         ;; ------------------------------------------------------------

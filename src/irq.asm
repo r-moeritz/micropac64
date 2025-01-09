@@ -6,7 +6,7 @@
 setupirq:
         sei
         ldbimm $7f, ci1icr
-        ldbimm 1, irqmsk
+        ldbimm $03, irqmsk ;enable raster IRQ & mob-data collision
         ldbimm $1b, scroly
         ldbimm raslin, raster
         ldwimm procirq, cinv
@@ -21,18 +21,20 @@ setupirq:
         ;;  - Ghosts going into/out of fright mode, or being eaten
 procirq:
         lda npelrem
-        jeq finirq              ;don't process IRQ if all pellets eaten
+        bne chkirq              ;don't handle IRQ when no pellets left
+        ldbimm $0f, vicirq      ;acknowledge IRQ
+        jmp sysirq              ;return from interrupt
         
-        lda spbgcl              ;check for collision
-        and #%00000001          ;between sprite 0 (Pac-Man) and background
-        beq chkrem
-        
-        ;; Collision detected between Pac-Man sprite and background.
-        ;; Must be a pellet since fruit and ghosts are sprites!
+chkirq: lda spbgcl              ;clear collision register by reading it
+        lda vicirq
+        and #$02                ;check for sprite-background collision
+        jeq rasirq
+       
+        ;; Handle sprite-background collision IRQ
         jsr findpel             ;find pellet collided with & mark as eaten
         lda irqwrd1+1           ;load pellet address hi-byte
         cmp #$ff                ;pellet found?
-        jeq chkrem              ;no, check remaining distance
+        jeq fincol              ;no, do nothing
         ldx #irqblki+4
         jsr isenzr              ;yes, is it an energizer?
         bne :+
@@ -47,10 +49,18 @@ rmpel:  ldwptr irqwrd1, 0, irqwrd2
         jsr printscr            ;print score
         ldbimm 6, irqtmp        ;set number of flashes in irqtmp
         dec npelrem             ;decrement pellets remaining
-        jne finirq
+        jne fincol
         jsr dissprt
-        jmp finirq
-chkrem: lda pacrem
+fincol: lda vicirq
+        and #$01
+        bne rasirq
+        ldbimm $0f, vicirq      ;acknowledge IRQ
+        jmp sysirq              ;return from interrupt
+
+        ;; Handle raster IRQ
+rasirq: lda npelrem
+        jeq finras              ;don't process IRQ if all pellets eaten
+        lda pacrem
         beq setnsrc
         lda pacdir
         cmp #w
@@ -70,7 +80,7 @@ pdsouth:
 decrem: dec pacrem
         lda pacrem
         beq setnsrc
-        jmp finirq
+        jmp finras
 setnsrc:
         cpbyt pactar, pacsrc    ;set target node as new source node
         ldx #irqblki
@@ -87,13 +97,13 @@ setnsrc:
         sta pactar
         sty pacdir
         jsr setnodis
-        jmp finirq
+        jmp finras
 chkcon: ldy pacdir
         lda (irqwrd1),y
         cmp #$ff
-        beq finirq
+        beq finras
         sta pactar              ;set new target...
         jsr setnodis            ;... and calculate distance
-finirq: ldbimm 0, pacnxd
-        ldbimm 1, vicirq        ;acknowledge VIC IRQ
-        jmp sysirq
+finras: ldbimm 0, pacnxd        ;clear out next direction
+        ldbimm $0f, vicirq      ;acknowledge IRQ
+        jmp sysirq              ;return from interrupt

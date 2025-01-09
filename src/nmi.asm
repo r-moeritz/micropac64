@@ -8,8 +8,8 @@ setupnmi:
         lda #$ff
         sta ti2alo
         sta ti2ahi                      ;timer A fires every 66.5ms (PAL)
-        ldbimm 3, ti2blo
-        ldbimm 0, ti2bhi                ;timer B fires every 199.5ms (PAL)
+        ldbimm 4, ti2blo
+        ldbimm 0, ti2bhi                ;timer B fires every 266ms (PAL)
         ldbimm %00010001, ci2cra
         ldbimm %01010001, ci2crb
         lda ci2icr
