@@ -109,7 +109,10 @@ fpckde: cmp #e
         jmp pelfound
 fpckdn: cmp #n
         bne fpds
-        cpbyt sp0y, irqtmp
+        sec
+        lda sp0y
+        sbc #2
+        sta irqtmp              ;store sp0y-2 in irqtmp
         jsr fprixs
         jsr fpinrow             ;get indexes of west-most & east-most pellets
         cpbyt irqwrd2, irqtmp   ;store index of west-most pellet
