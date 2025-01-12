@@ -34,49 +34,49 @@ rdinpt: jsr readjoy2
         cmp joyx
         beq move
         bcs chky
-        ldbimm w, wrd2
+        ldbimm w, tmp
         jmp chkmov
-move:   ldbimm e, wrd2
+move:   ldbimm e, tmp
         jmp chkmov
 chky:   lda #1
         cmp joyy
         beq movs
         jcs gameloop
-        ldbimm n, wrd2
+        ldbimm n, tmp
         jmp chkmov
-movs:   ldbimm s, wrd2
+movs:   ldbimm s, tmp
 chkmov: lda pacrem
         sec
         sbc #3
         jcs chkrvw
-        cpwrd wrd2, pacnxd
+        cpbyt tmp, pacnxd
         jmp gameloop
 chkrvw: lda pacdir
         cmp #w
         bne chkrve
-        lda wrd2
+        lda tmp
         cmp #e
         jne gameloop
         jmp reverse
 chkrve: cmp #e
         bne chkrvn
-        lda wrd2
+        lda tmp
         cmp #w
         jne gameloop
         jmp reverse
 chkrvn: cmp #n
         bne revs
-        lda wrd2
+        lda tmp
         cmp #s
         jne gameloop
         jmp reverse
 revs:
-        lda wrd2
+        lda tmp
         cmp #n
         jne gameloop
 reverse:
         sei
-        cpbyt wrd2, pacdir
+        cpbyt tmp, pacdir
         swpbyt pacsrc, pactar
         lda pacdis
         sec
