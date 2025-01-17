@@ -1,0 +1,4213 @@
+Sections:
+00: "org0001:801" (801-15E7)
+01: "org0002:4000" (4000-4900)
+02: "org0003:4bf0" (4BF0-4FE8)
+03: "org0004:5000" (5000-5480)
+
+
+Source: "./src/startup.asm"
+                        	     1:         ;; ============================================================
+                        	     2:         ;; Program startup
+                        	     3:         ;; ============================================================
+                        	     4: 
+                        	     5:         org $0801
+                        	     6: 
+                        	     7:         ;; BASIC header
+00:0801 0B08            	     8:         word nxl,10
+00:0803 0A00
+00:0805 9E              	     9:         byte $9e
+00:0806 32303631        	    10:         string "2061"
+00:080A 00
+00:080B 0000            	    11: nxl:    word 0
+                        	    12: 
+                        	    13:         ;; Program initialization
+00:080D 203009          	    14:         jsr initvic
+00:0810 205D09          	    15:         jsr fillcolmem
+00:0813 200A0C          	    16:         jsr initsprt
+00:0816 20490F          	    17:         jsr newgame
+00:0819 206C0C          	    18:         jsr setupirq
+00:081C 206F0D          	    19:         jsr setupnmi
+00:081F 4C6B0F          	    20:         jmp gameloop
+                        	    21: 
+                        	    22:         ;; Include program modules
+                        	    23:         include macros.asm
+
+Source: "macros.asm"
+                        	     1:         ;; ============================================================
+                        	     2:         ;; General purpose macros
+                        	     3:         ;; ============================================================
+                        	     4: 
+                        	     5: 
+                        	     6:         ;; Maths
+                        	     7:         ;; ------------------------------------------------------------
+                        	     8:         
+                        	     9:         ;; Multiply value in .A by 8, ignore C flag
+                        	    10:         ;; Reads:       .A
+                        	    11:         ;; Writes:      .A
+                        	    12: mula8:  macro
+                        	    13:         clc
+                        	    14:         asl
+                        	    15:         asl
+                        	    16:         asl
+                        	    17:         endm
+                        	    18:         
+                        	    19:         ;; Divide value in .A by 8, ignore C flag
+                        	    20:         ;; Reads:       .A
+                        	    21:         ;; Writes:      .A      
+                        	    22: diva8:  macro
+                        	    23:         sec
+                        	    24:         lsr
+                        	    25:         lsr
+                        	    26:         lsr
+                        	    27:         endm
+                        	    28: 
+                        	    29:         ;; Add immediate value to byte and store
+                        	    30: adcbimm: macro val, byt
+                        	    31:         clc
+                        	    32:         lda \byt
+                        	    33:         adc #\val
+                        	    34:         sta \byt
+                        	    35:         endm
+                        	    36: 
+                        	    37: sbcbimm: macro val, byt
+                        	    38:         sec
+                        	    39:         lda \byt
+                        	    40:         sbc #\val
+                        	    41:         sta \byt
+                        	    42:         endm
+                        	    43:         
+                        	    44:         ;; Conditional jumps
+                        	    45:         ;; ------------------------------------------------------------
+                        	    46: 
+                        	    47:         ;; BNE to distant address
+                        	    48: jne:    macro adr
+                        	    49:         beq :+
+                        	    50:         jmp \adr
+                        	    51: :
+                        	    52:         endm
+                        	    53: 
+                        	    54:         ;; BEQ to distant address
+                        	    55: jeq:    macro adr
+                        	    56:         bne :+
+                        	    57:         jmp \adr
+                        	    58: :
+                        	    59:         endm
+                        	    60: 
+                        	    61:         ;; BCS to distant address
+                        	    62: jcs:    macro adr
+                        	    63:         bcc :+
+                        	    64:         jmp \adr
+                        	    65: :
+                        	    66:         endm
+                        	    67: 
+                        	    68:         ;; BCC to distant address
+                        	    69: jcc:    macro adr
+                        	    70:         bcs :+
+                        	    71:         jmp \adr
+                        	    72: :
+                        	    73:         endm
+                        	    74: 
+                        	    75:         ;; BMI to distant address
+                        	    76: jmi:    macro adr
+                        	    77:         bpl :+
+                        	    78:         jmp \adr
+                        	    79: :
+                        	    80:         endm
+                        	    81:         
+                        	    82:         ;; Stack operations
+                        	    83:         ;; ------------------------------------------------------------
+                        	    84: 
+                        	    85:         ;; Push .X onto the stack
+                        	    86: phx:    macro
+                        	    87:         txa
+                        	    88:         pha
+                        	    89:         endm
+                        	    90: 
+                        	    91:         ;; Pop the top byte off the stack onto .X
+                        	    92: plx:    macro
+                        	    93:         pla
+                        	    94:         tax
+                        	    95:         endm
+                        	    96: 
+                        	    97:         ;; Push .Y onto the stack
+                        	    98: phy:    macro
+                        	    99:         tya
+                        	   100:         pha
+                        	   101:         endm
+                        	   102: 
+                        	   103:         ;; Pop the top byte off the stack onto .Y
+                        	   104: ply:    macro
+                        	   105:         pla
+                        	   106:         tay
+                        	   107:         endm
+                        	   108: 
+                        	   109:         ;; Memory operations
+                        	   110:         ;; ------------------------------------------------------------
+                        	   111: 
+                        	   112:         ;; Swap bytes via the stack
+                        	   113: swpbyt: macro byt1, byt2
+                        	   114:         lda \byt1
+                        	   115:         pha                     ;load byt1 & push onto the stack
+                        	   116:         lda \byt2
+                        	   117:         sta \byt1               ;load byt2 & save to byt1
+                        	   118:         pla
+                        	   119:         sta \byt2               ;pop byt1 off the stack & save to byt2
+                        	   120:         endm
+                        	   121:         
+                        	   122:         ;; Load immediate value into byte
+                        	   123: ldbimm: macro val, byt
+                        	   124:         lda #\val
+                        	   125:         sta \byt
+                        	   126:         endm
+                        	   127:         
+                        	   128:         ;; Load immediate value into word
+                        	   129: ldwimm: macro val, wrd
+                        	   130:         lda #<\val
+                        	   131:         sta \wrd
+                        	   132:         lda #>\val
+                        	   133:         sta \wrd+1
+                        	   134:         endm
+                        	   135: 
+                        	   136:         ;; Load value into byte via pointer at index
+                        	   137: ldbptr: macro ptr, idx, byt
+                        	   138:         ldy #\idx
+                        	   139:         lda (\ptr),y
+                        	   140:         sta \byt
+                        	   141:         endm
+                        	   142:         
+                        	   143:         ;; Load value into word via pointer at index
+                        	   144: ldwptr: macro ptr, idx, wrd
+                        	   145:         ldy #\idx
+                        	   146:         lda (\ptr),y
+                        	   147:         sta \wrd
+                        	   148:         iny
+                        	   149:         lda (\ptr),y
+                        	   150:         sta \wrd+1
+                        	   151:         endm
+                        	   152: 
+                        	   153:         ;; Copy value from one byte to another
+                        	   154: cpbyt:  macro src, dst
+                        	   155:         lda \src
+                        	   156:         sta \dst
+                        	   157:         endm
+                        	   158: 
+                        	   159:         ;; Copy value from one word to another
+                        	   160: cpwrd:  macro src, dst
+                        	   161:         lda \src
+                        	   162:         sta \dst
+                        	   163:         lda \src+1
+                        	   164:         sta \dst+1
+                        	   165:         endm
+                        	   166: 
+                        	   167:         ;; Increment pointer using X-based, indirect adressing to ensure
+                        	   168:         ;; HB is updated along with LB.
+                        	   169: incptrx: macro ptr
+                        	   170:         clc
+                        	   171:         lda \ptr,x
+                        	   172:         adc #1
+                        	   173:         sta \ptr,x
+                        	   174:         inx
+                        	   175:         lda \ptr,x
+                        	   176:         adc #0
+                        	   177:         sta \ptr,x
+                        	   178:         dex
+                        	   179:         endm
+                        	   180: 
+                        	   181:         ;; Increment word to ensure HB is updated along with LB.
+                        	   182: incwrd: macro wrd
+                        	   183:         clc
+                        	   184:         lda \wrd
+                        	   185:         adc #1
+                        	   186:         sta \wrd
+                        	   187:         lda \wrd+1
+                        	   188:         adc #0
+                        	   189:         sta \wrd+1
+                        	   190:         endm
+                        	   191: 
+
+Source: "./src/startup.asm"
+                        	    24:         include symbols.asm
+
+Source: "symbols.asm"
+                        	     1:         ;; ============================================================
+                        	     2:         ;; Symbol definitions
+                        	     3:         ;; ============================================================
+                        	     4: 
+                        	     5:         
+                        	     6:         ;; Zero page memory locations
+                        	     7:         ;; ------------------------------------------------------------
+                        	     8: 
+                        	     9:         ;; 15-byte buffer for use in sub-routines,
+                        	    10:         ;; divided into 3x blocks of 5 bytes each.
+                        	    11: buf:            equ $16         ;$16-$24
+                        	    12:         
+                        	    13:         ;; Block for game loop
+                        	    14: wrd1:           equ buf
+                        	    15: wrd2:           equ buf+$02
+                        	    16: tmp:            equ buf+$04
+                        	    17:         
+                        	    18:         ;; Block for IRQ handler
+                        	    19: irqwrd1:        equ buf+$05
+                        	    20: irqwrd2:        equ buf+$07
+                        	    21: irqtmp:         equ buf+$09
+                        	    22:         
+                        	    23:         ;; Block for NMI handler
+                        	    24: nmiwrd1:        equ buf+$0a
+                        	    25: nmiwrd2:        equ buf+$0c
+                        	    26: nmitmp:         equ buf+$0e
+                        	    27: 
+                        	    28:         ;; Joystick data
+                        	    29: joybtn:         equ $92         ;button value
+                        	    30: joyx:           equ $96         ;x axis value
+                        	    31: joyy:           equ $9b         ;y axis value
+                        	    32: 
+                        	    33:         ;; Pac-Man data
+                        	    34: pacsrc:         equ $9e         ;source node
+                        	    35: pactar:         equ $9f         ;target node
+                        	    36: pacdir:         equ $a3         ;facing direction
+                        	    37: pacnxd:         equ $a4         ;next direction
+                        	    38: pacdis:         equ $a5         ;distance to target
+                        	    39: pacrem:         equ $a6         ;distance remaining to target
+                        	    40: 
+                        	    41:         ;; Scoring, gameplay
+                        	    42: npelrem:        equ $a7          ;number of pellets remaining
+                        	    43: nmenrem:        equ $a8          ;number of remaining "men"
+                        	    44: lvlnum:         equ $a9          ;level number
+                        	    45: score:          equ $f7          ;player's score in BCD (4 bytes: $f7-$fa)
+                        	    46: 
+                        	    47:         ;; Animation
+                        	    48: pacaix:         equ $fb          ;Pac-Man animation frame index
+                        	    49: enzraix:        equ $fc          ;energizer animation frame index
+                        	    50: 
+                        	    51:         ;; Still available: $fd,$fe
+                        	    52:         
+                        	    53:         ;; Memory-mapped hardware registers
+                        	    54:         ;; ------------------------------------------------------------
+                        	    55:         
+                        	    56:         ;; VIC II registers
+                        	    57: vic:            equ $d000
+                        	    58: sp0x:           equ vic
+                        	    59: sp0y:           equ vic + $01
+                        	    60: scroly:         equ vic + $11
+                        	    61: raster:         equ vic + $12
+                        	    62: spena:          equ vic + $15
+                        	    63: vmcsb:          equ vic + $18
+                        	    64: vicirq:         equ vic + $19
+                        	    65: irqmsk:         equ vic + $1a
+                        	    66: spbgcl:         equ vic + $1f
+                        	    67: extcol:         equ vic + $20
+                        	    68: bgcol0:         equ vic + $21
+                        	    69: sp0col:         equ vic + $27
+                        	    70: 
+                        	    71:         ;; CIA1 registers
+                        	    72: cia1:           equ $dc00
+                        	    73: ci1pra:         equ cia1
+                        	    74: ci1icr:         equ cia1 + $0d
+                        	    75: 
+                        	    76:         ;; CIA2 registers
+                        	    77: cia2:           equ $dd00
+                        	    78: ci2pra:         equ cia2
+                        	    79: c2ddra:         equ cia2 + $02
+                        	    80: ti2a:           equ cia2 + $04
+                        	    81: ti2b:           equ cia2 + $06
+                        	    82: ci2icr:         equ cia2 + $0d
+                        	    83: ci2cra:         equ cia2 + $0e
+                        	    84: ci2crb:         equ cia2 + $0f
+                        	    85: 
+                        	    86: 
+                        	    87:         ;; Operating system memory locations
+                        	    88:         ;; ------------------------------------------------------------
+                        	    89:         
+                        	    90:         ;; Interrupt vectors
+                        	    91: cinv:           equ $0314       ;IRQ vector
+                        	    92: nminv:          equ $0318       ;NMI vector
+                        	    93: 
+                        	    94:         ;; Interrupt routines
+                        	    95: sysirq:         equ $ea7e       ;kernal IRQ handler
+                        	    96: sysnmi:         equ $fe56       ;kernal NMI handler
+                        	    97: 
+                        	    98: 
+                        	    99:         ;; Program memory locations
+                        	   100:         ;; ------------------------------------------------------------
+                        	   101:         
+                        	   102: charset:        equ $4000       ;character set definition
+                        	   103: coltab:         equ $4800       ;colour table
+                        	   104: mazegfx:        equ $4bf0       ;Pac-Man maze
+                        	   105: scnmem:         equ $4c00       ;screen memory
+                        	   106: colmem:         equ $d800       ;colour memory
+                        	   107: sp0mem:         equ $5000       ;sprite 0 address
+                        	   108: sp0ptr:         equ $4ff8       ;sprite 0 pointer
+                        	   109: sp0loc:         equ $1000/$40   ;sp0mem
+                        	   110: 
+                        	   111: 
+                        	   112:         ;; Constants
+                        	   113:         ;; ------------------------------------------------------------
+                        	   114: 
+                        	   115:         ;; Misc.
+                        	   116: raslin:         equ 250         ;line for raster interrupt
+                        	   117: spxscog:        equ 24          ;sprite x screen origin
+                        	   118: spyscog:        equ 50          ;sprite y screen origin
+                        	   119: maxpell:        equ 182         ;maximum number of pellets (incl. energizers)
+                        	   120: maxmen:         equ 3           ;maximum number of "men"
+                        	   121: 
+                        	   122:         ;; Screen memory indexes
+                        	   123: scrmsdi:        equ $185        ;most significant digit of score
+                        	   124:         
+                        	   125:         ;; Node indexes
+                        	   126: wrpnixw:        equ $1b         ;western warp tunnel node index
+                        	   127: wrpnixe:        equ $21         ;eastern warp tunnel node index
+                        	   128: pacstnd:        equ $31         ;Pac-Man's starting node index
+                        	   129: gsthmnd:        equ $1e         ;ghost home node
+                        	   130: 
+                        	   131:         ;; Character constants
+                        	   132: spcechr:        equ $20         ;space char
+                        	   133: pellchr:        equ $53         ;pellet char
+                        	   134: enzrchr:        equ $54         ;energizer char
+                        	   135: 
+                        	   136:         ;; Colour constants
+                        	   137: dkgrey:         equ $0b         ;dark grey
+                        	   138: ltgrey:         equ $0f         ;light grey
+                        	   139:         
+                        	   140:         ;; Compass directions
+                        	   141: n:              equ 2
+                        	   142: s:              equ 3
+                        	   143: w:              equ 4
+                        	   144: e:              equ 5
+                        	   145: 
+                        	   146:         ;; Scores, expressed as BCD pairs
+                        	   147: pellpts:        equ %00010000   ;10 pts for pellets
+                        	   148: enzrpts:        equ %01010000   ;50 pts for energizers
+                        	   149: 
+                        	   150:         ;; Index into buf to access memory block
+                        	   151:         ;; reservedf for gameloop
+                        	   152: blki:           equ $00
+                        	   153:         
+                        	   154:         ;; Index into buf to access memory block
+                        	   155:         ;; reserved for IRQ handler
+                        	   156: irqblki:        equ $05
+                        	   157: 
+                        	   158:         ;; Index into buf to access memory block
+                        	   159:         ;; reserved for NMI handler
+                        	   160: nmiblki:        equ $0a
+                        	   161: 
+                        	   162:         ;; The number of pellets that need to be eaten for bonus items
+                        	   163:         ;; to appear the 1st and 2nd time
+                        	   164: nbonpel1:     equ 52
+                        	   165: nbonpel2:     equ 127
+                        	   166: 
+
+Source: "./src/startup.asm"
+                        	    25:         include maths.asm
+
+Source: "maths.asm"
+                        	     1:         ;; ============================================================
+                        	     2:         ;; Maths sub-routines
+                        	     3:         ;; ============================================================
+                        	     4: 
+                        	     5:         ;; Multiply by 5
+                        	     6:         ;; Reads:
+                        	     7:         ;;  - .A (multiplicand)
+                        	     8:         ;;  - .X (offset to memory block in buf)
+                        	     9:         ;; Writes:
+                        	    10:         ;;  - Result is stored in 1st word of memory block
+                        	    11:         ;;  - 2nd word of memory block is used as a work area
+00:0822 E8              	    12: mula5:  inx
+00:0823 E8              	    13:         inx
+00:0824 9516            	    14:         sta buf,x               ;stash original .A in wrd2 (lo)
+00:0826 18              	    15:         clc
+00:0827 0A              	    16:         asl                     ;multiply by 2
+00:0828 A8              	    17:         tay                     ;stash product in .Y
+00:0829 A900            	    18:         lda #0
+00:082B 2A              	    19:         rol
+00:082C E8              	    20:         inx
+00:082D 9516            	    21:         sta buf,x               ;stash .C in wrd2 (hi)
+00:082F 98              	    22:         tya                     ;restore product from .Y
+00:0830 0A              	    23:         asl                     ;multiply by 2
+00:0831 A8              	    24:         tay                     ;stash product in .Y
+00:0832 B516            	    25:         lda buf,x               
+00:0834 2A              	    26:         rol                     ;restore .C from wrd2 (hi)
+00:0835 CA              	    27:         dex
+00:0836 CA              	    28:         dex
+00:0837 9516            	    29:         sta buf,x               ;write hi byte to wrd1 (hi)
+00:0839 98              	    30:         tya                     ;restore product from .Y
+00:083A E8              	    31:         inx
+00:083B 7516            	    32:         adc buf,x               ;add original .A value
+00:083D CA              	    33:         dex
+00:083E CA              	    34:         dex
+00:083F 9516            	    35:         sta buf,x               ;write lo byte to wrd1 (lo)
+00:0841 A900            	    36:         lda #0
+00:0843 2A              	    37:         rol
+00:0844 E8              	    38:         inx
+00:0845 7516            	    39:         adc buf,x               ;add .C to hi byte
+00:0847 9516            	    40:         sta buf,x               ;and write to wrd1 (hi)
+00:0849 CA              	    41:         dex
+00:084A 60              	    42:         rts
+                        	    43:         
+                        	    44:         ;; Multiply by 6
+                        	    45:         ;; Reads:
+                        	    46:         ;;  - .A (multiplicand)
+                        	    47:         ;;  - .X (offset to memory block in buf)
+                        	    48:         ;; Writes:
+                        	    49:         ;;  - Result is stored in 1st word of memory block
+                        	    50:         ;;  - 2nd word of memory block is used as a work area        
+00:084B E8              	    51: mula6:  inx
+00:084C E8              	    52:         inx
+00:084D 9516            	    53:         sta buf,x
+00:084F 18              	    54:         clc
+00:0850 0A              	    55:         asl
+00:0851 A8              	    56:         tay
+00:0852 A900            	    57:         lda #0
+00:0854 2A              	    58:         rol
+00:0855 E8              	    59:         inx
+00:0856 9516            	    60:         sta buf,x
+00:0858 98              	    61:         tya
+00:0859 0A              	    62:         asl
+00:085A A8              	    63:         tay
+00:085B B516            	    64:         lda buf,x
+00:085D 2A              	    65:         rol
+00:085E CA              	    66:         dex
+00:085F CA              	    67:         dex
+00:0860 9516            	    68:         sta buf,x
+00:0862 98              	    69:         tya
+00:0863 E8              	    70:         inx
+00:0864 7516            	    71:         adc buf,x
+00:0866 A8              	    72:         tay
+00:0867 A900            	    73:         lda #0
+00:0869 2A              	    74:         rol
+00:086A CA              	    75:         dex
+00:086B 7516            	    76:         adc buf,x
+00:086D 9516            	    77:         sta buf,x
+00:086F 98              	    78:         tya
+00:0870 E8              	    79:         inx
+00:0871 7516            	    80:         adc buf,x
+00:0873 CA              	    81:         dex
+00:0874 CA              	    82:         dex
+00:0875 9516            	    83:         sta buf,x
+00:0877 A900            	    84:         lda #0
+00:0879 2A              	    85:         rol
+00:087A E8              	    86:         inx
+00:087B 7516            	    87:         adc buf,x
+00:087D 9516            	    88:         sta buf,x
+00:087F CA              	    89:         dex
+00:0880 60              	    90:         rts
+                        	    91: 
+
+Source: "./src/startup.asm"
+                        	    26:         include io.asm
+
+Source: "io.asm"
+                        	     1:         ;; ============================================================
+                        	     2:         ;; I/O related sub-routines
+                        	     3:         ;; ============================================================
+                        	     4: 
+                        	     5:         ;; Write the player's score to screen memory
+                        	     6:         ;; May only be called from IRQ handler!
+                        	     7:         ;; Clobbers .A, .X, and .Y
+                        	     8:         ;; Reads:
+                        	     9:         ;;  - score
+                        	    10:         ;;  - irqwrd1
+                        	    11:         ;; Writes:
+                        	    12:         ;;  - irqwrd1
+                        	    13:         ;;  - irqwrd2
+                        	    14:         ;;  - irqtmp
+                        	    15: printscr:
+                        	    16:         ;; Each of the 4 bytes comprising score contains 2 BCD digits.
+                        	    17:         ;; Each digit needs to be extracted and turned into a
+                        	    18:         ;; printable character. Then, each digit can be written to
+                        	    19:         ;; screen memory using printchr. We skip leading zeroes.
+                        	    20:         ldwimm scrmsdi, irqwrd1
+00:0881 A985            	     1M         lda #<scrmsdi
+00:0883 851B            	     2M         sta irqwrd1
+00:0885 A901            	     3M         lda #>scrmsdi
+00:0887 851C            	     4M         sta irqwrd1+1
+                        	    21:         cpwrd irqwrd1, irqwrd2
+00:0889 A51B            	     1M         lda irqwrd1
+00:088B 851D            	     2M         sta irqwrd2
+00:088D A51C            	     3M         lda irqwrd1+1
+00:088F 851E            	     4M         sta irqwrd2+1
+                        	    22:         ldbimm 0, irqtmp
+00:0891 A900            	     1M         lda #0
+00:0893 851F            	     2M         sta irqtmp
+00:0895 A203            	    23:         ldx #3
+00:0897 3070            	    24: lpprsc: bmi fiprsc
+                        	    25:         ;; print hi-nybble BCD char
+00:0899 B5F7            	    26:         lda score,x
+00:089B 4A              	    27:         lsr
+00:089C 4A              	    28:         lsr
+00:089D 4A              	    29:         lsr
+00:089E 4A              	    30:         lsr                     ;shift BCD digit into lo-nybble
+00:089F F007            	    31:         beq :+
+00:08A1 A001            	    32:         ldy #1
+00:08A3 841F            	    33:         sty irqtmp
+00:08A5 4CAF08          	    34:         jmp :++
+00:08A8 A41F            	    35: :       ldy irqtmp
+00:08AA D003            	    36:         bne :+
+00:08AC 4CBB08          	    37:         jmp :++
+00:08AF 0930            	    38: :       ora #%00110000          ;convert to printable char
+00:08B1 A8              	    39:         tay                     ;place char in .Y
+                        	    40:         phx                     ;save .X onto stack
+00:08B2 8A              	     1M         txa
+00:08B3 48              	     2M         pha
+00:08B4 A205            	    41:         ldx #irqblki            ;load block index into .X
+00:08B6 201D09          	    42:         jsr printchr            ;print char
+                        	    43:         plx                     ;restore .X from stack
+00:08B9 68              	     1M         pla
+00:08BA AA              	     2M         tax
+                        	    44: :       incwrd irqwrd2
+00:08BB 18              	     1M         clc
+00:08BC A51D            	     2M         lda irqwrd2
+00:08BE 6901            	     3M         adc #1
+00:08C0 851D            	     4M         sta irqwrd2
+00:08C2 A51E            	     5M         lda irqwrd2+1
+00:08C4 6900            	     6M         adc #0
+00:08C6 851E            	     7M         sta irqwrd2+1
+                        	    45:         cpwrd irqwrd2, irqwrd1  ;increment screen memory offset
+00:08C8 A51D            	     1M         lda irqwrd2
+00:08CA 851B            	     2M         sta irqwrd1  
+00:08CC A51E            	     3M         lda irqwrd2+1
+00:08CE 851C            	     4M         sta irqwrd1  +1
+                        	    46:         
+                        	    47:         ;; print lo-nybble BCD char
+00:08D0 B5F7            	    48: :       lda score,x
+00:08D2 290F            	    49:         and #%00001111          ;mask out hi-nybble
+00:08D4 F007            	    50:         beq :+
+00:08D6 A001            	    51:         ldy #1        
+00:08D8 841F            	    52:         sty irqtmp
+00:08DA 4CE408          	    53:         jmp :++
+00:08DD A41F            	    54: :       ldy irqtmp
+00:08DF D003            	    55:         bne :+
+00:08E1 4CF008          	    56:         jmp :++
+00:08E4 0930            	    57: :       ora #%00110000          ;convert to printable char
+00:08E6 A8              	    58:         tay                     ;place char in .Y
+                        	    59:         phx                     ;save .X onto stack
+00:08E7 8A              	     1M         txa
+00:08E8 48              	     2M         pha
+00:08E9 A205            	    60:         ldx #irqblki            ;load block index into .X
+00:08EB 201D09          	    61:         jsr printchr            ;print char
+                        	    62:         plx                     ;restore .X from stack
+00:08EE 68              	     1M         pla
+00:08EF AA              	     2M         tax
+                        	    63: :       incwrd irqwrd2
+00:08F0 18              	     1M         clc
+00:08F1 A51D            	     2M         lda irqwrd2
+00:08F3 6901            	     3M         adc #1
+00:08F5 851D            	     4M         sta irqwrd2
+00:08F7 A51E            	     5M         lda irqwrd2+1
+00:08F9 6900            	     6M         adc #0
+00:08FB 851E            	     7M         sta irqwrd2+1
+                        	    64:         cpwrd irqwrd2, irqwrd1  ;increment screen memory offset
+00:08FD A51D            	     1M         lda irqwrd2
+00:08FF 851B            	     2M         sta irqwrd1  
+00:0901 A51E            	     3M         lda irqwrd2+1
+00:0903 851C            	     4M         sta irqwrd1  +1
+00:0905 CA              	    65:         dex                     ;decrement .X
+00:0906 4C9708          	    66:         jmp lpprsc
+00:0909 60              	    67: fiprsc: rts
+                        	    68:         
+                        	    69:         ;; Write value in .Y to colour memory at 16-bit offset
+                        	    70:         ;; in memory block.
+                        	    71:         ;; Reads:
+                        	    72:         ;;  - .Y (value to write to colour memory)
+                        	    73:         ;;  - .X (buf offset to access memory block )
+                        	    74:         ;;  - 1st word in memory block at offset
+                        	    75:         ;; Writes:
+                        	    76:         ;;  - 1st word in memory block at offset
+                        	    77: printcol:       
+00:090A 18              	    78:         clc
+00:090B A900            	    79:         lda #<colmem
+00:090D 7516            	    80:         adc buf,x
+00:090F 9516            	    81:         sta buf,x
+00:0911 E8              	    82:         inx                     ;hi-byte
+00:0912 A9D8            	    83:         lda #>colmem
+00:0914 7516            	    84:         adc buf,x
+00:0916 9516            	    85:         sta buf,x
+00:0918 CA              	    86:         dex                     ;lo-byte
+00:0919 98              	    87:         tya
+00:091A 8116            	    88:         sta (buf,x)             ;write to colour memory
+00:091C 60              	    89:         rts
+                        	    90: 
+                        	    91:         ;; Write char in .Y to screen memory at 16-bit offset
+                        	    92:         ;; in memory block.
+                        	    93:         ;; Reads:
+                        	    94:         ;;  - .Y (char to write to screen memory)
+                        	    95:         ;;  - .X (buf offset to access memory block )
+                        	    96:         ;;  - 1st word in memory block at offset
+                        	    97:         ;; Writes:
+                        	    98:         ;;  - 1st word in memory block at offset
+                        	    99: printchr:
+                        	   100:         ;; Write char to screen memory
+00:091D 18              	   101:         clc        
+00:091E A900            	   102:         lda #<scnmem
+00:0920 7516            	   103:         adc buf,x
+00:0922 9516            	   104:         sta buf,x
+00:0924 E8              	   105:         inx                     ;hi-byte
+00:0925 A94C            	   106:         lda #>scnmem
+00:0927 7516            	   107:         adc buf,x
+00:0929 9516            	   108:         sta buf,x
+00:092B CA              	   109:         dex                     ;lo-byte
+00:092C 98              	   110:         tya
+00:092D 8116            	   111:         sta (buf,x)             ;write to screen memory
+00:092F 60              	   112:         rts
+                        	   113: 
+                        	   114:         ;; Initialize VIC-II
+                        	   115:         ;;  - Select 16K video bank
+                        	   116:         ;;  - Select screen memory location
+                        	   117:         ;;  - Select character memory location
+                        	   118:         ;;  - Set border & background colours
+                        	   119: initvic:
+                        	   120:         ;; select vic bank
+00:0930 A903            	   121:         lda #3
+00:0932 0D02DD          	   122:         ora c2ddra
+00:0935 8D02DD          	   123:         sta c2ddra
+00:0938 A9FC            	   124:         lda #$fc
+00:093A 2D00DD          	   125:         and ci2pra
+00:093D 0902            	   126:         ora #2
+00:093F 8D00DD          	   127:         sta ci2pra
+                        	   128: 
+                        	   129:         ;; select screen memory loc
+00:0942 A90F            	   130:         lda #$0f
+00:0944 2D18D0          	   131:         and vmcsb
+00:0947 0930            	   132:         ora #$30
+00:0949 8D18D0          	   133:         sta vmcsb
+                        	   134: 
+                        	   135:         ;; select char memory loc
+00:094C A9F1            	   136:         lda #$f1
+00:094E 2D18D0          	   137:         and vmcsb
+00:0951 8D18D0          	   138:         sta vmcsb
+                        	   139: 
+                        	   140:         ;; set border & background colours
+00:0954 A900            	   141:         lda #0
+00:0956 8D20D0          	   142:         sta extcol
+00:0959 8D21D0          	   143:         sta bgcol0
+00:095C 60              	   144:         rts
+                        	   145: 
+                        	   146:         ;; Fill colour memory from colour table
+                        	   147: fillcolmem:
+                        	   148:         ;; populate colour memory
+00:095D A200            	   149:         ldx #0
+                        	   150: setcol1:
+00:095F BD004C          	   151:         lda scnmem,x
+00:0962 A8              	   152:         tay
+00:0963 B90048          	   153:         lda coltab,y
+00:0966 9D00D8          	   154:         sta colmem,x
+00:0969 E8              	   155:         inx
+00:096A E0FA            	   156:         cpx #250
+00:096C D0F1            	   157:         bne setcol1
+00:096E A200            	   158:         ldx #0
+                        	   159: setcol2:
+00:0970 BDFA4C          	   160:         lda scnmem+250,x
+00:0973 A8              	   161:         tay
+00:0974 B90048          	   162:         lda coltab,y
+00:0977 9DFAD8          	   163:         sta colmem+250,x
+00:097A E8              	   164:         inx
+00:097B E0FA            	   165:         cpx #250
+00:097D D0F1            	   166:         bne setcol2
+00:097F A200            	   167:         ldx #0
+                        	   168: setcol3:
+00:0981 BDF44D          	   169:         lda scnmem+500,x
+00:0984 A8              	   170:         tay
+00:0985 B90048          	   171:         lda coltab,y
+00:0988 9DF4D9          	   172:         sta colmem+500,x
+00:098B E8              	   173:         inx
+00:098C E0FA            	   174:         cpx #250
+00:098E D0F1            	   175:         bne setcol3
+00:0990 A200            	   176:         ldx #0
+                        	   177: setcol4:
+00:0992 BDEE4E          	   178:         lda scnmem+750,x
+00:0995 A8              	   179:         tay
+00:0996 B90048          	   180:         lda coltab,y
+00:0999 9DEEDA          	   181:         sta colmem+750,x
+00:099C E8              	   182:         inx
+00:099D E0FA            	   183:         cpx #250
+00:099F D0F1            	   184:         bne setcol4
+00:09A1 60              	   185:         rts
+                        	   186:         
+                        	   187:         ;; Read joystick in port 2
+                        	   188:         ;; Writes:
+                        	   189:         ;;  - joyx = $01: stick moved right
+                        	   190:         ;;  - joyx = $ff: stick moved left
+                        	   191:         ;;  - joyy = $01: stick moved down
+                        	   192:         ;;  - joyy = $ff: stick moved up
+                        	   193:         ;;  - joybtn = $01: button pressed
+                        	   194: readjoy2:
+00:09A2 78              	   195:         sei
+00:09A3 AD00DC          	   196:         lda ci1pra
+00:09A6 A000            	   197:         ldy #0
+00:09A8 A200            	   198:         ldx #0
+00:09AA 4A              	   199:         lsr
+00:09AB B001            	   200:         bcs djr0
+00:09AD 88              	   201:         dey
+00:09AE 4A              	   202: djr0:   lsr
+00:09AF B001            	   203:         bcs djr1
+00:09B1 C8              	   204:         iny
+00:09B2 4A              	   205: djr1:   lsr
+00:09B3 B001            	   206:         bcs djr2
+00:09B5 CA              	   207:         dex
+00:09B6 4A              	   208: djr2:   lsr
+00:09B7 B001            	   209:         bcs djr3
+00:09B9 E8              	   210:         inx
+00:09BA 4A              	   211: djr3:   lsr
+00:09BB 8696            	   212:         stx joyx
+00:09BD 849B            	   213:         sty joyy
+00:09BF A900            	   214:         lda #0
+00:09C1 2A              	   215:         rol
+00:09C2 8592            	   216:         sta joybtn
+00:09C4 58              	   217:         cli
+00:09C5 60              	   218:         rts
+                        	   219: 
+
+Source: "./src/startup.asm"
+                        	    27:         include maze.asm
+
+Source: "maze.asm"
+                        	     1:         ;; ============================================================
+                        	     2:         ;; Maze related sub-routines
+                        	     3:         ;; ============================================================
+                        	     4: 
+                        	     5:         ;; Convert pellet table index to pellet memory address.
+                        	     6:         ;; Reads:
+                        	     7:         ;;  - .A (pellet table index)
+                        	     8:         ;;  - .X (offset to memory block in buf)
+                        	     9:         ;; Writes:
+                        	    10:         ;;  - Result is stored in 1st word of buf at offset .X
+                        	    11:         ;;  - 2nd word of buf at offset .X is used as a work area
+                        	    12: pelladr:
+00:09C6 202208          	    13:         jsr mula5               ;multiply pellet index by 5
+00:09C9 18              	    14:         clc
+00:09CA B516            	    15:         lda buf,x               ;load product (lo)
+00:09CC 69F3            	    16:         adc #<pelltbl           ;add pellet table address (lo)
+00:09CE 9516            	    17:         sta buf,x               ;write sum (lo)
+00:09D0 E8              	    18:         inx
+00:09D1 B516            	    19:         lda buf,x               ;load product (hi)
+00:09D3 6911            	    20:         adc #>pelltbl           ;add pellet table address (hi)
+00:09D5 9516            	    21:         sta buf,x               ;write sum (hi)
+00:09D7 CA              	    22:         dex
+00:09D8 60              	    23:         rts
+                        	    24: 
+                        	    25:         ;; Fill maze with pellets
+                        	    26:         ;; May only be called from gameloop!
+                        	    27: fillmaze:
+                        	    28:         ldbimm 0, tmp           ;store pellet index in tmp
+00:09D9 A900            	     1M         lda #0
+00:09DB 851A            	     2M         sta tmp           
+                        	    29: filloop:
+00:09DD A51A            	    30:         lda tmp
+00:09DF A200            	    31:         ldx #blki
+00:09E1 20C609          	    32:         jsr pelladr             ;get pellet address
+00:09E4 A001            	    33:         ldy #1
+00:09E6 B116            	    34:         lda (wrd1),y
+00:09E8 C9FF            	    35:         cmp #$ff                ;end marker?
+00:09EA F029            	    36:         beq finfil              ;yep, we're done
+00:09EC A901            	    37:         lda #1
+00:09EE A002            	    38:         ldy #2
+00:09F0 9116            	    39:         sta (wrd1),y            ;set pellet status        
+                        	    40:         ldwptr wrd1, 0, wrd2
+00:09F2 A000            	     1M         ldy #0
+00:09F4 B116            	     2M         lda (wrd1),y
+00:09F6 8518            	     3M         sta wrd2
+00:09F8 C8              	     4M         iny
+00:09F9 B116            	     5M         lda (wrd1),y
+00:09FB 8519            	     6M         sta wrd2+1
+00:09FD A204            	    41:         ldx #blki+4
+00:09FF 203B0B          	    42:         jsr isenzr              ;is pellet an energizer?
+00:0A02 F005            	    43:         beq :+
+00:0A04 A053            	    44:         ldy #pellchr            ;no, it's a regular pellet
+00:0A06 4C0B0A          	    45:         jmp :++
+00:0A09 A054            	    46: :       ldy #enzrchr            ;yes, it's an energizer        
+00:0A0B A202            	    47: :       ldx #blki+2
+00:0A0D 201D09          	    48:         jsr printchr            ;print pellet char
+00:0A10 E61A            	    49:         inc tmp
+00:0A12 4CDD09          	    50:         jmp filloop
+00:0A15 60              	    51: finfil: rts
+                        	    52: 
+                        	    53:         ;; Find pellet collided with by searching in the opposite direction
+                        	    54:         ;; to which Pac-Man is facing.
+                        	    55:         ;; May only be called from IRQ handler!
+                        	    56:         ;; Reads:
+                        	    57:         ;;  - sp0x, sp0y
+                        	    58:         ;;  - pacdir (direction Pac-Man is facing)
+                        	    59:         ;; Writes:
+                        	    60:         ;;  - irqwrd1: pellet address
+                        	    61:         ;;  - irqtmp: pellet index
+                        	    62: findpel:
+                        	    63:         ;; if pacdir=#w then find 1st pellet in row with x>=sp0x
+                        	    64:         ;; if pacdir=#e then find last pellet in row with x<=sp0x
+                        	    65:         ;; if pacdir=#n then find pellet in row-1 with x=sp0x
+                        	    66:         ;; if pacdir=#s then find pellet in row+1 with x=sp0x
+00:0A16 A5A3            	    67:         lda pacdir
+00:0A18 C904            	    68:         cmp #w
+00:0A1A D033            	    69:         bne fpckde
+                        	    70:         cpbyt sp0y, irqtmp
+00:0A1C AD01D0          	     1M         lda sp0y
+00:0A1F 851F            	     2M         sta irqtmp
+00:0A21 201F0B          	    71:         jsr fpinrow             ;get indexes of west-most & east-most pellets
+                        	    72:         cpbyt irqwrd2, irqtmp   ;store index of west-most pellet
+00:0A24 A51D            	     1M         lda irqwrd2
+00:0A26 851F            	     2M         sta irqtmp   
+00:0A28 A205            	    73:         ldx #irqblki
+00:0A2A A51F            	    74: :       lda irqtmp              ;load index of west-most pellet in row
+00:0A2C 20C609          	    75:         jsr pelladr             ;load pellet address into irqwrd1
+00:0A2F A003            	    76:         ldy #3
+                        	    77:         cpbyt sp0x, irqwrd2     ;copy sp0x to irqwrd2 (lo)
+00:0A31 AD00D0          	     1M         lda sp0x
+00:0A34 851D            	     2M         sta irqwrd2     
+00:0A36 C61D            	    78:         dec irqwrd2             ;decrement irqwrd2 (lo) to give some leeway
+00:0A38 B11B            	    79:         lda (irqwrd1),y         ;load pellet x loc
+00:0A3A C51D            	    80:         cmp irqwrd2
+00:0A3C B005            	    81:         bcs :+                  ;pellet x loc >= sp0x?
+00:0A3E E61F            	    82:         inc irqtmp              ;no, try next pellet to the east
+00:0A40 4C2A0A          	    83:         jmp :-
+00:0A43 A002            	    84: :       ldy #2
+00:0A45 B11B            	    85:         lda (irqwrd1),y         ;yes, load pellet state
+                        	    86:         jeq pelnotfd            ;has pellet already been eaten?
+00:0A47 D003            	     1M         bne :+
+00:0A49 4CF20A          	     2M         jmp pelnotfd            
+                        	     3M :
+00:0A4C 4CEB0A          	    87:         jmp pelfound
+00:0A4F C905            	    88: fpckde: cmp #e
+00:0A51 D036            	    89:         bne fpckdn
+                        	    90:         cpbyt sp0y, irqtmp
+00:0A53 AD01D0          	     1M         lda sp0y
+00:0A56 851F            	     2M         sta irqtmp
+00:0A58 201F0B          	    91:         jsr fpinrow             ;get indexes of west-most & east-most pellets
+00:0A5B A001            	    92:         ldy #1
+00:0A5D B91D00          	    93:         lda irqwrd2,y
+00:0A60 851F            	    94:         sta irqtmp              ;store index of west-most pellet
+00:0A62 A205            	    95:         ldx #irqblki
+00:0A64 A51F            	    96: :       lda irqtmp
+00:0A66 20C609          	    97:         jsr pelladr
+                        	    98:         cpbyt sp0x, irqwrd2     ;copy sp0x to irqwrd2 (lo)
+00:0A69 AD00D0          	     1M         lda sp0x
+00:0A6C 851D            	     2M         sta irqwrd2     
+00:0A6E E61D            	    99:         inc irqwrd2             ;increment irqwrd2 (lo) to give some leeway
+00:0A70 A51D            	   100:         lda irqwrd2
+00:0A72 A003            	   101:         ldy #3
+00:0A74 D11B            	   102:         cmp (irqwrd1),y
+00:0A76 B005            	   103:         bcs :+                  ;sp0x >= pellet x loc
+00:0A78 C61F            	   104:         dec irqtmp              ;no, try next pellet to the west
+00:0A7A 4C640A          	   105:         jmp :-
+00:0A7D A002            	   106: :       ldy #2
+00:0A7F B11B            	   107:         lda (irqwrd1),y         ;yes, load pellet state
+                        	   108:         jeq pelnotfd            ;has pellet already been eaten?
+00:0A81 D003            	     1M         bne :+
+00:0A83 4CF20A          	     2M         jmp pelnotfd            
+                        	     3M :
+00:0A86 4CEB0A          	   109:         jmp pelfound
+00:0A89 C902            	   110: fpckdn: cmp #n
+00:0A8B D034            	   111:         bne fpds
+                        	   112:         cpbyt sp0y, irqtmp      ;store sp0y in irqtmp
+00:0A8D AD01D0          	     1M         lda sp0y
+00:0A90 851F            	     2M         sta irqtmp      
+                        	   113:         sbcbimm 3, irqtmp       ;subtract 3 from irqtmp to try to find row
+00:0A92 38              	     1M         sec
+00:0A93 A51F            	     2M         lda irqtmp       
+00:0A95 E903            	     3M         sbc #3
+00:0A97 851F            	     4M         sta irqtmp       
+00:0A99 20FB0A          	   114:         jsr fprixs
+00:0A9C 201F0B          	   115:         jsr fpinrow             ;get indexes of west-most & east-most pellets
+                        	   116:         cpbyt irqwrd2, irqtmp   ;store index of west-most pellet
+00:0A9F A51D            	     1M         lda irqwrd2
+00:0AA1 851F            	     2M         sta irqtmp   
+00:0AA3 A205            	   117:         ldx #irqblki
+00:0AA5 A51F            	   118: :       lda irqtmp
+00:0AA7 20C609          	   119:         jsr pelladr
+00:0AAA AD00D0          	   120:         lda sp0x
+00:0AAD A003            	   121:         ldy #3
+00:0AAF D11B            	   122:         cmp (irqwrd1),y
+00:0AB1 F005            	   123:         beq :+                  ;sp0x = pellet x loc?
+00:0AB3 E61F            	   124:         inc irqtmp              ;no, try next pellet to the east
+00:0AB5 4CA50A          	   125:         jmp :-
+00:0AB8 A002            	   126: :       ldy #2
+00:0ABA B11B            	   127:         lda (irqwrd1),y         ;yes, load pellet state
+00:0ABC F034            	   128:         beq pelnotfd            ;has pellet already been eaten?
+00:0ABE 4CEB0A          	   129:         jmp pelfound
+                        	   130: fpds:   cpbyt sp0y, irqtmp
+00:0AC1 AD01D0          	     1M         lda sp0y
+00:0AC4 851F            	     2M         sta irqtmp
+00:0AC6 200D0B          	   131:         jsr fprixn
+00:0AC9 201F0B          	   132:         jsr fpinrow             ;get indexes of west-most & east-most pellets
+                        	   133:         cpbyt irqwrd2, irqtmp   ;store index of west-most pellet
+00:0ACC A51D            	     1M         lda irqwrd2
+00:0ACE 851F            	     2M         sta irqtmp   
+00:0AD0 A205            	   134:         ldx #irqblki
+00:0AD2 A51F            	   135: :       lda irqtmp
+00:0AD4 20C609          	   136:         jsr pelladr
+00:0AD7 AD00D0          	   137:         lda sp0x
+00:0ADA A003            	   138:         ldy #3
+00:0ADC D11B            	   139:         cmp (irqwrd1),y
+00:0ADE F005            	   140:         beq :+                  ;sp0x = pellet x loc?
+00:0AE0 E61F            	   141:         inc irqtmp              ;no, try next pellet to the east
+00:0AE2 4CD20A          	   142:         jmp :-
+00:0AE5 A002            	   143: :       ldy #2
+00:0AE7 B11B            	   144:         lda (irqwrd1),y         ;yes, load pellet state
+00:0AE9 F007            	   145:         beq pelnotfd            ;has pellet already been eaten?
+                        	   146: pelfound:
+00:0AEB A900            	   147:         lda #0
+00:0AED A002            	   148:         ldy #2
+00:0AEF 911B            	   149:         sta (irqwrd1),y         ;pellet not yet eaten, mark as eaten
+00:0AF1 60              	   150:         rts        
+                        	   151: pelnotfd:
+                        	   152:         ldwimm $ffff, irqwrd1   ;pellet already eaten
+00:0AF2 A9FF            	     1M         lda #<$ffff
+00:0AF4 851B            	     2M         sta irqwrd1   
+00:0AF6 A9FF            	     3M         lda #>$ffff
+00:0AF8 851C            	     4M         sta irqwrd1   +1
+00:0AFA 60              	   153:         rts
+                        	   154: 
+                        	   155:         ;; Get y loc of next row to the south of the y loc in irqtmp
+                        	   156:         ;; Reads:
+                        	   157:         ;;  - irqtmp: y loc to find row south of
+                        	   158:         ;; Writes:
+                        	   159:         ;;  - irqtmp: y loc of next row to the south
+00:0AFB A000            	   160: fprixs: ldy #0
+00:0AFD B9A215          	   161: :       lda plrowix,y
+00:0B00 C51F            	   162:         cmp irqtmp
+00:0B02 B006            	   163:         bcs :+
+00:0B04 C8              	   164:         iny
+00:0B05 C8              	   165:         iny
+00:0B06 C8              	   166:         iny
+00:0B07 4CFD0A          	   167:         jmp :-
+00:0B0A 851F            	   168: :       sta irqtmp
+00:0B0C 60              	   169:         rts
+                        	   170:         
+                        	   171:         ;; Get y loc of next row to the north of the y loc in irqtmp
+                        	   172:         ;; Reads:
+                        	   173:         ;;  - irqtmp: y loc to find row north of
+                        	   174:         ;; Writes:
+                        	   175:         ;;  - irqtmp: y loc of next row to the north
+00:0B0D A042            	   176: fprixn: ldy #66
+00:0B0F B9A215          	   177: :       lda plrowix,y
+00:0B12 C51F            	   178:         cmp irqtmp
+00:0B14 9006            	   179:         bcc :+
+00:0B16 88              	   180:         dey
+00:0B17 88              	   181:         dey
+00:0B18 88              	   182:         dey
+00:0B19 4C0F0B          	   183:         jmp :-
+00:0B1C 851F            	   184: :       sta irqtmp
+00:0B1E 60              	   185:         rts
+                        	   186:         
+                        	   187:         
+                        	   188:         ;; Get pellet table indexes of west-most & east-most pellets 
+                        	   189:         ;; in row whose sprite y loc is in irqtmp
+                        	   190:         ;; May only be called from IRQ handler!
+                        	   191:         ;; Reads:
+                        	   192:         ;;  - irqtmp: pellet row y loc
+                        	   193:         ;; Writes:
+                        	   194:         ;;  - irqwrd2: indexes of west-most & east-most pellets in row
+                        	   195: fpinrow:
+00:0B1F A000            	   196:         ldy #0
+00:0B21 B9A215          	   197: :       lda plrowix,y
+00:0B24 C51F            	   198:         cmp irqtmp
+00:0B26 F006            	   199:         beq :+
+00:0B28 C8              	   200:         iny
+00:0B29 C8              	   201:         iny
+00:0B2A C8              	   202:         iny
+00:0B2B 4C210B          	   203:         jmp :-
+00:0B2E C8              	   204: :       iny
+00:0B2F B9A215          	   205:         lda plrowix,y
+00:0B32 851D            	   206:         sta irqwrd2
+00:0B34 C8              	   207:         iny
+00:0B35 B9A215          	   208:         lda plrowix,y
+00:0B38 851E            	   209:         sta irqwrd2+1
+00:0B3A 60              	   210:         rts
+                        	   211: 
+                        	   212:         ;; Check whether or not pellet at index is an energizer
+                        	   213:         ;; Reads:
+                        	   214:         ;;  - .X: index into buffer to access memory block
+                        	   215:         ;;  - 1st byte of memory block: pellet index
+                        	   216:         ;; Writes:
+                        	   217:         ;;  - .Z is set if pellet is an energizer
+00:0B3B A003            	   218: isenzr: ldy #3
+00:0B3D 300B            	   219: :       bmi :+
+00:0B3F B516            	   220:         lda buf,x
+00:0B41 D98615          	   221:         cmp enzrlst,y
+00:0B44 F004            	   222:         beq :+
+00:0B46 88              	   223:         dey
+00:0B47 4C3D0B          	   224:         jmp :-
+00:0B4A 60              	   225: :       rts
+                        	   226: 
+
+Source: "./src/startup.asm"
+                        	    28:         include nodes.asm
+
+Source: "nodes.asm"
+                        	     1:         ;; ============================================================
+                        	     2:         ;; Node-related sub-routines
+                        	     3:         ;; ============================================================
+                        	     4: 
+                        	     5:         ;; Convert node index to node address
+                        	     6:         ;; Reads:
+                        	     7:         ;;  - .A (node index)
+                        	     8:         ;;  - .X (offset into buf to access memory block)
+                        	     9:         ;; Writes:
+                        	    10:         ;;  - Result is stored in 1st word of memory block
+                        	    11:         ;;  - 2nd word of memory block is used as a work area
+                        	    12: nodeadr:
+00:0B4B 204B08          	    13:         jsr mula6
+00:0B4E 18              	    14:         clc
+00:0B4F B516            	    15:         lda buf,x
+00:0B51 6955            	    16:         adc #<nodetbl
+00:0B53 9516            	    17:         sta buf,x
+00:0B55 E8              	    18:         inx
+00:0B56 B516            	    19:         lda buf,x
+00:0B58 6910            	    20:         adc #>nodetbl
+00:0B5A 9516            	    21:         sta buf,x
+00:0B5C CA              	    22:         dex
+00:0B5D 60              	    23:         rts
+                        	    24: 
+                        	    25:         ;; Calculate distance from Pac-Man's source node to target node
+                        	    26:         ;; Reads:
+                        	    27:         ;;  - pacsrc (source node)
+                        	    28:         ;;  - pactar (target node)
+                        	    29:         ;;  - pacdir (compass direction)
+                        	    30:         ;;  - .X (offset into buf to access memory block)
+                        	    31:         ;; Writes:
+                        	    32:         ;;  - pacdis (total distance)
+                        	    33:         ;;  - pacrem (distance remaining)
+                        	    34:         ;;  - 1st & 2nd word of memory block are used for calculations
+                        	    35: setnodis:
+00:0B5E A5A3            	    36:         lda pacdir
+00:0B60 C904            	    37:         cmp #w
+00:0B62 D01A            	    38:         bne chkne
+00:0B64 A59F            	    39:         lda pactar
+00:0B66 C921            	    40:         cmp #wrpnixe            ;eastern warp tunnel node
+                        	    41:         jeq warp
+00:0B68 D003            	     1M         bne :+
+00:0B6A 4C030C          	     2M         jmp warp
+                        	     3M :
+00:0B6D A59E            	    42:         lda pacsrc
+00:0B6F 204B0B          	    43:         jsr nodeadr             
+00:0B72 A116            	    44:         lda (buf,x)             ;get source x coord...
+00:0B74 48              	    45:         pha                     ;... and stash it on the stack
+00:0B75 A59F            	    46:         lda pactar
+00:0B77 204B0B          	    47:         jsr nodeadr             ;get target node address
+00:0B7A 68              	    48:         pla                     ;restore source x coord
+00:0B7B 4CFB0B          	    49:         jmp calcnd
+00:0B7E C905            	    50: chkne:  cmp #e
+00:0B80 D01A            	    51:         bne chknn
+00:0B82 A59F            	    52:         lda pactar
+00:0B84 C91B            	    53:         cmp #wrpnixw             ;western warp tunnel node
+                        	    54:         jeq warp
+00:0B86 D003            	     1M         bne :+
+00:0B88 4C030C          	     2M         jmp warp
+                        	     3M :
+00:0B8B A59F            	    55:         lda pactar
+00:0B8D 204B0B          	    56:         jsr nodeadr             
+00:0B90 A116            	    57:         lda (buf,x)             ;get target x coord...
+00:0B92 48              	    58:         pha                     ;... and stash it on the stack
+00:0B93 A59E            	    59:         lda pacsrc
+00:0B95 204B0B          	    60:         jsr nodeadr             ;get source node address
+00:0B98 68              	    61:         pla                     ;restore target x coord
+00:0B99 4CFB0B          	    62:         jmp calcnd
+00:0B9C C902            	    63: chknn:  cmp #n
+00:0B9E D02F            	    64:         bne setnds
+00:0BA0 A59E            	    65:         lda pacsrc
+00:0BA2 204B0B          	    66:         jsr nodeadr
+                        	    67:         incptrx buf             ;advance pointer; we need y coord
+00:0BA5 18              	     1M         clc
+00:0BA6 B516            	     2M         lda buf             ,x
+00:0BA8 6901            	     3M         adc #1
+00:0BAA 9516            	     4M         sta buf             ,x
+00:0BAC E8              	     5M         inx
+00:0BAD B516            	     6M         lda buf             ,x
+00:0BAF 6900            	     7M         adc #0
+00:0BB1 9516            	     8M         sta buf             ,x
+00:0BB3 CA              	     9M         dex
+00:0BB4 A116            	    68:         lda (buf,x)             ;get source y coord...
+00:0BB6 48              	    69:         pha                     ;... and stash it on the stack
+00:0BB7 A59F            	    70:         lda pactar
+00:0BB9 204B0B          	    71:         jsr nodeadr             ;get target node address
+                        	    72:         incptrx buf             ;advance pointer; we need y coord
+00:0BBC 18              	     1M         clc
+00:0BBD B516            	     2M         lda buf             ,x
+00:0BBF 6901            	     3M         adc #1
+00:0BC1 9516            	     4M         sta buf             ,x
+00:0BC3 E8              	     5M         inx
+00:0BC4 B516            	     6M         lda buf             ,x
+00:0BC6 6900            	     7M         adc #0
+00:0BC8 9516            	     8M         sta buf             ,x
+00:0BCA CA              	     9M         dex
+00:0BCB 68              	    73:         pla                     ;restore source y coord
+00:0BCC 4CFB0B          	    74:         jmp calcnd
+00:0BCF A59F            	    75: setnds: lda pactar
+00:0BD1 204B0B          	    76:         jsr nodeadr
+                        	    77:         incptrx buf             ;advance pointer; we need y coord
+00:0BD4 18              	     1M         clc
+00:0BD5 B516            	     2M         lda buf             ,x
+00:0BD7 6901            	     3M         adc #1
+00:0BD9 9516            	     4M         sta buf             ,x
+00:0BDB E8              	     5M         inx
+00:0BDC B516            	     6M         lda buf             ,x
+00:0BDE 6900            	     7M         adc #0
+00:0BE0 9516            	     8M         sta buf             ,x
+00:0BE2 CA              	     9M         dex
+00:0BE3 A116            	    78:         lda (buf,x)             ;get target y coord...
+00:0BE5 48              	    79:         pha                     ;... and stash it on the stack
+00:0BE6 A59E            	    80:         lda pacsrc
+00:0BE8 204B0B          	    81:         jsr nodeadr
+                        	    82:         incptrx buf             ;advance pointer; we need y coord
+00:0BEB 18              	     1M         clc
+00:0BEC B516            	     2M         lda buf             ,x
+00:0BEE 6901            	     3M         adc #1
+00:0BF0 9516            	     4M         sta buf             ,x
+00:0BF2 E8              	     5M         inx
+00:0BF3 B516            	     6M         lda buf             ,x
+00:0BF5 6900            	     7M         adc #0
+00:0BF7 9516            	     8M         sta buf             ,x
+00:0BF9 CA              	     9M         dex
+00:0BFA 68              	    83:         pla                     ;restore target y coord
+00:0BFB 38              	    84: calcnd: sec
+00:0BFC E116            	    85:         sbc (buf,x)
+00:0BFE 85A5            	    86:         sta pacdis
+00:0C00 85A6            	    87:         sta pacrem
+00:0C02 60              	    88:         rts
+00:0C03 A900            	    89: warp:   lda #0
+00:0C05 85A5            	    90:         sta pacdis
+00:0C07 85A6            	    91:         sta pacrem
+00:0C09 60              	    92:         rts
+                        	    93: 
+
+Source: "./src/startup.asm"
+                        	    29:         include sprites.asm
+
+Source: "sprites.asm"
+                        	     1:         ;; ============================================================
+                        	     2:         ;; Sprite sub-routines
+                        	     3:         ;; ============================================================
+                        	     4: 
+                        	     5:         ;; Initialize sprites
+                        	     6: initsprt:
+                        	     7:         ldbimm sp0loc, sp0ptr   ;set sprite 0 pointer
+00:0C0A A940            	     1M         lda #sp0loc
+00:0C0C 8DF84F          	     2M         sta sp0ptr   
+00:0C0F AD3F50          	     8:         lda sp0mem+$3f          ;read byte 63
+00:0C12 290F            	     9:         and #$0f                ;mask out hi nybble
+00:0C14 8D27D0          	    10:         sta sp0col              ;set sprite 0 colour
+00:0C17 A931            	    11:         lda #pacstnd
+00:0C19 A200            	    12:         ldx #0
+00:0C1B 204B0B          	    13:         jsr nodeadr             ;get address of Pac's starting node
+                        	    14:         ldbptr wrd1, 0, sp0x    ;set Pac's x loc
+00:0C1E A000            	     1M         ldy #0
+00:0C20 B116            	     2M         lda (wrd1),y
+00:0C22 8D00D0          	     3M         sta sp0x    
+                        	    15:         ldbptr wrd1, 1, sp0y    ;set Pac's y loc
+00:0C25 A001            	     1M         ldy #1
+00:0C27 B116            	     2M         lda (wrd1),y
+00:0C29 8D01D0          	     3M         sta sp0y    
+00:0C2C AD15D0          	    16:         lda spena
+00:0C2F 0901            	    17:         ora #1
+00:0C31 8D15D0          	    18:         sta spena               ;enable sprite 0 (Pac-Man)
+                        	    19:         ldbimm w, pacdir        ;set Pac's initial direction to west
+00:0C34 A904            	     1M         lda #w
+00:0C36 85A3            	     2M         sta pacdir        
+                        	    20:         ldbimm pacstnd, pacsrc  ;set Pac's starting node as source node
+00:0C38 A931            	     1M         lda #pacstnd
+00:0C3A 859E            	     2M         sta pacsrc  
+                        	    21:         ldbptr wrd1, w, pactar  ;set western neighbour as target node
+00:0C3C A004            	     1M         ldy #w
+00:0C3E B116            	     2M         lda (wrd1),y
+00:0C40 859F            	     3M         sta pactar  
+00:0C42 205E0B          	    22:         jsr setnodis            ;calculate distance between source & target
+00:0C45 60              	    23:         rts
+                        	    24: 
+                        	    25:         ;; Disable all sprites
+                        	    26: dissprt:
+00:0C46 A900            	    27:         lda #0
+00:0C48 8D15D0          	    28:         sta spena
+00:0C4B 60              	    29:         rts
+                        	    30: 
+                        	    31:         ;; Convert sprite x loc in .A to char x loc
+                        	    32: spx2chx:
+00:0C4C 38              	    33:         sec
+00:0C4D E918            	    34:         sbc #spxscog
+                        	    35:         diva8
+00:0C4F 38              	     1M         sec
+00:0C50 4A              	     2M         lsr
+00:0C51 4A              	     3M         lsr
+00:0C52 4A              	     4M         lsr
+00:0C53 60              	    36:         rts
+                        	    37: 
+                        	    38:         ;; Convert sprite y loc in .A to char y loc
+                        	    39: spy2chy:
+00:0C54 38              	    40:         sec
+00:0C55 E932            	    41:         sbc #spyscog
+                        	    42:         diva8
+00:0C57 38              	     1M         sec
+00:0C58 4A              	     2M         lsr
+00:0C59 4A              	     3M         lsr
+00:0C5A 4A              	     4M         lsr
+00:0C5B 60              	    43:         rts
+                        	    44: 
+                        	    45:         ;; Convert char x loc in .A to sprite x loc
+                        	    46: chx2spx:
+                        	    47:         mula8
+00:0C5C 18              	     1M         clc
+00:0C5D 0A              	     2M         asl
+00:0C5E 0A              	     3M         asl
+00:0C5F 0A              	     4M         asl
+00:0C60 18              	    48:         clc
+00:0C61 6918            	    49:         adc #spxscog
+00:0C63 60              	    50:         rts
+                        	    51: 
+                        	    52:         ;; Convert char y loc in .A to sprite y loc
+                        	    53: chy2spy:
+                        	    54:         mula8
+00:0C64 18              	     1M         clc
+00:0C65 0A              	     2M         asl
+00:0C66 0A              	     3M         asl
+00:0C67 0A              	     4M         asl
+00:0C68 18              	    55:         clc
+00:0C69 6932            	    56:         adc #spyscog
+00:0C6B 60              	    57:         rts
+                        	    58: 
+
+Source: "./src/startup.asm"
+                        	    30:         include irq.asm
+
+Source: "irq.asm"
+                        	     1:         ;; ============================================================
+                        	     2:         ;; IRQ handler sub-routines
+                        	     3:         ;; ============================================================
+                        	     4: 
+                        	     5:         ;; Setup handler for raster IRQ.
+                        	     6: setupirq:
+00:0C6C 78              	     7:         sei
+                        	     8:         ldbimm $7f, ci1icr
+00:0C6D A97F            	     1M         lda #$7f
+00:0C6F 8D0DDC          	     2M         sta ci1icr
+                        	     9:         ldbimm $03, irqmsk ;enable raster IRQ & mob-data collision
+00:0C72 A903            	     1M         lda #$03
+00:0C74 8D1AD0          	     2M         sta irqmsk 
+                        	    10:         ldbimm $1b, scroly
+00:0C77 A91B            	     1M         lda #$1b
+00:0C79 8D11D0          	     2M         sta scroly
+                        	    11:         ldbimm raslin, raster
+00:0C7C A9FA            	     1M         lda #raslin
+00:0C7E 8D12D0          	     2M         sta raster
+                        	    12:         ldwimm procirq, cinv
+00:0C81 A98D            	     1M         lda #<procirq
+00:0C83 8D1403          	     2M         sta cinv
+00:0C86 A90C            	     3M         lda #>procirq
+00:0C88 8D1503          	     4M         sta cinv+1
+00:0C8B 58              	    13:         cli
+00:0C8C 60              	    14:         rts
+                        	    15: 
+                        	    16:         ;; IRQ handler. Here we implement logic for events such as:
+                        	    17:         ;;  - Pac-Man's movement (player controlled but we need to 
+                        	    18:         ;;    update sprite coordinates, distance remaining to target
+                        	    19:         ;;     node, set new target on reaching target node, etc.)
+                        	    20:         ;;  - Pac-Man's dying & updating remaining lives
+                        	    21:         ;;  - Ghosts going into/out of fright mode, or being eaten
+                        	    22: procirq:
+00:0C8D A5A7            	    23:         lda npelrem
+00:0C8F D006            	    24:         bne chkirq              ;don't handle IRQ when no pellets left
+00:0C91 0E19D0          	    25:         asl vicirq              ;acknowledge IRQ
+00:0C94 4C7EEA          	    26:         jmp sysirq              ;return from interrupt
+                        	    27:         
+00:0C97 AD1FD0          	    28: chkirq: lda spbgcl              ;clear collision register by reading it
+00:0C9A AD19D0          	    29:         lda vicirq
+00:0C9D 2902            	    30:         and #$02                ;check for sprite-background collision
+                        	    31:         jeq rasirq
+00:0C9F D003            	     1M         bne :+
+00:0CA1 4CF20C          	     2M         jmp rasirq
+                        	     3M :
+                        	    32:        
+                        	    33:         ;; Handle sprite-background collision IRQ
+00:0CA4 20160A          	    34:         jsr findpel             ;find pellet collided with & mark as eaten
+00:0CA7 A51C            	    35:         lda irqwrd1+1           ;load pellet address hi-byte
+00:0CA9 C9FF            	    36:         cmp #$ff                ;pellet found?
+                        	    37:         jeq fincol              ;no, do nothing
+00:0CAB D003            	     1M         bne :+
+00:0CAD 4CE50C          	     2M         jmp fincol              
+                        	     3M :
+00:0CB0 A209            	    38:         ldx #irqblki+4
+00:0CB2 203B0B          	    39:         jsr isenzr              ;yes, is it an energizer?
+00:0CB5 D008            	    40:         bne :+
+00:0CB7 A207            	    41:         ldx #irqblki+2
+00:0CB9 202A10          	    42:         jsr screnzr             ;yes, score it
+00:0CBC 4CC40C          	    43:         jmp rmpel
+00:0CBF A207            	    44: :       ldx #irqblki+2
+00:0CC1 201D10          	    45:         jsr scrpell             ;no, score as regular pellet
+                        	    46: rmpel:  ldwptr irqwrd1, 0, irqwrd2
+00:0CC4 A000            	     1M         ldy #0
+00:0CC6 B11B            	     2M         lda (irqwrd1),y
+00:0CC8 851D            	     3M         sta irqwrd2
+00:0CCA C8              	     4M         iny
+00:0CCB B11B            	     5M         lda (irqwrd1),y
+00:0CCD 851E            	     6M         sta irqwrd2+1
+00:0CCF A020            	    47:         ldy #spcechr
+00:0CD1 201D09          	    48:         jsr printchr            ;erase pellet
+00:0CD4 208108          	    49:         jsr printscr            ;print score
+                        	    50:         ldbimm 6, irqtmp        ;set number of flashes in irqtmp
+00:0CD7 A906            	     1M         lda #6
+00:0CD9 851F            	     2M         sta irqtmp        
+00:0CDB C6A7            	    51:         dec npelrem             ;decrement pellets remaining
+                        	    52:         jne fincol
+00:0CDD F003            	     1M         beq :+
+00:0CDF 4CE50C          	     2M         jmp fincol
+                        	     3M :
+00:0CE2 20460C          	    53:         jsr dissprt
+00:0CE5 AD19D0          	    54: fincol: lda vicirq
+00:0CE8 2901            	    55:         and #$01
+00:0CEA D006            	    56:         bne rasirq
+00:0CEC 0E19D0          	    57:         asl vicirq              ;acknowledge IRQ
+00:0CEF 4C7EEA          	    58:         jmp sysirq              ;return from interrupt
+                        	    59: 
+                        	    60:         ;; Handle raster IRQ
+00:0CF2 A5A7            	    61: rasirq: lda npelrem
+                        	    62:         jeq finras              ;don't process IRQ if all pellets eaten
+00:0CF4 D003            	     1M         bne :+
+00:0CF6 4C650D          	     2M         jmp finras              
+                        	     3M :
+00:0CF9 A5A6            	    63:         lda pacrem
+00:0CFB F02C            	    64:         beq setnsrc
+00:0CFD A5A3            	    65:         lda pacdir
+00:0CFF C904            	    66:         cmp #w
+00:0D01 D006            	    67:         bne chkpde
+00:0D03 CE00D0          	    68:         dec sp0x
+00:0D06 4C200D          	    69:         jmp decrem
+00:0D09 C905            	    70: chkpde: cmp #e
+00:0D0B D006            	    71:         bne chkpdn
+00:0D0D EE00D0          	    72:         inc sp0x
+00:0D10 4C200D          	    73:         jmp decrem
+00:0D13 C902            	    74: chkpdn: cmp #n
+00:0D15 D006            	    75:         bne pdsouth
+00:0D17 CE01D0          	    76:         dec sp0y
+00:0D1A 4C200D          	    77:         jmp decrem
+                        	    78: pdsouth:
+00:0D1D EE01D0          	    79:         inc sp0y
+00:0D20 C6A6            	    80: decrem: dec pacrem
+00:0D22 A5A6            	    81:         lda pacrem
+00:0D24 F003            	    82:         beq setnsrc
+00:0D26 4C650D          	    83:         jmp finras
+                        	    84: setnsrc:
+                        	    85:         cpbyt pactar, pacsrc    ;set target node as new source node
+00:0D29 A59F            	     1M         lda pactar
+00:0D2B 859E            	     2M         sta pacsrc    
+00:0D2D A205            	    86:         ldx #irqblki
+00:0D2F 204B0B          	    87:         jsr nodeadr             ;load node address into irqwrd1
+                        	    88:         ldbptr irqwrd1, 0, sp0x ;store node x loc into sp0x
+00:0D32 A000            	     1M         ldy #0
+00:0D34 B11B            	     2M         lda (irqwrd1),y
+00:0D36 8D00D0          	     3M         sta sp0x 
+                        	    89:         ldbptr irqwrd1, 1, sp0y ;store node y loc into sp0y
+00:0D39 A001            	     1M         ldy #1
+00:0D3B B11B            	     2M         lda (irqwrd1),y
+00:0D3D 8D01D0          	     3M         sta sp0y 
+00:0D40 A4A4            	    90:         ldy pacnxd              ;new direction?
+00:0D42 F014            	    91:         beq chkcon              ;if not, check for node in current direction
+00:0D44 B11B            	    92:         lda (irqwrd1),y         ;yes, load node
+00:0D46 C9FF            	    93:         cmp #$ff
+00:0D48 F00E            	    94:         beq chkcon
+00:0D4A C91E            	    95:         cmp #gsthmnd
+00:0D4C F00A            	    96:         beq chkcon
+00:0D4E 859F            	    97:         sta pactar
+00:0D50 84A3            	    98:         sty pacdir
+00:0D52 205E0B          	    99:         jsr setnodis
+00:0D55 4C650D          	   100:         jmp finras
+00:0D58 A4A3            	   101: chkcon: ldy pacdir
+00:0D5A B11B            	   102:         lda (irqwrd1),y
+00:0D5C C9FF            	   103:         cmp #$ff
+00:0D5E F005            	   104:         beq finras
+00:0D60 859F            	   105:         sta pactar              ;set new target...
+00:0D62 205E0B          	   106:         jsr setnodis            ;... and calculate distance
+                        	   107: finras: ldbimm 0, pacnxd        ;clear out next direction
+00:0D65 A900            	     1M         lda #0
+00:0D67 85A4            	     2M         sta pacnxd        
+00:0D69 0E19D0          	   108:         asl vicirq              ;acknowledge IRQ
+00:0D6C 4C7EEA          	   109:         jmp sysirq              ;return from interrupt
+                        	   110: 
+
+Source: "./src/startup.asm"
+                        	    31:         include nmi.asm
+
+Source: "nmi.asm"
+                        	     1:         ;; ============================================================
+                        	     2:         ;; NMI handler sub-routines
+                        	     3:         ;; ============================================================
+                        	     4: 
+                        	     5:         ;; Setup handler for CIA2 timer NMI.
+                        	     6: setupnmi:
+00:0D6F 78              	     7:         sei
+                        	     8:         ldwimm $740d, ti2a              ;timer A fires every ~30ms (PAL)
+00:0D70 A90D            	     1M         lda #<$740d
+00:0D72 8D04DD          	     2M         sta ti2a              
+00:0D75 A974            	     3M         lda #>$740d
+00:0D77 8D05DD          	     4M         sta ti2a              +1
+                        	     9:         ldwimm 6, ti2b                  ;timer B fires every ~180ms (PAL)
+00:0D7A A906            	     1M         lda #<6
+00:0D7C 8D06DD          	     2M         sta ti2b                  
+00:0D7F A900            	     3M         lda #>6
+00:0D81 8D07DD          	     4M         sta ti2b                  +1
+                        	    10:         ldbimm %00010001, ci2cra
+00:0D84 A911            	     1M         lda #%00010001
+00:0D86 8D0EDD          	     2M         sta ci2cra
+                        	    11:         ldbimm %01010001, ci2crb
+00:0D89 A951            	     1M         lda #%01010001
+00:0D8B 8D0FDD          	     2M         sta ci2crb
+00:0D8E AD0DDD          	    12:         lda ci2icr
+                        	    13:         ldbimm %10000011, ci2icr        ;allow interrupts from both timers
+00:0D91 A983            	     1M         lda #%10000011
+00:0D93 8D0DDD          	     2M         sta ci2icr        
+                        	    14:         ldbimm 0, pacaix                ;init Pac-Man's animation index
+00:0D96 A900            	     1M         lda #0
+00:0D98 85FB            	     2M         sta pacaix                
+                        	    15:         ldbimm 0, enzraix               ;init energizer animation index
+00:0D9A A900            	     1M         lda #0
+00:0D9C 85FC            	     2M         sta enzraix               
+                        	    16:         ldwimm procnmi, nminv
+00:0D9E A9AA            	     1M         lda #<procnmi
+00:0DA0 8D1803          	     2M         sta nminv
+00:0DA3 A90D            	     3M         lda #>procnmi
+00:0DA5 8D1903          	     4M         sta nminv+1
+00:0DA8 58              	    17:         cli
+00:0DA9 60              	    18:         rts
+                        	    19: 
+                        	    20:         ;; NMI handler. Here we animate the various in-game objects such as:
+                        	    21:         ;;  - Pac-Man (in-game and death animations)
+                        	    22:         ;;  - Energizers (phase)
+                        	    23:         ;;  - The ghosts (regular, fright, and death animations)
+                        	    24:         ;; We also handle timer events such as:
+                        	    25:         ;;  - Fruit (appearance and disappearance)
+                        	    26:         ;;  - Ghosts switching between scatter & chase mode
+                        	    27: procnmi:
+00:0DAA 48              	    28:         pha
+                        	    29:         phx
+00:0DAB 8A              	     1M         txa
+00:0DAC 48              	     2M         pha
+                        	    30:         phy                             ;push .A, .X, and .Y onto the stack
+00:0DAD 98              	     1M         tya
+00:0DAE 48              	     2M         pha
+00:0DAF AD0DDD          	    31:         lda ci2icr
+00:0DB2 A8              	    32:         tay
+00:0DB3 2902            	    33:         and #%00000010
+                        	    34:         jne timbev
+00:0DB5 F003            	     1M         beq :+
+00:0DB7 4C1F0E          	     2M         jmp timbev
+                        	     3M :
+00:0DBA 98              	    35:         tya
+00:0DBB 2901            	    36:         and #%00000001
+                        	    37:         jeq sysnmi
+00:0DBD D003            	     1M         bne :+
+00:0DBF 4C56FE          	     2M         jmp sysnmi
+                        	     3M :
+                        	    38:         
+                        	    39:         ;; Timer A fired: animate Pac-Man
+00:0DC2 A5A7            	    40: timaev: lda npelrem
+                        	    41:         jeq finnmi                      ;don't animate PM if all pellets eaten
+00:0DC4 D003            	     1M         bne :+
+00:0DC6 4C430F          	     2M         jmp finnmi                      
+                        	     3M :
+00:0DC9 A5A6            	    42:         lda pacrem
+                        	    43:         jeq finnmi                      ;don't animate PM if he's not moving
+00:0DCB D003            	     1M         bne :+
+00:0DCD 4C430F          	     2M         jmp finnmi                      
+                        	     3M :
+00:0DD0 E6FB            	    44:         inc pacaix
+00:0DD2 A4FB            	    45:         ldy pacaix
+00:0DD4 C006            	    46:         cpy #6                          ;past final animation?
+00:0DD6 9005            	    47:         bcc :+
+                        	    48:         ldbimm 0, pacaix                ;yes, reset animation index
+00:0DD8 A900            	     1M         lda #0
+00:0DDA 85FB            	     2M         sta pacaix                
+00:0DDC A8              	    49:         tay
+00:0DDD A5A3            	    50: :       lda pacdir                      ;no, check Pac-Man's direction
+00:0DDF C902            	    51:         cmp #n
+00:0DE1 F013            	    52:         beq :+
+00:0DE3 C903            	    53:         cmp #s
+00:0DE5 F01A            	    54:         beq :++
+00:0DE7 C904            	    55:         cmp #w
+00:0DE9 F021            	    56:         beq :+++
+                        	    57:         ldwimm pacalste, nmiwrd1        ;east
+00:0DEB A99C            	     1M         lda #<pacalste
+00:0DED 8520            	     2M         sta nmiwrd1        
+00:0DEF A915            	     3M         lda #>pacalste
+00:0DF1 8521            	     4M         sta nmiwrd1        +1
+00:0DF3 4C140E          	    58:         jmp ldanim
+                        	    59: :       ldwimm pacalstn, nmiwrd1        ;north
+00:0DF6 A98A            	     1M         lda #<pacalstn
+00:0DF8 8520            	     2M         sta nmiwrd1        
+00:0DFA A915            	     3M         lda #>pacalstn
+00:0DFC 8521            	     4M         sta nmiwrd1        +1
+00:0DFE 4C140E          	    60:         jmp ldanim
+                        	    61: :       ldwimm pacalsts, nmiwrd1        ;south
+00:0E01 A990            	     1M         lda #<pacalsts
+00:0E03 8520            	     2M         sta nmiwrd1        
+00:0E05 A915            	     3M         lda #>pacalsts
+00:0E07 8521            	     4M         sta nmiwrd1        +1
+00:0E09 4C140E          	    62:         jmp ldanim
+                        	    63: :       ldwimm pacalstw, nmiwrd1        ;west
+00:0E0C A996            	     1M         lda #<pacalstw
+00:0E0E 8520            	     2M         sta nmiwrd1        
+00:0E10 A915            	     3M         lda #>pacalstw
+00:0E12 8521            	     4M         sta nmiwrd1        +1
+00:0E14 18              	    64: ldanim: clc
+00:0E15 B120            	    65:         lda (nmiwrd1),y
+00:0E17 6940            	    66:         adc #sp0loc
+00:0E19 8DF84F          	    67:         sta sp0ptr
+00:0E1C 4C430F          	    68:         jmp finnmi
+                        	    69:         
+                        	    70:         ;; Timer B fired: animate energizers or flash maze on level end
+00:0E1F A5A7            	    71: timbev: lda npelrem
+00:0E21 F066            	    72:         beq flshmaz                     ;all pellets eaten, flash maze
+00:0E23 A5FC            	    73:         lda enzraix
+00:0E25 F037            	    74:         beq tic
+00:0E27 C6FC            	    75:         dec enzraix
+00:0E29 A003            	    76:         ldy #3
+                        	    77: tocloop:
+                        	    78:         jmi finnmi
+00:0E2B 1003            	     1M         bpl :+
+00:0E2D 4C430F          	     2M         jmp finnmi
+                        	     3M :
+                        	    79:         phy                             ;save loop counter onto stack        
+00:0E30 98              	     1M         tya
+00:0E31 48              	     2M         pha
+00:0E32 B98615          	    80:         lda enzrlst,y                   ;load energizer pelltbl index into .A
+00:0E35 A20A            	    81:         ldx #nmiblki
+00:0E37 20C609          	    82:         jsr pelladr                     ;load pellet address into nmiwrd1
+00:0E3A A002            	    83:         ldy #2
+00:0E3C B120            	    84:         lda (nmiwrd1),y                 ;load pellet state
+00:0E3E D006            	    85:         bne :+                          ;has the pellet been eaten?
+                        	    86:         ply                             ;yes, next energizer
+00:0E40 68              	     1M         pla
+00:0E41 A8              	     2M         tay
+00:0E42 88              	    87:         dey
+00:0E43 4C2B0E          	    88:         jmp tocloop
+                        	    89: :       ldwptr nmiwrd1, 0, nmiwrd2      ;energizer not eaten
+00:0E46 A000            	     1M         ldy #0
+00:0E48 B120            	     2M         lda (nmiwrd1),y
+00:0E4A 8522            	     3M         sta nmiwrd2      
+00:0E4C C8              	     4M         iny
+00:0E4D B120            	     5M         lda (nmiwrd1),y
+00:0E4F 8523            	     6M         sta nmiwrd2      +1
+00:0E51 A00F            	    90:         ldy #ltgrey
+00:0E53 A20C            	    91:         ldx #nmiblki+2
+00:0E55 200A09          	    92:         jsr printcol                    ;colour energizer light grey
+                        	    93:         ply                             ;pop loop counter off the stack
+00:0E58 68              	     1M         pla
+00:0E59 A8              	     2M         tay
+00:0E5A 88              	    94:         dey
+00:0E5B 4C2B0E          	    95:         jmp tocloop
+00:0E5E E6FC            	    96: tic:    inc enzraix
+00:0E60 A003            	    97:         ldy #3
+                        	    98: ticloop:
+                        	    99:         jmi finnmi
+00:0E62 1003            	     1M         bpl :+
+00:0E64 4C430F          	     2M         jmp finnmi
+                        	     3M :
+                        	   100:         phy                             ;push loop counter onto stack
+00:0E67 98              	     1M         tya
+00:0E68 48              	     2M         pha
+00:0E69 B98615          	   101:         lda enzrlst,y                   ;load energizer pelltbl index into .A
+00:0E6C A20A            	   102:         ldx #nmiblki
+00:0E6E 20C609          	   103:         jsr pelladr                     ;load pellet address into nmiwrd1
+                        	   104:         ldwptr nmiwrd1, 0, nmiwrd2
+00:0E71 A000            	     1M         ldy #0
+00:0E73 B120            	     2M         lda (nmiwrd1),y
+00:0E75 8522            	     3M         sta nmiwrd2
+00:0E77 C8              	     4M         iny
+00:0E78 B120            	     5M         lda (nmiwrd1),y
+00:0E7A 8523            	     6M         sta nmiwrd2+1
+00:0E7C A00B            	   105:         ldy #dkgrey
+00:0E7E A20C            	   106:         ldx #nmiblki+2
+00:0E80 200A09          	   107:         jsr printcol                    ;colour energizer dark grey
+                        	   108:         ply                             ;pop loop counter off the stack
+00:0E83 68              	     1M         pla
+00:0E84 A8              	     2M         tay
+00:0E85 88              	   109:         dey
+00:0E86 4C620E          	   110:         jmp ticloop
+                        	   111: flshmaz:
+00:0E89 A51F            	   112:         lda irqtmp                      ;HACK: read number of flashes remaining from irqtmp
+                        	   113:         jeq finnmi
+00:0E8B D003            	     1M         bne :+
+00:0E8D 4C430F          	     2M         jmp finnmi
+                        	     3M :
+00:0E90 6A              	   114:         ror
+                        	   115:         jcc flshwht                     ;flash white on even, blue on odd
+00:0E91 B003            	     1M         bcs :+
+00:0E93 4CED0E          	     2M         jmp flshwht                     
+                        	     3M :
+00:0E96 A200            	   116:         ldx #0
+                        	   117: setblu1:
+00:0E98 BD00D8          	   118:         lda colmem,x                    ;load value in colmem at pos
+00:0E9B 290F            	   119:         and #%00001111                  ;mask out high nybble
+00:0E9D C901            	   120:         cmp #$01
+00:0E9F D005            	   121:         bne :+                          ;is colour = white?
+00:0EA1 A906            	   122:         lda #$06
+00:0EA3 9D00D8          	   123:         sta colmem,x                    ;yes, make it blue
+00:0EA6 E8              	   124: :       inx                     
+00:0EA7 E0FA            	   125:         cpx #250
+00:0EA9 D0ED            	   126:         bne setblu1
+00:0EAB A200            	   127:         ldx #0
+                        	   128: setblu2:
+00:0EAD BDFAD8          	   129:         lda colmem+250,x                ;load value in colmem at pos
+00:0EB0 290F            	   130:         and #%00001111                  ;mask out high nybble
+00:0EB2 C901            	   131:         cmp #$01
+00:0EB4 D005            	   132:         bne :+                          ;is colour = white?
+00:0EB6 A906            	   133:         lda #$06
+00:0EB8 9DFAD8          	   134:         sta colmem+250,x                ;yes, make it blue
+00:0EBB E8              	   135: :       inx                     
+00:0EBC E0FA            	   136:         cpx #250
+00:0EBE D0ED            	   137:         bne setblu2
+00:0EC0 A200            	   138:         ldx #0
+                        	   139: setblu3:
+00:0EC2 BDF4D9          	   140:         lda colmem+500,x                ;load value in colmem at pos
+00:0EC5 290F            	   141:         and #%00001111                  ;mask out high nybble
+00:0EC7 C901            	   142:         cmp #$01
+00:0EC9 D005            	   143:         bne :+                          ;is colour = white?
+00:0ECB A906            	   144:         lda #$06
+00:0ECD 9DF4D9          	   145:         sta colmem+500,x                ;yes, make it blue
+00:0ED0 E8              	   146: :       inx                     
+00:0ED1 E0FA            	   147:         cpx #250
+00:0ED3 D0ED            	   148:         bne setblu3
+00:0ED5 A200            	   149:         ldx #0
+                        	   150: setblu4:
+00:0ED7 BDEEDA          	   151:         lda colmem+750,x                ;load value in colmem at pos
+00:0EDA 290F            	   152:         and #%00001111                  ;mask out high nybble
+00:0EDC C901            	   153:         cmp #$01
+00:0EDE D005            	   154:         bne :+                          ;is colour = white?
+00:0EE0 A906            	   155:         lda #$06
+00:0EE2 9DEEDA          	   156:         sta colmem+750,x                ;yes, make it blue
+00:0EE5 E8              	   157: :       inx
+00:0EE6 E0FA            	   158:         cpx #250
+00:0EE8 D0ED            	   159:         bne setblu4
+00:0EEA 4C410F          	   160:         jmp flshfin
+                        	   161: flshwht:
+00:0EED A200            	   162:         ldx #0
+                        	   163: setwht1:
+00:0EEF BD00D8          	   164:         lda colmem,x                    ;load value in colmem at pos
+00:0EF2 290F            	   165:         and #%00001111                  ;mask out high nybble
+00:0EF4 C906            	   166:         cmp #$06
+00:0EF6 D005            	   167:         bne :+                          ;is colour = blue?
+00:0EF8 A901            	   168:         lda #$01
+00:0EFA 9D00D8          	   169:         sta colmem,x                    ;yes, make it white
+00:0EFD E8              	   170: :       inx                     
+00:0EFE E0FA            	   171:         cpx #250
+00:0F00 D0ED            	   172:         bne setwht1
+00:0F02 A200            	   173:         ldx #0
+                        	   174: setwht2:
+00:0F04 BDFAD8          	   175:         lda colmem+250,x                ;load value in colmem at pos
+00:0F07 290F            	   176:         and #%00001111                  ;mask out high nybble
+00:0F09 C906            	   177:         cmp #$06
+00:0F0B D005            	   178:         bne :+                          ;is colour = blue?
+00:0F0D A901            	   179:         lda #$01
+00:0F0F 9DFAD8          	   180:         sta colmem+250,x                ;yes, make it white
+00:0F12 E8              	   181: :       inx                     
+00:0F13 E0FA            	   182:         cpx #250
+00:0F15 D0ED            	   183:         bne setwht2
+00:0F17 A200            	   184:         ldx #0
+                        	   185: setwht3:
+00:0F19 BDF4D9          	   186:         lda colmem+500,x                ;load value in colmem at pos
+00:0F1C 290F            	   187:         and #%00001111                  ;mask out high nybble
+00:0F1E C906            	   188:         cmp #$06
+00:0F20 D005            	   189:         bne :+                          ;is colour = blue?
+00:0F22 A901            	   190:         lda #$01
+00:0F24 9DF4D9          	   191:         sta colmem+500,x                ;yes, make it white
+00:0F27 E8              	   192: :       inx                     
+00:0F28 E0FA            	   193:         cpx #250
+00:0F2A D0ED            	   194:         bne setwht3
+00:0F2C A200            	   195:         ldx #0
+                        	   196: setwht4:
+00:0F2E BDEEDA          	   197:         lda colmem+750,x                ;load value in colmem at pos
+00:0F31 290F            	   198:         and #%00001111                  ;mask out high nybble
+00:0F33 C906            	   199:         cmp #$06
+00:0F35 D005            	   200:         bne :+                          ;is colour = blue?
+00:0F37 A901            	   201:         lda #$01
+00:0F39 9DEEDA          	   202:         sta colmem+750,x                ;yes, make it white
+00:0F3C E8              	   203: :       inx                     
+00:0F3D E0FA            	   204:         cpx #250
+00:0F3F D0ED            	   205:         bne setwht4
+                        	   206: flshfin:
+00:0F41 C61F            	   207:         dec irqtmp                      ;decrement flashes remaining
+                        	   208:         
+                        	   209:         ;; Restore machine state & return from NMI
+                        	   210: finnmi: ply
+00:0F43 68              	     1M         pla
+00:0F44 A8              	     2M         tay
+                        	   211:         plx
+00:0F45 68              	     1M         pla
+00:0F46 AA              	     2M         tax
+00:0F47 68              	   212:         pla                             ;restore .Y, .X, and .A from stack
+00:0F48 40              	   213:         rti
+                        	   214: 
+
+Source: "./src/startup.asm"
+                        	    32:         include game.asm
+
+Source: "game.asm"
+                        	     1:         ;; ============================================================
+                        	     2:         ;; Game-logic related routines
+                        	     3:         ;; ============================================================
+                        	     4: 
+                        	     5:         ;; Initialize variables when starting a new game
+                        	     6: newgame:
+                        	     7:         ldbimm maxpell, npelrem
+00:0F49 A9B6            	     1M         lda #maxpell
+00:0F4B 85A7            	     2M         sta npelrem
+                        	     8:         ldbimm maxmen, nmenrem
+00:0F4D A903            	     1M         lda #maxmen
+00:0F4F 85A8            	     2M         sta nmenrem
+                        	     9:         ldbimm 0, lvlnum
+00:0F51 A900            	     1M         lda #0
+00:0F53 85A9            	     2M         sta lvlnum
+00:0F55 201010          	    10:         jsr rstscr              ;reset score
+00:0F58 4CD909          	    11:         jmp fillmaze            ;fill maze with pellets
+                        	    12: 
+                        	    13:         ;; Setup next game level
+                        	    14: nextlvl:
+00:0F5B E6A9            	    15:         inc lvlnum
+00:0F5D 20D909          	    16:         jsr fillmaze
+00:0F60 205D09          	    17:         jsr fillcolmem
+00:0F63 200A0C          	    18:         jsr initsprt
+                        	    19:         ldbimm maxpell, npelrem
+00:0F66 A9B6            	     1M         lda #maxpell
+00:0F68 85A7            	     2M         sta npelrem
+00:0F6A 60              	    20:         rts
+                        	    21:         
+                        	    22:         ;; Main game loop
+                        	    23: gameloop:
+00:0F6B A5A7            	    24:         lda npelrem             ;check remaining pellets
+00:0F6D D00C            	    25:         bne rdinpt              ;if <> 0 read joystick input
+00:0F6F A2FF            	    26: :       ldx #$ff
+00:0F71 CA              	    27: :       dex
+00:0F72 D0FD            	    28:         bne :-                  ;delay
+00:0F74 A51F            	    29:         lda irqtmp              ;check if end level animation finished
+00:0F76 D0F7            	    30:         bne :--                 ;no? wait a bit longer
+00:0F78 205B0F          	    31:         jsr nextlvl 
+00:0F7B 20A209          	    32: rdinpt: jsr readjoy2
+00:0F7E A901            	    33:         lda #1
+00:0F80 C596            	    34:         cmp joyx
+00:0F82 F009            	    35:         beq move
+00:0F84 B00E            	    36:         bcs chky
+                        	    37:         ldbimm w, tmp
+00:0F86 A904            	     1M         lda #w
+00:0F88 851A            	     2M         sta tmp
+00:0F8A 4CAA0F          	    38:         jmp chkmov
+                        	    39: move:   ldbimm e, tmp
+00:0F8D A905            	     1M         lda #e
+00:0F8F 851A            	     2M         sta tmp
+00:0F91 4CAA0F          	    40:         jmp chkmov
+00:0F94 A901            	    41: chky:   lda #1
+00:0F96 C59B            	    42:         cmp joyy
+00:0F98 F00C            	    43:         beq movs
+                        	    44:         jcs gameloop
+00:0F9A 9003            	     1M         bcc :+
+00:0F9C 4C6B0F          	     2M         jmp gameloop
+                        	     3M :
+                        	    45:         ldbimm n, tmp
+00:0F9F A902            	     1M         lda #n
+00:0FA1 851A            	     2M         sta tmp
+00:0FA3 4CAA0F          	    46:         jmp chkmov
+                        	    47: movs:   ldbimm s, tmp
+00:0FA6 A903            	     1M         lda #s
+00:0FA8 851A            	     2M         sta tmp
+00:0FAA A5A6            	    48: chkmov: lda pacrem
+00:0FAC 38              	    49:         sec
+00:0FAD E903            	    50:         sbc #3
+                        	    51:         jcs chkrvw
+00:0FAF 9003            	     1M         bcc :+
+00:0FB1 4CBB0F          	     2M         jmp chkrvw
+                        	     3M :
+                        	    52:         cpbyt tmp, pacnxd
+00:0FB4 A51A            	     1M         lda tmp
+00:0FB6 85A4            	     2M         sta pacnxd
+00:0FB8 4C6B0F          	    53:         jmp gameloop
+00:0FBB A5A3            	    54: chkrvw: lda pacdir
+00:0FBD C904            	    55:         cmp #w
+00:0FBF D00C            	    56:         bne chkrve
+00:0FC1 A51A            	    57:         lda tmp
+00:0FC3 C905            	    58:         cmp #e
+                        	    59:         jne gameloop
+00:0FC5 F003            	     1M         beq :+
+00:0FC7 4C6B0F          	     2M         jmp gameloop
+                        	     3M :
+00:0FCA 4CF60F          	    60:         jmp reverse
+00:0FCD C905            	    61: chkrve: cmp #e
+00:0FCF D00C            	    62:         bne chkrvn
+00:0FD1 A51A            	    63:         lda tmp
+00:0FD3 C904            	    64:         cmp #w
+                        	    65:         jne gameloop
+00:0FD5 F003            	     1M         beq :+
+00:0FD7 4C6B0F          	     2M         jmp gameloop
+                        	     3M :
+00:0FDA 4CF60F          	    66:         jmp reverse
+00:0FDD C902            	    67: chkrvn: cmp #n
+00:0FDF D00C            	    68:         bne revs
+00:0FE1 A51A            	    69:         lda tmp
+00:0FE3 C903            	    70:         cmp #s
+                        	    71:         jne gameloop
+00:0FE5 F003            	     1M         beq :+
+00:0FE7 4C6B0F          	     2M         jmp gameloop
+                        	     3M :
+00:0FEA 4CF60F          	    72:         jmp reverse
+                        	    73: revs:
+00:0FED A51A            	    74:         lda tmp
+00:0FEF C902            	    75:         cmp #n
+                        	    76:         jne gameloop
+00:0FF1 F003            	     1M         beq :+
+00:0FF3 4C6B0F          	     2M         jmp gameloop
+                        	     3M :
+                        	    77: reverse:
+00:0FF6 78              	    78:         sei
+                        	    79:         cpbyt tmp, pacdir
+00:0FF7 A51A            	     1M         lda tmp
+00:0FF9 85A3            	     2M         sta pacdir
+                        	    80:         swpbyt pacsrc, pactar
+00:0FFB A59E            	     1M         lda pacsrc
+00:0FFD 48              	     2M         pha                     ;load byt1 & push onto the stack
+00:0FFE A59F            	     3M         lda pactar
+00:1000 859E            	     4M         sta pacsrc               ;load byt2 & save to byt1
+00:1002 68              	     5M         pla
+00:1003 859F            	     6M         sta pactar               ;pop byt1 off the stack & save to byt2
+00:1005 A5A5            	    81:         lda pacdis
+00:1007 38              	    82:         sec
+00:1008 E5A6            	    83:         sbc pacrem
+00:100A 85A6            	    84:         sta pacrem
+00:100C 58              	    85:         cli
+00:100D 4C6B0F          	    86:         jmp gameloop
+                        	    87: 
+
+Source: "./src/startup.asm"
+                        	    33:         include score.asm
+
+Source: "score.asm"
+                        	     1:         ;; ============================================================
+                        	     2:         ;; Score related routines
+                        	     3:         ;; ============================================================
+                        	     4: 
+                        	     5:         ;; Reset the score to 0
+                        	     6: rstscr:
+00:1010 A900            	     7:         lda #0
+00:1012 A203            	     8:         ldx #3
+00:1014 3006            	     9: :       bmi :+
+00:1016 95F7            	    10:         sta score,x
+00:1018 CA              	    11:         dex
+00:1019 4C1410          	    12:         jmp :-
+00:101C 60              	    13: :       rts
+                        	    14:         
+                        	    15:         ;; Score pellet (10 pts)
+                        	    16:         ;; Reads:
+                        	    17:         ;;  - .X (offset to memory block)
+                        	    18:         ;; Writes:
+                        	    19:         ;;  - score
+                        	    20: scrpell:
+00:101D A910            	    21:         lda #pellpts
+00:101F 9516            	    22:         sta buf,x
+00:1021 E8              	    23:         inx
+00:1022 A900            	    24:         lda #0
+00:1024 9516            	    25:         sta buf,x
+00:1026 CA              	    26:         dex
+00:1027 4C3710          	    27:         jmp addscr
+                        	    28: 
+                        	    29:         ;; Score energizer (50 pts)
+                        	    30:         ;; Reads:
+                        	    31:         ;;  - .X (offset to memory block)
+                        	    32:         ;; Writes:
+                        	    33:         ;;  - 1st word in memory block
+                        	    34:         ;;  - score
+                        	    35: screnzr:
+00:102A A950            	    36:         lda #enzrpts
+00:102C 9516            	    37:         sta buf,x
+00:102E E8              	    38:         inx
+00:102F A900            	    39:         lda #0
+00:1031 9516            	    40:         sta buf,x
+00:1033 CA              	    41:         dex
+00:1034 4C3710          	    42:         jmp addscr
+                        	    43:       
+                        	    44:         ;; Add 16-bit BCD value to score
+                        	    45:         ;; Reads:
+                        	    46:         ;;  - .X: index into buffer to access memory block
+                        	    47:         ;;  - 1st word in memory block containing 4 BCD digits
+                        	    48:         ;; Writes:
+                        	    49:         ;;  - score
+                        	    50: addscr:
+00:1037 F8              	    51:         sed
+00:1038 18              	    52:         clc
+00:1039 A5F7            	    53:         lda score
+00:103B 7516            	    54:         adc buf,x
+00:103D 85F7            	    55:         sta score
+00:103F A5F8            	    56:         lda score+1
+00:1041 E8              	    57:         inx
+00:1042 7516            	    58:         adc buf,x 
+00:1044 85F8            	    59:         sta score+1
+00:1046 A5F9            	    60:         lda score+2
+00:1048 6900            	    61:         adc #0
+00:104A 85F9            	    62:         sta score+2
+00:104C A5FA            	    63:         lda score+3
+00:104E 6900            	    64:         adc #0
+00:1050 85FA            	    65:         sta score+3
+00:1052 D8              	    66:         cld
+00:1053 CA              	    67:         dex
+00:1054 60              	    68:         rts
+                        	    69: 
+
+Source: "./src/startup.asm"
+                        	    34: 
+                        	    35:         ;; Include tables
+                        	    36:         include tables.asm
+
+Source: "tables.asm"
+                        	     1:         ;; ============================================================
+                        	     2:         ;; Data table definitions
+                        	     3:         ;; ============================================================
+                        	     4:         
+                        	     5:         ;; Node table
+                        	     6:         ;; Format:        
+                        	     7:         ;;  - byte x,y (node loc in sprite coords)
+                        	     8:         ;;  - byte n,s,w,e (indices of neighboring nodes)
+                        	     9: nodetbl:
+                        	    10:         ;; Row 1
+00:1055 20              	    11:         byte $20,$3a,$ff,$06,$ff,$01
+00:1056 3A
+00:1057 FF
+00:1058 06
+00:1059 FF
+00:105A 01
+00:105B 40              	    12:         byte $40,$3a,$ff,$07,$00,$02
+00:105C 3A
+00:105D FF
+00:105E 07
+00:105F 00
+00:1060 02
+00:1061 60              	    13:         byte $60,$3a,$ff,$09,$01,$ff
+00:1062 3A
+00:1063 FF
+00:1064 09
+00:1065 01
+00:1066 FF
+00:1067 70              	    14:         byte $70,$3a,$ff,$0a,$ff,$04
+00:1068 3A
+00:1069 FF
+00:106A 0A
+00:106B FF
+00:106C 04
+00:106D 90              	    15:         byte $90,$3a,$ff,$0c,$03,$05
+00:106E 3A
+00:106F FF
+00:1070 0C
+00:1071 03
+00:1072 05
+00:1073 B0              	    16:         byte $b0,$3a,$ff,$0d,$04,$ff
+00:1074 3A
+00:1075 FF
+00:1076 0D
+00:1077 04
+00:1078 FF
+                        	    17:         ;; Row 2
+00:1079 20              	    18:         byte $20,$52,$00,$0e,$ff,$07
+00:107A 52
+00:107B 00
+00:107C 0E
+00:107D FF
+00:107E 07
+00:107F 40              	    19:         byte $40,$52,$01,$0f,$06,$08
+00:1080 52
+00:1081 01
+00:1082 0F
+00:1083 06
+00:1084 08
+00:1085 50              	    20:         byte $50,$52,$ff,$10,$07,$09
+00:1086 52
+00:1087 FF
+00:1088 10
+00:1089 07
+00:108A 09
+00:108B 60              	    21:         byte $60,$52,$02,$ff,$08,$0a
+00:108C 52
+00:108D 02
+00:108E FF
+00:108F 08
+00:1090 0A
+00:1091 70              	    22:         byte $70,$52,$03,$ff,$09,$0b
+00:1092 52
+00:1093 03
+00:1094 FF
+00:1095 09
+00:1096 0B
+00:1097 80              	    23:         byte $80,$52,$ff,$13,$0a,$0c
+00:1098 52
+00:1099 FF
+00:109A 13
+00:109B 0A
+00:109C 0C
+00:109D 90              	    24:         byte $90,$52,$04,$14,$0b,$0d
+00:109E 52
+00:109F 04
+00:10A0 14
+00:10A1 0B
+00:10A2 0D
+00:10A3 B0              	    25:         byte $b0,$52,$05,$15,$0c,$ff
+00:10A4 52
+00:10A5 05
+00:10A6 15
+00:10A7 0C
+00:10A8 FF
+                        	    26:         ;; Row 3
+00:10A9 20              	    27:         byte $20,$6a,$06,$ff,$ff,$0f
+00:10AA 6A
+00:10AB 06
+00:10AC FF
+00:10AD FF
+00:10AE 0F
+00:10AF 40              	    28:         byte $40,$6a,$07,$1c,$0e,$ff
+00:10B0 6A
+00:10B1 07
+00:10B2 1C
+00:10B3 0E
+00:10B4 FF
+00:10B5 50              	    29:         byte $50,$6a,$08,$ff,$ff,$11
+00:10B6 6A
+00:10B7 08
+00:10B8 FF
+00:10B9 FF
+00:10BA 11
+00:10BB 60              	    30:         byte $60,$6a,$ff,$17,$10,$ff
+00:10BC 6A
+00:10BD FF
+00:10BE 17
+00:10BF 10
+00:10C0 FF
+00:10C1 70              	    31:         byte $70,$6a,$ff,$19,$ff,$13
+00:10C2 6A
+00:10C3 FF
+00:10C4 19
+00:10C5 FF
+00:10C6 13
+00:10C7 80              	    32:         byte $80,$6a,$0b,$ff,$12,$ff
+00:10C8 6A
+00:10C9 0B
+00:10CA FF
+00:10CB 12
+00:10CC FF
+00:10CD 90              	    33:         byte $90,$6a,$0c,$20,$ff,$15
+00:10CE 6A
+00:10CF 0C
+00:10D0 20
+00:10D1 FF
+00:10D2 15
+00:10D3 B0              	    34:         byte $b0,$6a,$0d,$ff,$14,$ff
+00:10D4 6A
+00:10D5 0D
+00:10D6 FF
+00:10D7 14
+00:10D8 FF
+                        	    35:         ;; Row 4
+00:10D9 50              	    36:         byte $50,$7a,$ff,$1d,$ff,$17
+00:10DA 7A
+00:10DB FF
+00:10DC 1D
+00:10DD FF
+00:10DE 17
+00:10DF 60              	    37:         byte $60,$7a,$11,$ff,$16,$18
+00:10E0 7A
+00:10E1 11
+00:10E2 FF
+00:10E3 16
+00:10E4 18
+00:10E5 68              	    38:         byte $68,$7a,$ff,$1e,$17,$19
+00:10E6 7A
+00:10E7 FF
+00:10E8 1E
+00:10E9 17
+00:10EA 19
+00:10EB 70              	    39:         byte $70,$7a,$12,$ff,$18,$1a
+00:10EC 7A
+00:10ED 12
+00:10EE FF
+00:10EF 18
+00:10F0 1A
+00:10F1 80              	    40:         byte $80,$7a,$ff,$1f,$19,$ff
+00:10F2 7A
+00:10F3 FF
+00:10F4 1F
+00:10F5 19
+00:10F6 FF
+                        	    41:         ;; Row 5
+00:10F7 18              	    42:         byte $18,$92,$ff,$ff,$21,$1c
+00:10F8 92
+00:10F9 FF
+00:10FA FF
+00:10FB 21
+00:10FC 1C
+00:10FD 40              	    43:         byte $40,$92,$0f,$25,$1b,$1d
+00:10FE 92
+00:10FF 0F
+00:1100 25
+00:1101 1B
+00:1102 1D
+00:1103 50              	    44:         byte $50,$92,$16,$22,$1c,$ff
+00:1104 92
+00:1105 16
+00:1106 22
+00:1107 1C
+00:1108 FF
+00:1109 68              	    45:         byte $68,$92,$18,$ff,$ff,$ff
+00:110A 92
+00:110B 18
+00:110C FF
+00:110D FF
+00:110E FF
+00:110F 80              	    46:         byte $80,$92,$1a,$23,$ff,$20
+00:1110 92
+00:1111 1A
+00:1112 23
+00:1113 FF
+00:1114 20
+00:1115 90              	    47:         byte $90,$92,$14,$2a,$1f,$21
+00:1116 92
+00:1117 14
+00:1118 2A
+00:1119 1F
+00:111A 21
+00:111B B8              	    48:         byte $b8,$92,$ff,$ff,$20,$1b
+00:111C 92
+00:111D FF
+00:111E FF
+00:111F 20
+00:1120 1B
+                        	    49:         ;; Row 6
+00:1121 50              	    50:         byte $50,$a2,$1d,$26,$ff,$23
+00:1122 A2
+00:1123 1D
+00:1124 26
+00:1125 FF
+00:1126 23
+00:1127 80              	    51:         byte $80,$a2,$1f,$29,$22,$ff
+00:1128 A2
+00:1129 1F
+00:112A 29
+00:112B 22
+00:112C FF
+                        	    52:         ;; Row 7
+00:112D 20              	    53:         byte $20,$ba,$ff,$2c,$ff,$25
+00:112E BA
+00:112F FF
+00:1130 2C
+00:1131 FF
+00:1132 25
+00:1133 40              	    54:         byte $40,$ba,$1c,$2e,$24,$26
+00:1134 BA
+00:1135 1C
+00:1136 2E
+00:1137 24
+00:1138 26
+00:1139 50              	    55:         byte $50,$ba,$22,$ff,$25,$27
+00:113A BA
+00:113B 22
+00:113C FF
+00:113D 25
+00:113E 27
+00:113F 60              	    56:         byte $60,$ba,$ff,$30,$26,$ff
+00:1140 BA
+00:1141 FF
+00:1142 30
+00:1143 26
+00:1144 FF
+00:1145 70              	    57:         byte $70,$ba,$ff,$32,$ff,$29
+00:1146 BA
+00:1147 FF
+00:1148 32
+00:1149 FF
+00:114A 29
+00:114B 80              	    58:         byte $80,$ba,$23,$ff,$28,$2a
+00:114C BA
+00:114D 23
+00:114E FF
+00:114F 28
+00:1150 2A
+00:1151 90              	    59:         byte $90,$ba,$20,$34,$29,$2b
+00:1152 BA
+00:1153 20
+00:1154 34
+00:1155 29
+00:1156 2B
+00:1157 B0              	    60:         byte $b0,$ba,$ff,$36,$2a,$ff
+00:1158 BA
+00:1159 FF
+00:115A 36
+00:115B 2A
+00:115C FF
+                        	    61:         ;; Row 8
+00:115D 20              	    62:         byte $20,$ca,$24,$ff,$ff,$2d
+00:115E CA
+00:115F 24
+00:1160 FF
+00:1161 FF
+00:1162 2D
+00:1163 30              	    63:         byte $30,$ca,$ff,$38,$2c,$ff
+00:1164 CA
+00:1165 FF
+00:1166 38
+00:1167 2C
+00:1168 FF
+00:1169 40              	    64:         byte $40,$ca,$25,$39,$ff,$2f
+00:116A CA
+00:116B 25
+00:116C 39
+00:116D FF
+00:116E 2F
+00:116F 50              	    65:         byte $50,$ca,$ff,$3a,$2e,$30
+00:1170 CA
+00:1171 FF
+00:1172 3A
+00:1173 2E
+00:1174 30
+00:1175 60              	    66:         byte $60,$ca,$27,$ff,$2f,$31
+00:1176 CA
+00:1177 27
+00:1178 FF
+00:1179 2F
+00:117A 31
+00:117B 68              	    67:         byte $68,$ca,$ff,$ff,$30,$32
+00:117C CA
+00:117D FF
+00:117E FF
+00:117F 30
+00:1180 32
+00:1181 70              	    68:         byte $70,$ca,$28,$ff,$31,$33
+00:1182 CA
+00:1183 28
+00:1184 FF
+00:1185 31
+00:1186 33
+00:1187 80              	    69:         byte $80,$ca,$ff,$3d,$32,$34
+00:1188 CA
+00:1189 FF
+00:118A 3D
+00:118B 32
+00:118C 34
+00:118D 90              	    70:         byte $90,$ca,$2a,$3e,$33,$ff
+00:118E CA
+00:118F 2A
+00:1190 3E
+00:1191 33
+00:1192 FF
+00:1193 A0              	    71:         byte $a0,$ca,$ff,$3f,$ff,$36
+00:1194 CA
+00:1195 FF
+00:1196 3F
+00:1197 FF
+00:1198 36
+00:1199 B0              	    72:         byte $b0,$ca,$2b,$ff,$35,$ff
+00:119A CA
+00:119B 2B
+00:119C FF
+00:119D 35
+00:119E FF
+                        	    73:         ;; Row 9
+00:119F 20              	    74:         byte $20,$da,$ff,$41,$ff,$38
+00:11A0 DA
+00:11A1 FF
+00:11A2 41
+00:11A3 FF
+00:11A4 38
+00:11A5 30              	    75:         byte $30,$da,$2d,$ff,$37,$39
+00:11A6 DA
+00:11A7 2D
+00:11A8 FF
+00:11A9 37
+00:11AA 39
+00:11AB 40              	    76:         byte $40,$da,$2e,$ff,$38,$ff
+00:11AC DA
+00:11AD 2E
+00:11AE FF
+00:11AF 38
+00:11B0 FF
+00:11B1 50              	    77:         byte $50,$da,$2f,$ff,$ff,$3b
+00:11B2 DA
+00:11B3 2F
+00:11B4 FF
+00:11B5 FF
+00:11B6 3B
+00:11B7 60              	    78:         byte $60,$da,$ff,$42,$3a,$ff
+00:11B8 DA
+00:11B9 FF
+00:11BA 42
+00:11BB 3A
+00:11BC FF
+00:11BD 70              	    79:         byte $70,$da,$ff,$43,$ff,$3d
+00:11BE DA
+00:11BF FF
+00:11C0 43
+00:11C1 FF
+00:11C2 3D
+00:11C3 80              	    80:         byte $80,$da,$33,$ff,$3c,$ff
+00:11C4 DA
+00:11C5 33
+00:11C6 FF
+00:11C7 3C
+00:11C8 FF
+00:11C9 90              	    81:         byte $90,$da,$34,$ff,$ff,$3f
+00:11CA DA
+00:11CB 34
+00:11CC FF
+00:11CD FF
+00:11CE 3F
+00:11CF A0              	    82:         byte $a0,$da,$35,$ff,$3e,$40
+00:11D0 DA
+00:11D1 35
+00:11D2 FF
+00:11D3 3E
+00:11D4 40
+00:11D5 B0              	    83:         byte $b0,$da,$ff,$44,$3f,$ff
+00:11D6 DA
+00:11D7 FF
+00:11D8 44
+00:11D9 3F
+00:11DA FF
+                        	    84:         ;; Row 10
+00:11DB 20              	    85:         byte $20,$ea,$37,$ff,$ff,$42
+00:11DC EA
+00:11DD 37
+00:11DE FF
+00:11DF FF
+00:11E0 42
+00:11E1 60              	    86:         byte $60,$ea,$3b,$ff,$41,$43
+00:11E2 EA
+00:11E3 3B
+00:11E4 FF
+00:11E5 41
+00:11E6 43
+00:11E7 70              	    87:         byte $70,$ea,$3c,$ff,$42,$44
+00:11E8 EA
+00:11E9 3C
+00:11EA FF
+00:11EB 42
+00:11EC 44
+00:11ED B0              	    88:         byte $b0,$ea,$40,$ff,$43,$ff
+00:11EE EA
+00:11EF 40
+00:11F0 FF
+00:11F1 43
+00:11F2 FF
+                        	    89: 
+                        	    90: 
+                        	    91:         ;; Pellet table
+                        	    92:         ;; Format:        
+                        	    93:         ;;  - word address (screen memory address)
+                        	    94:         ;;  - byte status (0=eaten, 1=not eaten)
+                        	    95:         ;;  - byte x,y (sprite coordinates of char)
+                        	    96: pelltbl:
+                        	    97:         ;; Row 1
+00:11F3 2900            	    98:         word $0029
+00:11F5 01              	    99:         byte 1,$20,$3a
+00:11F6 20
+00:11F7 3A
+00:11F8 2A00            	   100:         word $002a
+00:11FA 01              	   101:         byte 1,$28,$3a
+00:11FB 28
+00:11FC 3A
+00:11FD 2B00            	   102:         word $002b
+00:11FF 01              	   103:         byte 1,$30,$3a
+00:1200 30
+00:1201 3A
+00:1202 2C00            	   104:         word $002c
+00:1204 01              	   105:         byte 1,$38,$3a
+00:1205 38
+00:1206 3A
+00:1207 2D00            	   106:         word $002d
+00:1209 01              	   107:         byte 1,$40,$3a
+00:120A 40
+00:120B 3A
+00:120C 2E00            	   108:         word $002e
+00:120E 01              	   109:         byte 1,$48,$3a
+00:120F 48
+00:1210 3A
+00:1211 2F00            	   110:         word $002f
+00:1213 01              	   111:         byte 1,$50,$3a
+00:1214 50
+00:1215 3A
+00:1216 3000            	   112:         word $0030
+00:1218 01              	   113:         byte 1,$58,$3a
+00:1219 58
+00:121A 3A
+00:121B 3100            	   114:         word $0031
+00:121D 01              	   115:         byte 1,$60,$3a
+00:121E 60
+00:121F 3A
+00:1220 3300            	   116:         word $0033
+00:1222 01              	   117:         byte 1,$70,$3a
+00:1223 70
+00:1224 3A
+00:1225 3400            	   118:         word $0034
+00:1227 01              	   119:         byte 1,$78,$3a
+00:1228 78
+00:1229 3A
+00:122A 3500            	   120:         word $0035
+00:122C 01              	   121:         byte 1,$80,$3a
+00:122D 80
+00:122E 3A
+00:122F 3600            	   122:         word $0036
+00:1231 01              	   123:         byte 1,$88,$3a
+00:1232 88
+00:1233 3A
+00:1234 3700            	   124:         word $0037
+00:1236 01              	   125:         byte 1,$90,$3a
+00:1237 90
+00:1238 3A
+00:1239 3800            	   126:         word $0038
+00:123B 01              	   127:         byte 1,$98,$3a
+00:123C 98
+00:123D 3A
+00:123E 3900            	   128:         word $0039
+00:1240 01              	   129:         byte 1,$a0,$3a
+00:1241 A0
+00:1242 3A
+00:1243 3A00            	   130:         word $003a
+00:1245 01              	   131:         byte 1,$a8,$3a
+00:1246 A8
+00:1247 3A
+00:1248 3B00            	   132:         word $003b
+00:124A 01              	   133:         byte 1,$b0,$3a
+00:124B B0
+00:124C 3A
+                        	   134:         ;; Row 2
+00:124D 5100            	   135:         word $0051
+00:124F 01              	   136:         byte 1,$20,$42          ;energizer
+00:1250 20
+00:1251 42
+00:1252 5500            	   137:         word $0055
+00:1254 01              	   138:         byte 1,$40,$42
+00:1255 40
+00:1256 42
+00:1257 5900            	   139:         word $0059
+00:1259 01              	   140:         byte 1,$60,$42
+00:125A 60
+00:125B 42
+00:125C 5B00            	   141:         word $005b
+00:125E 01              	   142:         byte 1,$70,$42
+00:125F 70
+00:1260 42
+00:1261 5F00            	   143:         word $005f
+00:1263 01              	   144:         byte 1,$90,$42
+00:1264 90
+00:1265 42
+00:1266 6300            	   145:         word $0063
+00:1268 01              	   146:         byte 1,$b0,$42          ;energizer
+00:1269 B0
+00:126A 42
+                        	   147:         ;; Row 3
+00:126B 7900            	   148:         word $0079
+00:126D 01              	   149:         byte 1,$20,$4a
+00:126E 20
+00:126F 4A
+00:1270 7D00            	   150:         word $007d
+00:1272 01              	   151:         byte 1,$40,$4a
+00:1273 40
+00:1274 4A
+00:1275 8100            	   152:         word $0081
+00:1277 01              	   153:         byte 1,$60,$4a
+00:1278 60
+00:1279 4A
+00:127A 8300            	   154:         word $0083
+00:127C 01              	   155:         byte 1,$70,$4a
+00:127D 70
+00:127E 4A
+00:127F 8700            	   156:         word $0087
+00:1281 01              	   157:         byte 1,$90,$4a
+00:1282 90
+00:1283 4A
+00:1284 8B00            	   158:         word $008b
+00:1286 01              	   159:         byte 1,$b0,$4a
+00:1287 B0
+00:1288 4A
+                        	   160:         ;; Row 4
+00:1289 A100            	   161:         word $00a1
+00:128B 01              	   162:         byte 1,$20,$52
+00:128C 20
+00:128D 52
+00:128E A200            	   163:         word $00a2
+00:1290 01              	   164:         byte 1,$28,$52
+00:1291 28
+00:1292 52
+00:1293 A300            	   165:         word $00a3
+00:1295 01              	   166:         byte 1,$30,$52
+00:1296 30
+00:1297 52
+00:1298 A400            	   167:         word $00a4
+00:129A 01              	   168:         byte 1,$38,$52
+00:129B 38
+00:129C 52
+00:129D A500            	   169:         word $00a5
+00:129F 01              	   170:         byte 1,$40,$52
+00:12A0 40
+00:12A1 52
+00:12A2 A600            	   171:         word $00a6
+00:12A4 01              	   172:         byte 1,$48,$52
+00:12A5 48
+00:12A6 52
+00:12A7 A700            	   173:         word $00a7
+00:12A9 01              	   174:         byte 1,$50,$52
+00:12AA 50
+00:12AB 52
+00:12AC A800            	   175:         word $00a8
+00:12AE 01              	   176:         byte 1,$58,$52
+00:12AF 58
+00:12B0 52
+00:12B1 A900            	   177:         word $00a9
+00:12B3 01              	   178:         byte 1,$60,$52
+00:12B4 60
+00:12B5 52
+00:12B6 AA00            	   179:         word $00aa
+00:12B8 01              	   180:         byte 1,$68,$52
+00:12B9 68
+00:12BA 52
+00:12BB AB00            	   181:         word $00ab
+00:12BD 01              	   182:         byte 1,$70,$52
+00:12BE 70
+00:12BF 52
+00:12C0 AC00            	   183:         word $00ac
+00:12C2 01              	   184:         byte 1,$78,$52
+00:12C3 78
+00:12C4 52
+00:12C5 AD00            	   185:         word $00ad
+00:12C7 01              	   186:         byte 1,$80,$52
+00:12C8 80
+00:12C9 52
+00:12CA AE00            	   187:         word $00ae
+00:12CC 01              	   188:         byte 1,$88,$52
+00:12CD 88
+00:12CE 52
+00:12CF AF00            	   189:         word $00af
+00:12D1 01              	   190:         byte 1,$90,$52
+00:12D2 90
+00:12D3 52
+00:12D4 B000            	   191:         word $00b0
+00:12D6 01              	   192:         byte 1,$98,$52
+00:12D7 98
+00:12D8 52
+00:12D9 B100            	   193:         word $00b1
+00:12DB 01              	   194:         byte 1,$a0,$52
+00:12DC A0
+00:12DD 52
+00:12DE B200            	   195:         word $00b2
+00:12E0 01              	   196:         byte 1,$a8,$52
+00:12E1 A8
+00:12E2 52
+00:12E3 B300            	   197:         word $00b3
+00:12E5 01              	   198:         byte 1,$b0,$52
+00:12E6 B0
+00:12E7 52
+                        	   199:         ;; Row 5
+00:12E8 C900            	   200:         word $00c9
+00:12EA 01              	   201:         byte 1,$20,$5a
+00:12EB 20
+00:12EC 5A
+00:12ED CD00            	   202:         word $00cd
+00:12EF 01              	   203:         byte 1,$40,$5a
+00:12F0 40
+00:12F1 5A
+00:12F2 CF00            	   204:         word $00cf
+00:12F4 01              	   205:         byte 1,$50,$5a
+00:12F5 50
+00:12F6 5A
+00:12F7 D500            	   206:         word $00d5
+00:12F9 01              	   207:         byte 1,$80,$5a
+00:12FA 80
+00:12FB 5A
+00:12FC D700            	   208:         word $00d7
+00:12FE 01              	   209:         byte 1,$90,$5a
+00:12FF 90
+00:1300 5A
+00:1301 DB00            	   210:         word $00db
+00:1303 01              	   211:         byte 1,$b0,$5a
+00:1304 B0
+00:1305 5A
+                        	   212:         ;; Row 6
+00:1306 F100            	   213:         word $00f1
+00:1308 01              	   214:         byte 1,$20,$62
+00:1309 20
+00:130A 62
+00:130B F500            	   215:         word $00f5
+00:130D 01              	   216:         byte 1,$40,$62
+00:130E 40
+00:130F 62
+00:1310 F700            	   217:         word $00f7
+00:1312 01              	   218:         byte 1,$50,$62
+00:1313 50
+00:1314 62
+00:1315 FD00            	   219:         word $00fd
+00:1317 01              	   220:         byte 1,$80,$62
+00:1318 80
+00:1319 62
+00:131A FF00            	   221:         word $00ff
+00:131C 01              	   222:         byte 1,$90,$62
+00:131D 90
+00:131E 62
+00:131F 0301            	   223:         word $0103
+00:1321 01              	   224:         byte 1,$b0,$62
+00:1322 B0
+00:1323 62
+                        	   225:         ;; Row 7
+00:1324 1901            	   226:         word $0119
+00:1326 01              	   227:         byte 1,$20,$6a
+00:1327 20
+00:1328 6A
+00:1329 1A01            	   228:         word $011a
+00:132B 01              	   229:         byte 1,$28,$6a
+00:132C 28
+00:132D 6A
+00:132E 1B01            	   230:         word $011b
+00:1330 01              	   231:         byte 1,$30,$6a
+00:1331 30
+00:1332 6A
+00:1333 1C01            	   232:         word $011c
+00:1335 01              	   233:         byte 1,$38,$6a
+00:1336 38
+00:1337 6A
+00:1338 1D01            	   234:         word $011d
+00:133A 01              	   235:         byte 1,$40,$6a
+00:133B 40
+00:133C 6A
+00:133D 1F01            	   236:         word $011f
+00:133F 01              	   237:         byte 1,$50,$6a
+00:1340 50
+00:1341 6A
+00:1342 2001            	   238:         word $0120
+00:1344 01              	   239:         byte 1,$58,$6a
+00:1345 58
+00:1346 6A
+00:1347 2101            	   240:         word $0121
+00:1349 01              	   241:         byte 1,$60,$6a
+00:134A 60
+00:134B 6A
+00:134C 2301            	   242:         word $0123
+00:134E 01              	   243:         byte 1,$70,$6a
+00:134F 70
+00:1350 6A
+00:1351 2401            	   244:         word $0124
+00:1353 01              	   245:         byte 1,$78,$6a
+00:1354 78
+00:1355 6A
+00:1356 2501            	   246:         word $0125
+00:1358 01              	   247:         byte 1,$80,$6a
+00:1359 80
+00:135A 6A
+00:135B 2701            	   248:         word $0127
+00:135D 01              	   249:         byte 1,$90,$6a
+00:135E 90
+00:135F 6A
+00:1360 2801            	   250:         word $0128
+00:1362 01              	   251:         byte 1,$98,$6a
+00:1363 98
+00:1364 6A
+00:1365 2901            	   252:         word $0129
+00:1367 01              	   253:         byte 1,$a0,$6a
+00:1368 A0
+00:1369 6A
+00:136A 2A01            	   254:         word $012a
+00:136C 01              	   255:         byte 1,$a8,$6a
+00:136D A8
+00:136E 6A
+00:136F 2B01            	   256:         word $012b
+00:1371 01              	   257:         byte 1,$b0,$6a
+00:1372 B0
+00:1373 6A
+                        	   258:         ;; Row 8
+00:1374 4501            	   259:         word $0145
+00:1376 01              	   260:         byte 1,$40,$72
+00:1377 40
+00:1378 72
+00:1379 4901            	   261:         word $0149
+00:137B 01              	   262:         byte 1,$60,$72
+00:137C 60
+00:137D 72
+00:137E 4B01            	   263:         word $014b
+00:1380 01              	   264:         byte 1,$70,$72
+00:1381 70
+00:1382 72
+00:1383 4F01            	   265:         word $014f
+00:1385 01              	   266:         byte 1,$90,$72
+00:1386 90
+00:1387 72
+                        	   267:         ;; Row 9
+00:1388 6D01            	   268:         word $016d
+00:138A 01              	   269:         byte 1,$40,$7a
+00:138B 40
+00:138C 7A
+00:138D 7701            	   270:         word $0177
+00:138F 01              	   271:         byte 1,$90,$7a
+00:1390 90
+00:1391 7A
+                        	   272:         ;; Row 10
+00:1392 9501            	   273:         word $0195
+00:1394 01              	   274:         byte 1,$40,$82
+00:1395 40
+00:1396 82
+00:1397 9F01            	   275:         word $019f
+00:1399 01              	   276:         byte 1,$90,$82
+00:139A 90
+00:139B 82
+                        	   277:         ;; Row 11
+00:139C BD01            	   278:         word $01bd
+00:139E 01              	   279:         byte 1,$40,$8a
+00:139F 40
+00:13A0 8A
+00:13A1 C701            	   280:         word $01c7
+00:13A3 01              	   281:         byte 1,$90,$8a
+00:13A4 90
+00:13A5 8A
+                        	   282:         ;; Row 12
+00:13A6 E501            	   283:         word $01e5
+00:13A8 01              	   284:         byte 1,$40,$92
+00:13A9 40
+00:13AA 92
+00:13AB EF01            	   285:         word $01ef
+00:13AD 01              	   286:         byte 1,$90,$92
+00:13AE 90
+00:13AF 92
+                        	   287:         ;; Row 13
+00:13B0 0D02            	   288:         word $020d
+00:13B2 01              	   289:         byte 1,$40,$9a
+00:13B3 40
+00:13B4 9A
+00:13B5 1702            	   290:         word $0217
+00:13B7 01              	   291:         byte 1,$90,$9a
+00:13B8 90
+00:13B9 9A
+                        	   292:         ;; Row 14
+00:13BA 3502            	   293:         word $0235
+00:13BC 01              	   294:         byte 1,$40,$a2
+00:13BD 40
+00:13BE A2
+00:13BF 3F02            	   295:         word $023f
+00:13C1 01              	   296:         byte 1,$90,$a2
+00:13C2 90
+00:13C3 A2
+                        	   297:         ;; Row 15
+00:13C4 5D02            	   298:         word $025d
+00:13C6 01              	   299:         byte 1,$40,$aa
+00:13C7 40
+00:13C8 AA
+00:13C9 6702            	   300:         word $0267
+00:13CB 01              	   301:         byte 1,$90,$aa
+00:13CC 90
+00:13CD AA
+                        	   302:         ;; Row 16
+00:13CE 8502            	   303:         word $0285
+00:13D0 01              	   304:         byte 1,$40,$b2
+00:13D1 40
+00:13D2 B2
+00:13D3 8F02            	   305:         word $028f
+00:13D5 01              	   306:         byte 1,$90,$b2
+00:13D6 90
+00:13D7 B2
+                        	   307:         ;; Row 17
+00:13D8 A902            	   308:         word $02a9
+00:13DA 01              	   309:         byte 1,$20,$ba
+00:13DB 20
+00:13DC BA
+00:13DD AA02            	   310:         word $02aa
+00:13DF 01              	   311:         byte 1,$28,$ba
+00:13E0 28
+00:13E1 BA
+00:13E2 AB02            	   312:         word $02ab
+00:13E4 01              	   313:         byte 1,$30,$ba
+00:13E5 30
+00:13E6 BA
+00:13E7 AC02            	   314:         word $02ac
+00:13E9 01              	   315:         byte 1,$38,$ba
+00:13EA 38
+00:13EB BA
+00:13EC AD02            	   316:         word $02ad
+00:13EE 01              	   317:         byte 1,$40,$ba
+00:13EF 40
+00:13F0 BA
+00:13F1 AE02            	   318:         word $02ae
+00:13F3 01              	   319:         byte 1,$48,$ba
+00:13F4 48
+00:13F5 BA
+00:13F6 AF02            	   320:         word $02af
+00:13F8 01              	   321:         byte 1,$50,$ba
+00:13F9 50
+00:13FA BA
+00:13FB B002            	   322:         word $02b0
+00:13FD 01              	   323:         byte 1,$58,$ba
+00:13FE 58
+00:13FF BA
+00:1400 B102            	   324:         word $02b1
+00:1402 01              	   325:         byte 1,$60,$ba
+00:1403 60
+00:1404 BA
+00:1405 B302            	   326:         word $02b3
+00:1407 01              	   327:         byte 1,$70,$ba
+00:1408 70
+00:1409 BA
+00:140A B402            	   328:         word $02b4
+00:140C 01              	   329:         byte 1,$78,$ba
+00:140D 78
+00:140E BA
+00:140F B502            	   330:         word $02b5
+00:1411 01              	   331:         byte 1,$80,$ba
+00:1412 80
+00:1413 BA
+00:1414 B602            	   332:         word $02b6
+00:1416 01              	   333:         byte 1,$88,$ba
+00:1417 88
+00:1418 BA
+00:1419 B702            	   334:         word $02b7
+00:141B 01              	   335:         byte 1,$90,$ba
+00:141C 90
+00:141D BA
+00:141E B802            	   336:         word $02b8
+00:1420 01              	   337:         byte 1,$98,$ba
+00:1421 98
+00:1422 BA
+00:1423 B902            	   338:         word $02b9
+00:1425 01              	   339:         byte 1,$a0,$ba
+00:1426 A0
+00:1427 BA
+00:1428 BA02            	   340:         word $02ba
+00:142A 01              	   341:         byte 1,$a8,$ba
+00:142B A8
+00:142C BA
+00:142D BB02            	   342:         word $02bb
+00:142F 01              	   343:         byte 1,$b0,$ba
+00:1430 B0
+00:1431 BA
+                        	   344:         ;; Row 18
+00:1432 D102            	   345:         word $02d1
+00:1434 01              	   346:         byte 1,$20,$c2
+00:1435 20
+00:1436 C2
+00:1437 D502            	   347:         word $02d5
+00:1439 01              	   348:         byte 1,$40,$c2
+00:143A 40
+00:143B C2
+00:143C D902            	   349:         word $02d9
+00:143E 01              	   350:         byte 1,$60,$c2
+00:143F 60
+00:1440 C2
+00:1441 DB02            	   351:         word $02db
+00:1443 01              	   352:         byte 1,$70,$c2
+00:1444 70
+00:1445 C2
+00:1446 DF02            	   353:         word $02df
+00:1448 01              	   354:         byte 1,$90,$c2
+00:1449 90
+00:144A C2
+00:144B E302            	   355:         word $02e3
+00:144D 01              	   356:         byte 1,$b0,$c2
+00:144E B0
+00:144F C2
+                        	   357:         ;; Row 19
+00:1450 F902            	   358:         word $02f9
+00:1452 01              	   359:         byte 1,$20,$ca          ;energizer
+00:1453 20
+00:1454 CA
+00:1455 FA02            	   360:         word $02fa
+00:1457 01              	   361:         byte 1,$28,$ca
+00:1458 28
+00:1459 CA
+00:145A FB02            	   362:         word $02fb
+00:145C 01              	   363:         byte 1,$30,$ca
+00:145D 30
+00:145E CA
+00:145F FD02            	   364:         word $02fd
+00:1461 01              	   365:         byte 1,$40,$ca
+00:1462 40
+00:1463 CA
+00:1464 FE02            	   366:         word $02fe
+00:1466 01              	   367:         byte 1,$48,$ca
+00:1467 48
+00:1468 CA
+00:1469 FF02            	   368:         word $02ff
+00:146B 01              	   369:         byte 1,$50,$ca
+00:146C 50
+00:146D CA
+00:146E 0003            	   370:         word $0300
+00:1470 01              	   371:         byte 1,$58,$ca
+00:1471 58
+00:1472 CA
+00:1473 0103            	   372:         word $0301
+00:1475 01              	   373:         byte 1,$60,$ca
+00:1476 60
+00:1477 CA
+00:1478 0303            	   374:         word $0303
+00:147A 01              	   375:         byte 1,$70,$ca
+00:147B 70
+00:147C CA
+00:147D 0403            	   376:         word $0304
+00:147F 01              	   377:         byte 1,$78,$ca
+00:1480 78
+00:1481 CA
+00:1482 0503            	   378:         word $0305
+00:1484 01              	   379:         byte 1,$80,$ca
+00:1485 80
+00:1486 CA
+00:1487 0603            	   380:         word $0306
+00:1489 01              	   381:         byte 1,$88,$ca
+00:148A 88
+00:148B CA
+00:148C 0703            	   382:         word $0307
+00:148E 01              	   383:         byte 1,$90,$ca
+00:148F 90
+00:1490 CA
+00:1491 0903            	   384:         word $0309
+00:1493 01              	   385:         byte 1,$a0,$ca
+00:1494 A0
+00:1495 CA
+00:1496 0A03            	   386:         word $030a
+00:1498 01              	   387:         byte 1,$a8,$ca
+00:1499 A8
+00:149A CA
+00:149B 0B03            	   388:         word $030b
+00:149D 01              	   389:         byte 1,$b0,$ca          ;energizer
+00:149E B0
+00:149F CA
+                        	   390:         ;; Row 20
+00:14A0 2303            	   391:         word $0323
+00:14A2 01              	   392:         byte 1,$30,$d2
+00:14A3 30
+00:14A4 D2
+00:14A5 2503            	   393:         word $0325
+00:14A7 01              	   394:         byte 1,$40,$d2
+00:14A8 40
+00:14A9 D2
+00:14AA 2703            	   395:         word $0327
+00:14AC 01              	   396:         byte 1,$50,$d2
+00:14AD 50
+00:14AE D2
+00:14AF 2D03            	   397:         word $032d
+00:14B1 01              	   398:         byte 1,$80,$d2
+00:14B2 80
+00:14B3 D2
+00:14B4 2F03            	   399:         word $032f
+00:14B6 01              	   400:         byte 1,$90,$d2
+00:14B7 90
+00:14B8 D2
+00:14B9 3103            	   401:         word $0331
+00:14BB 01              	   402:         byte 1,$a0,$d2
+00:14BC A0
+00:14BD D2
+                        	   403:         ;; Row 21
+00:14BE 4903            	   404:         word $0349
+00:14C0 01              	   405:         byte 1,$20,$da
+00:14C1 20
+00:14C2 DA
+00:14C3 4A03            	   406:         word $034a
+00:14C5 01              	   407:         byte 1,$28,$da
+00:14C6 28
+00:14C7 DA
+00:14C8 4B03            	   408:         word $034b
+00:14CA 01              	   409:         byte 1,$30,$da
+00:14CB 30
+00:14CC DA
+00:14CD 4C03            	   410:         word $034c
+00:14CF 01              	   411:         byte 1,$38,$da
+00:14D0 38
+00:14D1 DA
+00:14D2 4D03            	   412:         word $034d
+00:14D4 01              	   413:         byte 1,$40,$da
+00:14D5 40
+00:14D6 DA
+00:14D7 4F03            	   414:         word $034f
+00:14D9 01              	   415:         byte 1,$50,$da
+00:14DA 50
+00:14DB DA
+00:14DC 5003            	   416:         word $0350
+00:14DE 01              	   417:         byte 1,$58,$da
+00:14DF 58
+00:14E0 DA
+00:14E1 5103            	   418:         word $0351
+00:14E3 01              	   419:         byte 1,$60,$da
+00:14E4 60
+00:14E5 DA
+00:14E6 5303            	   420:         word $0353
+00:14E8 01              	   421:         byte 1,$70,$da
+00:14E9 70
+00:14EA DA
+00:14EB 5403            	   422:         word $0354
+00:14ED 01              	   423:         byte 1,$78,$da
+00:14EE 78
+00:14EF DA
+00:14F0 5503            	   424:         word $0355
+00:14F2 01              	   425:         byte 1,$80,$da
+00:14F3 80
+00:14F4 DA
+00:14F5 5703            	   426:         word $0357
+00:14F7 01              	   427:         byte 1,$90,$da
+00:14F8 90
+00:14F9 DA
+00:14FA 5803            	   428:         word $0358
+00:14FC 01              	   429:         byte 1,$98,$da
+00:14FD 98
+00:14FE DA
+00:14FF 5903            	   430:         word $0359
+00:1501 01              	   431:         byte 1,$a0,$da
+00:1502 A0
+00:1503 DA
+00:1504 5A03            	   432:         word $035a
+00:1506 01              	   433:         byte 1,$a8,$da
+00:1507 A8
+00:1508 DA
+00:1509 5B03            	   434:         word $035b
+00:150B 01              	   435:         byte 1,$b0,$da
+00:150C B0
+00:150D DA
+                        	   436:         ;; Row 22
+00:150E 7103            	   437:         word $0371
+00:1510 01              	   438:         byte 1,$20,$e2
+00:1511 20
+00:1512 E2
+00:1513 7903            	   439:         word $0379
+00:1515 01              	   440:         byte 1,$60,$e2
+00:1516 60
+00:1517 E2
+00:1518 7B03            	   441:         word $037b
+00:151A 01              	   442:         byte 1,$70,$e2
+00:151B 70
+00:151C E2
+00:151D 8303            	   443:         word $0383
+00:151F 01              	   444:         byte 1,$b0,$e2
+00:1520 B0
+00:1521 E2
+                        	   445:         ;; Row 23
+00:1522 9903            	   446:         word $0399
+00:1524 01              	   447:         byte 1,$20,$ea
+00:1525 20
+00:1526 EA
+00:1527 9A03            	   448:         word $039a
+00:1529 01              	   449:         byte 1,$28,$ea
+00:152A 28
+00:152B EA
+00:152C 9B03            	   450:         word $039b
+00:152E 01              	   451:         byte 1,$30,$ea
+00:152F 30
+00:1530 EA
+00:1531 9C03            	   452:         word $039c
+00:1533 01              	   453:         byte 1,$38,$ea
+00:1534 38
+00:1535 EA
+00:1536 9D03            	   454:         word $039d
+00:1538 01              	   455:         byte 1,$40,$ea
+00:1539 40
+00:153A EA
+00:153B 9E03            	   456:         word $039e
+00:153D 01              	   457:         byte 1,$48,$ea
+00:153E 48
+00:153F EA
+00:1540 9F03            	   458:         word $039f
+00:1542 01              	   459:         byte 1,$50,$ea
+00:1543 50
+00:1544 EA
+00:1545 A003            	   460:         word $03a0
+00:1547 01              	   461:         byte 1,$58,$ea
+00:1548 58
+00:1549 EA
+00:154A A103            	   462:         word $03a1
+00:154C 01              	   463:         byte 1,$60,$ea
+00:154D 60
+00:154E EA
+00:154F A203            	   464:         word $03a2
+00:1551 01              	   465:         byte 1,$68,$ea
+00:1552 68
+00:1553 EA
+00:1554 A303            	   466:         word $03a3
+00:1556 01              	   467:         byte 1,$70,$ea
+00:1557 70
+00:1558 EA
+00:1559 A403            	   468:         word $03a4
+00:155B 01              	   469:         byte 1,$78,$ea
+00:155C 78
+00:155D EA
+00:155E A503            	   470:         word $03a5
+00:1560 01              	   471:         byte 1,$80,$ea
+00:1561 80
+00:1562 EA
+00:1563 A603            	   472:         word $03a6
+00:1565 01              	   473:         byte 1,$88,$ea
+00:1566 88
+00:1567 EA
+00:1568 A703            	   474:         word $03a7
+00:156A 01              	   475:         byte 1,$90,$ea
+00:156B 90
+00:156C EA
+00:156D A803            	   476:         word $03a8
+00:156F 01              	   477:         byte 1,$98,$ea
+00:1570 98
+00:1571 EA
+00:1572 A903            	   478:         word $03a9
+00:1574 01              	   479:         byte 1,$a0,$ea
+00:1575 A0
+00:1576 EA
+00:1577 AA03            	   480:         word $03aa
+00:1579 01              	   481:         byte 1,$a8,$ea
+00:157A A8
+00:157B EA
+00:157C AB03            	   482:         word $03ab
+00:157E 01              	   483:         byte 1,$b0,$ea
+00:157F B0
+00:1580 EA
+                        	   484:         ;; End marker
+00:1581 FFFF            	   485:         word $ffff
+00:1583 FF              	   486:         byte $ff,$ff,$ff
+00:1584 FF
+00:1585 FF
+                        	   487:         
+                        	   488:         ;; Energizer list
+                        	   489:         ;; Index into pelltbl
+                        	   490: enzrlst:
+00:1586 12              	   491:         byte $12
+00:1587 17              	   492:         byte $17
+00:1588 79              	   493:         byte $79
+00:1589 88              	   494:         byte $88
+                        	   495: 
+                        	   496:         ;; Pac-Man animation frames
+                        	   497:         ;; Format:
+                        	   498:         ;;  - byte sprite offset values
+                        	   499: pacalstn:                       ;north-facing animation frames
+00:158A 00              	   500:         byte $00,$07,$08,$09,$08,$07
+00:158B 07
+00:158C 08
+00:158D 09
+00:158E 08
+00:158F 07
+                        	   501: pacalsts:                       ;south-facing animation frames
+00:1590 00              	   502:         byte $00,$0a,$0b,$0c,$0b,$0a
+00:1591 0A
+00:1592 0B
+00:1593 0C
+00:1594 0B
+00:1595 0A
+                        	   503: pacalstw:                       ;west-facing animation frames
+00:1596 00              	   504:         byte $00,$01,$02,$03,$02,$01
+00:1597 01
+00:1598 02
+00:1599 03
+00:159A 02
+00:159B 01
+                        	   505: pacalste:                       ;east-facing animation frames
+00:159C 00              	   506:         byte $00,$04,$05,$06,$05,$04
+00:159D 04
+00:159E 05
+00:159F 06
+00:15A0 05
+00:15A1 04
+                        	   507: 
+                        	   508:         ;; Index in pelltbl of leftmost+rightmost pellet in row by sprite y loc
+                        	   509:         ;; Format:
+                        	   510:         ;;  - byte y (sprite y loc of row)
+                        	   511:         ;;  - byte ixl (pelltbl index of leftmost pellet in row)
+                        	   512:         ;;  - byte ixr (pelltbl index of rightmost pellet in row)
+                        	   513: plrowix:
+00:15A2 3A              	   514:         byte $3a,$00,$11        ;row 1
+00:15A3 00
+00:15A4 11
+00:15A5 42              	   515:         byte $42,$12,$17        ;row 2
+00:15A6 12
+00:15A7 17
+00:15A8 4A              	   516:         byte $4a,$18,$1d        ;row 3
+00:15A9 18
+00:15AA 1D
+00:15AB 52              	   517:         byte $52,$1e,$30        ;row 4
+00:15AC 1E
+00:15AD 30
+00:15AE 5A              	   518:         byte $5a,$31,$36        ;row 5
+00:15AF 31
+00:15B0 36
+00:15B1 62              	   519:         byte $62,$37,$3c        ;row 6
+00:15B2 37
+00:15B3 3C
+00:15B4 6A              	   520:         byte $6a,$3d,$4c        ;row 7
+00:15B5 3D
+00:15B6 4C
+00:15B7 72              	   521:         byte $72,$4d,$50        ;row 8
+00:15B8 4D
+00:15B9 50
+00:15BA 7A              	   522:         byte $7a,$51,$52        ;row 9
+00:15BB 51
+00:15BC 52
+00:15BD 82              	   523:         byte $82,$53,$54        ;row 10
+00:15BE 53
+00:15BF 54
+00:15C0 8A              	   524:         byte $8a,$55,$56        ;row 11
+00:15C1 55
+00:15C2 56
+00:15C3 92              	   525:         byte $92,$57,$58        ;row 12
+00:15C4 57
+00:15C5 58
+00:15C6 9A              	   526:         byte $9a,$59,$5a        ;row 13
+00:15C7 59
+00:15C8 5A
+00:15C9 A2              	   527:         byte $a2,$5b,$5c        ;row 14
+00:15CA 5B
+00:15CB 5C
+00:15CC AA              	   528:         byte $aa,$5d,$5e        ;row 15
+00:15CD 5D
+00:15CE 5E
+00:15CF B2              	   529:         byte $b2,$5f,$60        ;row 16
+00:15D0 5F
+00:15D1 60
+00:15D2 BA              	   530:         byte $ba,$61,$72        ;row 17
+00:15D3 61
+00:15D4 72
+00:15D5 C2              	   531:         byte $c2,$73,$78        ;row 18
+00:15D6 73
+00:15D7 78
+00:15D8 CA              	   532:         byte $ca,$79,$88        ;row 19
+00:15D9 79
+00:15DA 88
+00:15DB D2              	   533:         byte $d2,$89,$8e        ;row 20
+00:15DC 89
+00:15DD 8E
+00:15DE DA              	   534:         byte $da,$8f,$9e        ;row 21
+00:15DF 8F
+00:15E0 9E
+00:15E1 E2              	   535:         byte $e2,$9f,$a2        ;row 22
+00:15E2 9F
+00:15E3 A2
+00:15E4 EA              	   536:         byte $ea,$a3,$b5        ;row 23
+00:15E5 A3
+00:15E6 B5
+                        	   537: 
+
+Source: "./src/startup.asm"
+                        	    37:         
+                        	    38:         ;; Include assets
+                        	    39:         *=charset
+01:4000 3C666E6E60623C00	    40:         incbin assets/charset,2
+01:4008 183C667E66666600
+01:4010 7C66667C66667C00
+01:4018 3C66606060663C00
+01:4020 786C6666666C7800
+01:4028 7E60607860607E00
+01:4030 7E60607860606000
+01:4038 3C66606E66663C00
+01:4040 6666667E66666600
+01:4048 3C18181818183C00
+01:4050 1E0C0C0C0C6C3800
+01:4058 666C7870786C6600
+01:4060 6060606060607E00
+01:4068 63777F6B63636300
+01:4070 66767E7E6E666600
+01:4078 3C66666666663C00
+01:4080 7C66667C60606000
+01:4088 3C666666663C0E00
+01:4090 7C66667C786C6600
+01:4098 3C66603C06663C00
+01:40A0 7E18181818181800
+01:40A8 6666666666663C00
+01:40B0 66666666663C1800
+01:40B8 6363636B7F776300
+01:40C0 66663C183C666600
+01:40C8 6666663C18181800
+01:40D0 7E060C1830607E00
+01:40D8 3C30303030303C00
+01:40E0 0C12307C3062FC00
+01:40E8 3C0C0C0C0C0C3C00
+01:40F0 00183C7E18181818
+01:40F8 0010307F7F301000
+01:4100 0000000000000000
+01:4108 1818181800001800
+01:4110 6666660000000000
+01:4118 6666FF66FF666600
+01:4120 183E603C067C1800
+01:4128 62660C1830664600
+01:4130 3C663C3867663F00
+01:4138 060C180000000000
+01:4140 0C18303030180C00
+01:4148 30180C0C0C183000
+01:4150 00663CFF3C660000
+01:4158 0018187E18180000
+01:4160 0000000000181830
+01:4168 0000007E00000000
+01:4170 0000000000181800
+01:4178 0003060C18306000
+01:4180 3C666E7666663C00
+01:4188 1818381818187E00
+01:4190 3C66060C30607E00
+01:4198 3C66061C06663C00
+01:41A0 060E1E667F060600
+01:41A8 7E607C0606663C00
+01:41B0 3C66607C66663C00
+01:41B8 7E660C1818181800
+01:41C0 3C66663C66663C00
+01:41C8 3C66663E06663C00
+01:41D0 0000180000180000
+01:41D8 0000180000181830
+01:41E0 0E18306030180E00
+01:41E8 00007E007E000000
+01:41F0 70180C060C187000
+01:41F8 3C66060C18001800
+01:4200 00000F1020232424
+01:4208 24242320100F0000
+01:4210 0000F00804C42424
+01:4218 2424C40408F00000
+01:4220 0000FF0000FF0000
+01:4228 2424242424242424
+01:4230 2424242424180000
+01:4238 0000182424242424
+01:4240 0000F80404F80000
+01:4248 00001F20201F0000
+01:4250 0000FF0000C32424
+01:4258 2424C30000FF0000
+01:4260 2424232020232424
+01:4268 2424C40404C42424
+01:4270 00003F2020272424
+01:4278 24242720203F0000
+01:4280 0000FC0404E42424
+01:4288 2424E40404FC0000
+01:4290 000000FFFF000000
+01:4298 0000001000000000
+01:42A0 0000387C7C380000
+01:42A8 0000000000000000
+01:42B0 0000000000000000
+01:42B8 0000000000000000
+01:42C0 0000000000000000
+01:42C8 0000000000000000
+01:42D0 0000000000000000
+01:42D8 0000000000000000
+01:42E0 0000000000000000
+01:42E8 0000000000000000
+01:42F0 0000000000000000
+01:42F8 0000000000000000
+01:4300 0000000000000000
+01:4308 0000000000000000
+01:4310 0000000000000000
+01:4318 0000000000000000
+01:4320 0000000000000000
+01:4328 0000000000000000
+01:4330 0000000000000000
+01:4338 0000000000000000
+01:4340 0000000000000000
+01:4348 0000000000000000
+01:4350 0000000000000000
+01:4358 0000000000000000
+01:4360 0000000000000000
+01:4368 0000000000000000
+01:4370 0000000000000000
+01:4378 0000000000000000
+01:4380 0000000000000000
+01:4388 0000000000000000
+01:4390 0000000000000000
+01:4398 0000000000000000
+01:43A0 0000000000000000
+01:43A8 0000000000000000
+01:43B0 0000000000000000
+01:43B8 0000000000000000
+01:43C0 0000000000000000
+01:43C8 0000000000000000
+01:43D0 0000000000000000
+01:43D8 0000000000000000
+01:43E0 0000000000000000
+01:43E8 0000000000000000
+01:43F0 0000000000000000
+01:43F8 0000000000000000
+01:4400 0000000000000000
+01:4408 0000000000000000
+01:4410 0000000000000000
+01:4418 0000000000000000
+01:4420 0000000000000000
+01:4428 0000000000000000
+01:4430 0000000000000000
+01:4438 0000000000000000
+01:4440 0000000000000000
+01:4448 0000000000000000
+01:4450 0000000000000000
+01:4458 0000000000000000
+01:4460 0000000000000000
+01:4468 0000000000000000
+01:4470 0000000000000000
+01:4478 0000000000000000
+01:4480 0000000000000000
+01:4488 0000000000000000
+01:4490 0000000000000000
+01:4498 0000000000000000
+01:44A0 0000000000000000
+01:44A8 0000000000000000
+01:44B0 0000000000000000
+01:44B8 0000000000000000
+01:44C0 0000000000000000
+01:44C8 0000000000000000
+01:44D0 0000000000000000
+01:44D8 0000000000000000
+01:44E0 0000000000000000
+01:44E8 0000000000000000
+01:44F0 0000000000000000
+01:44F8 0000000000000000
+01:4500 0000000000000000
+01:4508 0000000000000000
+01:4510 0000000000000000
+01:4518 0000000000000000
+01:4520 0000000000000000
+01:4528 0000000000000000
+01:4530 0000000000000000
+01:4538 0000000000000000
+01:4540 0000000000000000
+01:4548 0000000000000000
+01:4550 0000000000000000
+01:4558 0000000000000000
+01:4560 0000000000000000
+01:4568 0000000000000000
+01:4570 0000000000000000
+01:4578 0000000000000000
+01:4580 0000000000000000
+01:4588 0000000000000000
+01:4590 0000000000000000
+01:4598 0000000000000000
+01:45A0 0000000000000000
+01:45A8 0000000000000000
+01:45B0 0000000000000000
+01:45B8 0000000000000000
+01:45C0 0000000000000000
+01:45C8 0000000000000000
+01:45D0 0000000000000000
+01:45D8 0000000000000000
+01:45E0 0000000000000000
+01:45E8 0000000000000000
+01:45F0 0000000000000000
+01:45F8 0000000000000000
+01:4600 0000000000000000
+01:4608 0000000000000000
+01:4610 0000000000000000
+01:4618 0000000000000000
+01:4620 0000000000000000
+01:4628 0000000000000000
+01:4630 0000000000000000
+01:4638 0000000000000000
+01:4640 0000000000000000
+01:4648 0000000000000000
+01:4650 0000000000000000
+01:4658 0000000000000000
+01:4660 0000000000000000
+01:4668 0000000000000000
+01:4670 0000000000000000
+01:4678 0000000000000000
+01:4680 0000000000000000
+01:4688 0000000000000000
+01:4690 0000000000000000
+01:4698 0000000000000000
+01:46A0 0000000000000000
+01:46A8 0000000000000000
+01:46B0 0000000000000000
+01:46B8 0000000000000000
+01:46C0 0000000000000000
+01:46C8 0000000000000000
+01:46D0 0000000000000000
+01:46D8 0000000000000000
+01:46E0 0000000000000000
+01:46E8 0000000000000000
+01:46F0 0000000000000000
+01:46F8 0000000000000000
+01:4700 0000000000000000
+01:4708 0000000000000000
+01:4710 0000000000000000
+01:4718 0000000000000000
+01:4720 0000000000000000
+01:4728 0000000000000000
+01:4730 0000000000000000
+01:4738 0000000000000000
+01:4740 0000000000000000
+01:4748 0000000000000000
+01:4750 0000000000000000
+01:4758 0000000000000000
+01:4760 0000000000000000
+01:4768 0000000000000000
+01:4770 0000000000000000
+01:4778 0000000000000000
+01:4780 0000000000000000
+01:4788 0000000000000000
+01:4790 0000000000000000
+01:4798 0000000000000000
+01:47A0 0000000000000000
+01:47A8 0000000000000000
+01:47B0 0000000000000000
+01:47B8 0000000000000000
+01:47C0 0000000000000000
+01:47C8 0000000000000000
+01:47D0 0000000000000000
+01:47D8 0000000000000000
+01:47E0 0000000000000000
+01:47E8 5555555555555555
+01:47F0 AAAAAAAAAAAAAAAA
+01:47F8 FFFFFFFFFFFFFFFF
+01:4800 0101010101010101
+01:4808 0101010101010101
+01:4810 0101010101010101
+01:4818 0101010101010101
+01:4820 0101010101010101
+01:4828 0101010101010101
+01:4830 0101010101010101
+01:4838 0101010101010101
+01:4840 0606060606060606
+01:4848 0606060606060606
+01:4850 06060F0F0F010101
+01:4858 0101010101010101
+01:4860 0101010101010101
+01:4868 0101010101010101
+01:4870 0101010101010101
+01:4878 0101010101010101
+01:4880 0101010101010101
+01:4888 0101010101010101
+01:4890 0101010101010101
+01:4898 0101010101010101
+01:48A0 0101010101010101
+01:48A8 0101010101010101
+01:48B0 0101010101010101
+01:48B8 0101010101010101
+01:48C0 0101010101010101
+01:48C8 0101010101010101
+01:48D0 0101010101010101
+01:48D8 0101010101010101
+01:48E0 0101010101010101
+01:48E8 0101010101010101
+01:48F0 0101010101010101
+01:48F8 0101010101010101
+                        	    41: 
+                        	    42:         *=mazegfx
+02:4BF0 E803E84327001800	    43:         incbin assets/mazegfx,2
+02:4BF8 000F0B0628001900
+02:4C00 4044444444444444
+02:4C08 44444A4444444444
+02:4C10 4444444442202020
+02:4C18 2020202020202020
+02:4C20 2020202020202020
+02:4C28 4553535353535353
+02:4C30 5353455353535353
+02:4C38 5353535345202020
+02:4C40 2020200809070820
+02:4C48 13030F1205202020
+02:4C50 4554404442534044
+02:4C58 4253455340444253
+02:4C60 4044425445202020
+02:4C68 2020202020202020
+02:4C70 2020202020202020
+02:4C78 4553414443534144
+02:4C80 4353465341444353
+02:4C88 4144435345202020
+02:4C90 2020202020202020
+02:4C98 2020202030202020
+02:4CA0 4553535353535353
+02:4CA8 5353535353535353
+02:4CB0 5353535345202020
+02:4CB8 2020202020202020
+02:4CC0 2020202020202020
+02:4CC8 4553404442534753
+02:4CD0 4044444442534753
+02:4CD8 4044425345202020
+02:4CE0 2020202020202020
+02:4CE8 2020202020202020
+02:4CF0 4553414443534553
+02:4CF8 41444A4443534553
+02:4D00 4144435345202020
+02:4D08 2020202020202020
+02:4D10 2020202020202020
+02:4D18 4553535353534553
+02:4D20 5353455353534553
+02:4D28 5353535345202020
+02:4D30 2020202020202020
+02:4D38 2020311510202020
+02:4D40 4144444442534C44
+02:4D48 4853465349444D53
+02:4D50 4044444443202020
+02:4D58 2020202020202020
+02:4D60 2020202020202020
+02:4D68 2020202045534520
+02:4D70 2020202020204553
+02:4D78 4520202020202020
+02:4D80 2020202020202020
+02:4D88 2020202030202020
+02:4D90 2020202045534520
+02:4D98 4E52525250204553
+02:4DA0 4520202020202020
+02:4DA8 2020202020202020
+02:4DB0 2020202020202020
+02:4DB8 4444444443534620
+02:4DC0 4520202045204653
+02:4DC8 4144444444202020
+02:4DD0 2020202020202020
+02:4DD8 2020202020202020
+02:4DE0 2020202020532020
+02:4DE8 4520202045202053
+02:4DF0 2020202020202020
+02:4DF8 2020202020202020
+02:4E00 2020202020202020
+02:4E08 4444444442534720
+02:4E10 4F44444451204753
+02:4E18 4044444444202020
+02:4E20 2020202020202020
+02:4E28 2020202020202020
+02:4E30 2020202045534520
+02:4E38 2020202020204553
+02:4E40 4520202020202020
+02:4E48 2020202020202020
+02:4E50 2020202020202020
+02:4E58 2020202045534520
+02:4E60 4044444442204553
+02:4E68 4520202020202020
+02:4E70 2020202020202020
+02:4E78 2020202020202020
+02:4E80 4044444443534620
+02:4E88 41444A4443204653
+02:4E90 4144444442202020
+02:4E98 2020202020202020
+02:4EA0 2020202020202020
+02:4EA8 4553535353535353
+02:4EB0 5353455353535353
+02:4EB8 5353535345202020
+02:4EC0 2020202020202020
+02:4EC8 2020202020202020
+02:4ED0 4553494442534944
+02:4ED8 4853465349444853
+02:4EE0 4044485345202020
+02:4EE8 2020202020202020
+02:4EF0 2020202020202020
+02:4EF8 4554535345535353
+02:4F00 5353205353535353
+02:4F08 4553535445202020
+02:4F10 2020202020202020
+02:4F18 2020202020202020
+02:4F20 4C44485346534753
+02:4F28 49444A4448534753
+02:4F30 465349444D202020
+02:4F38 2020202020202020
+02:4F40 2020202020202020
+02:4F48 4553535353534553
+02:4F50 5353455353534553
+02:4F58 5353535345202020
+02:4F60 2020202020202020
+02:4F68 2020202020202020
+02:4F70 4553494444444B44
+02:4F78 4853465349444B44
+02:4F80 4444485345202020
+02:4F88 2020202020202020
+02:4F90 2020202020202020
+02:4F98 4553535353535353
+02:4FA0 5353535353535353
+02:4FA8 5353535345202020
+02:4FB0 2020202020202020
+02:4FB8 2020202020202020
+02:4FC0 4144444444444444
+02:4FC8 4444444444444444
+02:4FD0 4444444443202020
+02:4FD8 2020202020202020
+02:4FE0 2020202020202020
+                        	    44: 
+                        	    45:         *=sp0mem
+03:5000 3E00007F0000FF80	    46:         incbin assets/sprites,2
+03:5008 00FF8000FF8000FF
+03:5010 8000FF80007F0000
+03:5018 3E00000000000000
+03:5020 0000000000000000
+03:5028 0000000000000000
+03:5030 0000000000000000
+03:5038 0000000000000087
+03:5040 3E00007F0000FF80
+03:5048 003F80000780003F
+03:5050 8000FF80007F0000
+03:5058 3E00000000000000
+03:5060 0000000000000000
+03:5068 0000000000000000
+03:5070 0000000000000000
+03:5078 0000000000000087
+03:5080 7E0000FF00003F80
+03:5088 000F80000780000F
+03:5090 80003F8000FF0000
+03:5098 7E00000000000000
+03:50A0 0000000000000000
+03:50A8 0000000000000000
+03:50B0 0000000000000000
+03:50B8 0000000000000087
+03:50C0 FC00003F00000F80
+03:50C8 0007800003800007
+03:50D0 80000F80003F0000
+03:50D8 FC00000000000000
+03:50E0 0000000000000000
+03:50E8 0000000000000000
+03:50F0 0000000000000000
+03:50F8 0000000000000087
+03:5100 3E00007F0000FF80
+03:5108 00FE0000F00000FE
+03:5110 0000FF80007F0000
+03:5118 3E00000000000000
+03:5120 0000000000000000
+03:5128 0000000000000000
+03:5130 0000000000000000
+03:5138 0000000000000087
+03:5140 3F00007F8000FE00
+03:5148 00F80000F00000F8
+03:5150 0000FE00007F8000
+03:5158 3F00000000000000
+03:5160 0000000000000000
+03:5168 0000000000000000
+03:5170 0000000000000000
+03:5178 0000000000000087
+03:5180 1F80007E0000F800
+03:5188 00F00000E00000F0
+03:5190 0000F800007E0000
+03:5198 1F80000000000000
+03:51A0 0000000000000000
+03:51A8 0000000000000000
+03:51B0 0000000000000000
+03:51B8 0000000000000087
+03:51C0 220000630000F780
+03:51C8 00F78000F78000FF
+03:51D0 8000FF80007F0000
+03:51D8 3E00000000000000
+03:51E0 0000000000000000
+03:51E8 0000000000000000
+03:51F0 0000000000000000
+03:51F8 0000000000000087
+03:5200 410000C18000E380
+03:5208 00E38000F78000FF
+03:5210 8000FF80007F0000
+03:5218 3E00000000000000
+03:5220 0000000000000000
+03:5228 0000000000000000
+03:5230 0000000000000000
+03:5238 0000000000000087
+03:5240 808000808000C180
+03:5248 00C18000E38000F7
+03:5250 80007F00007F0000
+03:5258 3E00000000000000
+03:5260 0000000000000000
+03:5268 0000000000000000
+03:5270 0000000000000000
+03:5278 0000000000000087
+03:5280 3E00007F0000FF80
+03:5288 00FF8000F78000F7
+03:5290 8000F78000630000
+03:5298 2200000000000000
+03:52A0 0000000000000000
+03:52A8 0000000000000000
+03:52B0 0000000000000000
+03:52B8 0000000000000087
+03:52C0 3E00007F0000FF80
+03:52C8 00FF8000F78000E3
+03:52D0 8000E38000C18000
+03:52D8 4100000000000000
+03:52E0 0000000000000000
+03:52E8 0000000000000000
+03:52F0 0000000000000000
+03:52F8 0000000000000087
+03:5300 3E00007F00007F00
+03:5308 00F78000E38000C1
+03:5310 8000C18000808000
+03:5318 8080000000000000
+03:5320 0000000000000000
+03:5328 0000000000000000
+03:5330 0000000000000000
+03:5338 0000000000000087
+03:5340 0000000000004000
+03:5348 00F00000E50000EF
+03:5350 80006F80000F8000
+03:5358 0700000000000000
+03:5360 0000000000000000
+03:5368 0000000000000000
+03:5370 0000000000000000
+03:5378 0000000000000082
+03:5380 0700001900002200
+03:5388 0002000002000000
+03:5390 0000000000000000
+03:5398 0000000000000000
+03:53A0 0000000000000000
+03:53A8 0000000000000000
+03:53B0 0000000000000000
+03:53B8 0000000000000089
+03:53C0 0000000000000000
+03:53C8 0000000000000000
+03:53D0 0000000000000000
+03:53D8 0000000000000000
+03:53E0 0000000000000000
+03:53E8 0000000000000000
+03:53F0 0000000000000000
+03:53F8 0000000000000081
+03:5400 0000000000006600
+03:5408 00FF0000DB0000FF
+03:5410 00007600003C0000
+03:5418 1800000000000000
+03:5420 0000000000000000
+03:5428 0000000000000000
+03:5430 0000000000000000
+03:5438 0000000000000082
+03:5440 1000003C00001800
+03:5448 0000000024000000
+03:5450 0000080000000000
+03:5458 0000000000000000
+03:5460 0000000000000000
+03:5468 0000000000000000
+03:5470 0000000000000000
+03:5478 0000000000000085
+                        	    47: 
+
+
+Symbols by name:
+addscr                           A:1037
+bgcol0                           E:D021
+blki                             E:0000
+buf                              E:0016
+c2ddra                           E:DD02
+calcnd                           A:0BFB
+charset                          E:4000
+chkcon                           A:0D58
+chkirq                           A:0C97
+chkmov                           A:0FAA
+chkne                            A:0B7E
+chknn                            A:0B9C
+chkpde                           A:0D09
+chkpdn                           A:0D13
+chkrve                           A:0FCD
+chkrvn                           A:0FDD
+chkrvw                           A:0FBB
+chky                             A:0F94
+chx2spx                          A:0C5C
+chy2spy                          A:0C64
+ci1icr                           E:DC0D
+ci1pra                           E:DC00
+ci2cra                           E:DD0E
+ci2crb                           E:DD0F
+ci2icr                           E:DD0D
+ci2pra                           E:DD00
+cia1                             E:DC00
+cia2                             E:DD00
+cinv                             E:0314
+colmem                           E:D800
+coltab                           E:4800
+decrem                           A:0D20
+dissprt                          A:0C46
+djr0                             A:09AE
+djr1                             A:09B2
+djr2                             A:09B6
+djr3                             A:09BA
+dkgrey                           E:000B
+e                                E:0005
+enzraix                          E:00FC
+enzrchr                          E:0054
+enzrlst                          A:1586
+enzrpts                          E:0050
+extcol                           E:D020
+fillcolmem                       A:095D
+fillmaze                         A:09D9
+filloop                          A:09DD
+fincol                           A:0CE5
+findpel                          A:0A16
+finfil                           A:0A15
+finnmi                           A:0F43
+finras                           A:0D65
+fiprsc                           A:0909
+flshfin                          A:0F41
+flshmaz                          A:0E89
+flshwht                          A:0EED
+fpckde                           A:0A4F
+fpckdn                           A:0A89
+fpds                             A:0AC1
+fpinrow                          A:0B1F
+fprixn                           A:0B0D
+fprixs                           A:0AFB
+gameloop                         A:0F6B
+gsthmnd                          E:001E
+initsprt                         A:0C0A
+initvic                          A:0930
+irqblki                          E:0005
+irqmsk                           E:D01A
+irqtmp                           E:001F
+irqwrd1                          E:001B
+irqwrd2                          E:001D
+isenzr                           A:0B3B
+joybtn                           E:0092
+joyx                             E:0096
+joyy                             E:009B
+ldanim                           A:0E14
+lpprsc                           A:0897
+ltgrey                           E:000F
+lvlnum                           E:00A9
+maxmen                           E:0003
+maxpell                          E:00B6
+mazegfx                          E:4BF0
+move                             A:0F8D
+movs                             A:0FA6
+mula5                            A:0822
+mula6                            A:084B
+n                                E:0002
+newgame                          A:0F49
+nextlvl                          A:0F5B
+nmenrem                          E:00A8
+nmiblki                          E:000A
+nminv                            E:0318
+nmiwrd1                          E:0020
+nmiwrd2                          E:0022
+nodeadr                          A:0B4B
+nodetbl                          A:1055
+npelrem                          E:00A7
+nxl                              A:080B
+pacaix                           E:00FB
+pacalste                         A:159C
+pacalstn                         A:158A
+pacalsts                         A:1590
+pacalstw                         A:1596
+pacdir                           E:00A3
+pacdis                           E:00A5
+pacnxd                           E:00A4
+pacrem                           E:00A6
+pacsrc                           E:009E
+pacstnd                          E:0031
+pactar                           E:009F
+pdsouth                          A:0D1D
+pelfound                         A:0AEB
+pelladr                          A:09C6
+pellchr                          E:0053
+pellpts                          E:0010
+pelltbl                          A:11F3
+pelnotfd                         A:0AF2
+plrowix                          A:15A2
+printchr                         A:091D
+printcol                         A:090A
+printscr                         A:0881
+procirq                          A:0C8D
+procnmi                          A:0DAA
+rasirq                           A:0CF2
+raslin                           E:00FA
+raster                           E:D012
+rdinpt                           A:0F7B
+readjoy2                         A:09A2
+reverse                          A:0FF6
+revs                             A:0FED
+rmpel                            A:0CC4
+rstscr                           A:1010
+s                                E:0003
+scnmem                           E:4C00
+score                            E:00F7
+screnzr                          A:102A
+scrmsdi                          E:0185
+scroly                           E:D011
+scrpell                          A:101D
+setblu1                          A:0E98
+setblu2                          A:0EAD
+setblu3                          A:0EC2
+setblu4                          A:0ED7
+setcol1                          A:095F
+setcol2                          A:0970
+setcol3                          A:0981
+setcol4                          A:0992
+setnds                           A:0BCF
+setnodis                         A:0B5E
+setnsrc                          A:0D29
+setupirq                         A:0C6C
+setupnmi                         A:0D6F
+setwht1                          A:0EEF
+setwht2                          A:0F04
+setwht3                          A:0F19
+setwht4                          A:0F2E
+sp0col                           E:D027
+sp0loc                           E:0040
+sp0mem                           E:5000
+sp0ptr                           E:4FF8
+sp0x                             E:D000
+sp0y                             E:D001
+spbgcl                           E:D01F
+spcechr                          E:0020
+spena                            E:D015
+spx2chx                          A:0C4C
+spxscog                          E:0018
+spy2chy                          A:0C54
+spyscog                          E:0032
+sysirq                           E:EA7E
+sysnmi                           E:FE56
+ti2a                             E:DD04
+ti2b                             E:DD06
+tic                              A:0E5E
+ticloop                          A:0E62
+timaev                           A:0DC2
+timbev                           A:0E1F
+tmp                              E:001A
+tocloop                          A:0E2B
+vic                              E:D000
+vicirq                           E:D019
+vmcsb                            E:D018
+w                                E:0004
+warp                             A:0C03
+wrd1                             E:0016
+wrd2                             E:0018
+wrpnixe                          E:0021
+wrpnixw                          E:001B
+
+Symbols by value:
+0000 blki
+0002 n
+0003 maxmen
+0003 s
+0004 w
+0005 e
+0005 irqblki
+000A nmiblki
+000B dkgrey
+000F ltgrey
+0010 pellpts
+0016 buf
+0016 wrd1
+0018 spxscog
+0018 wrd2
+001A tmp
+001B irqwrd1
+001B wrpnixw
+001D irqwrd2
+001E gsthmnd
+001F irqtmp
+0020 nmiwrd1
+0020 spcechr
+0021 wrpnixe
+0022 nmiwrd2
+0031 pacstnd
+0032 spyscog
+0040 sp0loc
+0050 enzrpts
+0053 pellchr
+0054 enzrchr
+0092 joybtn
+0096 joyx
+009B joyy
+009E pacsrc
+009F pactar
+00A3 pacdir
+00A4 pacnxd
+00A5 pacdis
+00A6 pacrem
+00A7 npelrem
+00A8 nmenrem
+00A9 lvlnum
+00B6 maxpell
+00F7 score
+00FA raslin
+00FB pacaix
+00FC enzraix
+0185 scrmsdi
+0314 cinv
+0318 nminv
+080B nxl
+0822 mula5
+084B mula6
+0881 printscr
+0897 lpprsc
+0909 fiprsc
+090A printcol
+091D printchr
+0930 initvic
+095D fillcolmem
+095F setcol1
+0970 setcol2
+0981 setcol3
+0992 setcol4
+09A2 readjoy2
+09AE djr0
+09B2 djr1
+09B6 djr2
+09BA djr3
+09C6 pelladr
+09D9 fillmaze
+09DD filloop
+0A15 finfil
+0A16 findpel
+0A4F fpckde
+0A89 fpckdn
+0AC1 fpds
+0AEB pelfound
+0AF2 pelnotfd
+0AFB fprixs
+0B0D fprixn
+0B1F fpinrow
+0B3B isenzr
+0B4B nodeadr
+0B5E setnodis
+0B7E chkne
+0B9C chknn
+0BCF setnds
+0BFB calcnd
+0C03 warp
+0C0A initsprt
+0C46 dissprt
+0C4C spx2chx
+0C54 spy2chy
+0C5C chx2spx
+0C64 chy2spy
+0C6C setupirq
+0C8D procirq
+0C97 chkirq
+0CC4 rmpel
+0CE5 fincol
+0CF2 rasirq
+0D09 chkpde
+0D13 chkpdn
+0D1D pdsouth
+0D20 decrem
+0D29 setnsrc
+0D58 chkcon
+0D65 finras
+0D6F setupnmi
+0DAA procnmi
+0DC2 timaev
+0E14 ldanim
+0E1F timbev
+0E2B tocloop
+0E5E tic
+0E62 ticloop
+0E89 flshmaz
+0E98 setblu1
+0EAD setblu2
+0EC2 setblu3
+0ED7 setblu4
+0EED flshwht
+0EEF setwht1
+0F04 setwht2
+0F19 setwht3
+0F2E setwht4
+0F41 flshfin
+0F43 finnmi
+0F49 newgame
+0F5B nextlvl
+0F6B gameloop
+0F7B rdinpt
+0F8D move
+0F94 chky
+0FA6 movs
+0FAA chkmov
+0FBB chkrvw
+0FCD chkrve
+0FDD chkrvn
+0FED revs
+0FF6 reverse
+1010 rstscr
+101D scrpell
+102A screnzr
+1037 addscr
+1055 nodetbl
+11F3 pelltbl
+1586 enzrlst
+158A pacalstn
+1590 pacalsts
+1596 pacalstw
+159C pacalste
+15A2 plrowix
+4000 charset
+4800 coltab
+4BF0 mazegfx
+4C00 scnmem
+4FF8 sp0ptr
+5000 sp0mem
+D000 sp0x
+D000 vic
+D001 sp0y
+D011 scroly
+D012 raster
+D015 spena
+D018 vmcsb
+D019 vicirq
+D01A irqmsk
+D01F spbgcl
+D020 extcol
+D021 bgcol0
+D027 sp0col
+D800 colmem
+DC00 ci1pra
+DC00 cia1
+DC0D ci1icr
+DD00 ci2pra
+DD00 cia2
+DD02 c2ddra
+DD04 ti2a
+DD06 ti2b
+DD0D ci2icr
+DD0E ci2cra
+DD0F ci2crb
+EA7E sysirq
+FE56 sysnmi

@@ -120,7 +120,7 @@ maxpell:        equ 182         ;maximum number of pellets (incl. energizers)
 maxmen:         equ 3           ;maximum number of "men"
 
         ;; Screen memory indexes
-scrmsdi:        equ $15c        ;most significant digit of score
+scrmsdi:        equ $185        ;most significant digit of score
         
         ;; Node indexes
 wrpnixw:        equ $1b         ;western warp tunnel node index
