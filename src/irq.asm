@@ -22,7 +22,7 @@ setupirq:
 procirq:
         lda npelrem
         bne chkirq              ;don't handle IRQ when no pellets left
-        ldbimm $0f, vicirq      ;acknowledge IRQ
+        asl vicirq              ;acknowledge IRQ
         jmp sysirq              ;return from interrupt
         
 chkirq: lda spbgcl              ;clear collision register by reading it
@@ -54,7 +54,7 @@ rmpel:  ldwptr irqwrd1, 0, irqwrd2
 fincol: lda vicirq
         and #$01
         bne rasirq
-        ldbimm $0f, vicirq      ;acknowledge IRQ
+        asl vicirq              ;acknowledge IRQ
         jmp sysirq              ;return from interrupt
 
         ;; Handle raster IRQ
@@ -105,5 +105,5 @@ chkcon: ldy pacdir
         sta pactar              ;set new target...
         jsr setnodis            ;... and calculate distance
 finras: ldbimm 0, pacnxd        ;clear out next direction
-        ldbimm $0f, vicirq      ;acknowledge IRQ
+        asl vicirq              ;acknowledge IRQ
         jmp sysirq              ;return from interrupt
