@@ -77,10 +77,8 @@ ci1icr:         equ cia1 + $0d
 cia2:           equ $dd00
 ci2pra:         equ cia2
 c2ddra:         equ cia2 + $02
-ti2alo:         equ cia2 + $04
-ti2ahi:         equ cia2 + $05
-ti2blo:         equ cia2 + $06
-ti2bhi:         equ cia2 + $07
+ti2a:           equ cia2 + $04
+ti2b:           equ cia2 + $06
 ci2icr:         equ cia2 + $0d
 ci2cra:         equ cia2 + $0e
 ci2crb:         equ cia2 + $0f

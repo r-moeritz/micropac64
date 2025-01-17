@@ -5,11 +5,8 @@
         ;; Setup handler for CIA2 timer NMI.
 setupnmi:
         sei
-        lda #$ff
-        sta ti2alo
-        sta ti2ahi                      ;timer A fires every 66.5ms (PAL)
-        ldbimm 4, ti2blo
-        ldbimm 0, ti2bhi                ;timer B fires every 266ms (PAL)
+        ldwimm $740d, ti2a              ;timer A fires every ~30ms (PAL)
+        ldwimm 6, ti2b                  ;timer B fires every ~180ms (PAL)
         ldbimm %00010001, ci2cra
         ldbimm %01010001, ci2crb
         lda ci2icr
