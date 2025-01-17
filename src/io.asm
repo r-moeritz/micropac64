@@ -66,26 +66,49 @@ lpprsc: bmi fiprsc
         jmp lpprsc
 fiprsc: rts
         
-        ;; Write char in .Y to screen memory at 16-bit screen memory offset
+        ;; Write value in .Y to colour memory at 16-bit offset
         ;; in memory block.
         ;; Reads:
-        ;;  - .Y (char to print)
-        ;;  - .X (buf offset to access memory block)
+        ;;  - .Y (value to write to colour memory)
+        ;;  - .X (buf offset to access memory block )
+        ;;  - 1st word in memory block at offset
+        ;; Writes:
+        ;;  - 1st word in memory block at offset
+printcol:       
+        clc
+        lda #<colmem
+        adc buf,x
+        sta buf,x
+        inx                     ;hi-byte
+        lda #>colmem
+        adc buf,x
+        sta buf,x
+        dex                     ;lo-byte
+        tya
+        sta (buf,x)             ;write to colour memory
+        rts
+
+        ;; Write char in .Y to screen memory at 16-bit offset
+        ;; in memory block.
+        ;; Reads:
+        ;;  - .Y (char to write to screen memory)
+        ;;  - .X (buf offset to access memory block )
         ;;  - 1st word in memory block at offset
         ;; Writes:
         ;;  - 1st word in memory block at offset
 printchr:
-        clc
+        ;; Write char to screen memory
+        clc        
         lda #<scnmem
         adc buf,x
         sta buf,x
+        inx                     ;hi-byte
         lda #>scnmem
-        inx
         adc buf,x
         sta buf,x
-        dex
+        dex                     ;lo-byte
         tya
-        sta (buf,x)
+        sta (buf,x)             ;write to screen memory
         rts
 
         ;; Initialize VIC-II

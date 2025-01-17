@@ -90,9 +90,9 @@ tocloop:
         dey
         jmp tocloop
 :       ldwptr nmiwrd1, 0, nmiwrd2      ;energizer not eaten
-        ldy #enzrchr                    
+        ldy #ltgrey
         ldx #nmiblki+2
-        jsr printchr                    ;print energizer char
+        jsr printcol                    ;colour energizer light grey
         ply                             ;pop loop counter off the stack
         dey
         jmp tocloop
@@ -105,9 +105,9 @@ ticloop:
         ldx #nmiblki
         jsr pelladr                     ;load pellet address into nmiwrd1
         ldwptr nmiwrd1, 0, nmiwrd2
-        ldy #spcechr
+        ldy #dkgrey
         ldx #nmiblki+2
-        jsr printchr                    ;print space char
+        jsr printcol                    ;colour energizer dark grey
         ply                             ;pop loop counter off the stack
         dey
         jmp ticloop

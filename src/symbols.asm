@@ -134,6 +134,10 @@ gsthmnd:        equ $1e         ;ghost home node
 spcechr:        equ $20         ;space char
 pellchr:        equ $53         ;pellet char
 enzrchr:        equ $54         ;energizer char
+
+        ;; Colour constants
+dkgrey:         equ $0b         ;dark grey
+ltgrey:         equ $0f         ;light grey
         
         ;; Compass directions
 n:              equ 2

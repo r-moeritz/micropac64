@@ -27,26 +27,26 @@ pelladr:
 fillmaze:
         ldbimm 0, tmp           ;store pellet index in tmp
 filloop:
+        lda tmp
         ldx #blki
         jsr pelladr             ;get pellet address
         ldy #1
         lda (wrd1),y
         cmp #$ff                ;end marker?
         beq finfil              ;yep, we're done
-        ldx #blki+4
-        jsr isenzr              ;is it an energizer?
-        beq :+
-        lda #1                  ;regular pellet
-        jmp :++
-:       lda #2                  ;energizer
-:       ldy #2
-        sta (wrd1),y            ;set pellet status
+        lda #1
+        ldy #2
+        sta (wrd1),y            ;set pellet status        
         ldwptr wrd1, 0, wrd2
-        ldy #pellchr
-        ldx #blki+2
+        ldx #blki+4
+        jsr isenzr              ;is pellet an energizer?
+        beq :+
+        ldy #pellchr            ;no, it's a regular pellet
+        jmp :++
+:       ldy #enzrchr            ;yes, it's an energizer        
+:       ldx #blki+2
         jsr printchr            ;print pellet char
         inc tmp
-        lda tmp
         jmp filloop
 finfil: rts
 
