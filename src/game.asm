@@ -6,7 +6,9 @@
 newgame:
         ldbimm maxpell, npelrem
         ldbimm maxmen, nmenrem
-        ldbimm 0, lvlnum
+        lda #0
+        sta lvlnum
+        sta frtena
         jsr rstscr              ;reset score
         jmp fillmaze            ;fill maze with pellets
 
@@ -17,6 +19,7 @@ nextlvl:
         jsr fillcolmem
         jsr initsprt
         ldbimm maxpell, npelrem
+        ldbimm 0, frtena
         rts
         
         ;; Main game loop

@@ -49,6 +49,8 @@ rmpel:  ldwptr irqwrd1, 0, irqwrd2
         jsr printscr            ;print score
         ldbimm 6, irqtmp        ;set number of flashes in irqtmp
         dec npelrem             ;decrement pellets remaining
+        jsr showfrt             ;conditionally enable bonus fruit
+        lda npelrem
         jne fincol
         jsr dissprt
 fincol: lda vicirq

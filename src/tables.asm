@@ -534,3 +534,47 @@ plrowix:
         byte $da,$8f,$9e        ;row 21
         byte $e2,$9f,$a2        ;row 22
         byte $ea,$a3,$b5        ;row 23
+
+        ;; Fruit sprite table
+        ;; Format:
+        ;;  - byte lvl (level number)
+        ;;  - byte spx (sprite index)
+        ;;  - word ofs (sp0mem offset)
+        ;;  - word pts (bonus points)
+frtsptbl:
+        ;; 1st level: Cherries
+        byte $00,$0d
+        word $0d*$40,$0064
+        ;; 2nd level: Strawberry
+        byte $01,$0f
+        word $0f*$40,$012c
+        ;; 3rd & 4th level: Peach
+        byte $02,$11
+        word $11*$40,$01f4
+        byte $03,$13
+        word $13*$40,$01f4
+        ;; 5th & 6th level: Apple
+        byte $04,$15
+        word $15*$40,$02bc
+        byte $05,$17
+        word $17*$40,$02bc
+        ;; 7th & 8th level: Grapes
+        byte $06,$19
+        word $19*$40,$03e8
+        byte $07,$1b
+        word $1b*$40,$03e8
+        ;; 9th & 10th levels: Galaxian
+        byte $08,$1d
+        word $1d*$40,$07d0
+        byte $09,$1f
+        word $1f*$40,$07d0
+        ;; 11th & 12th level: Bell
+        byte $0a,$21
+        word $21*$40,$0bb8
+        byte $0b,$23
+        word $23*$40,$0bb8
+        ;; level 13 onwards: Key
+        byte $0c,$25
+        word $25*$40,$1388
+        ;; End Marker
+        byte $ff

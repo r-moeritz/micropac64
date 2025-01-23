@@ -43,6 +43,7 @@ npelrem:        equ $a7          ;number of pellets remaining
 nmenrem:        equ $a8          ;number of remaining "men"
 lvlnum:         equ $a9          ;level number
 score:          equ $f7          ;player's score in BCD (4 bytes: $f7-$fa)
+frtena:         equ $fd          ;whether or not fruit is enabled
 
         ;; Animation
 pacaix:         equ $fb          ;Pac-Man animation frame index
@@ -57,6 +58,20 @@ enzraix:        equ $fc          ;energizer animation frame index
 vic:            equ $d000
 sp0x:           equ vic
 sp0y:           equ vic + $01
+sp1x:           equ vic + $02
+sp1y:           equ vic + $03
+sp2x:           equ vic + $04
+sp2y:           equ vic + $05
+sp3x:           equ vic + $06
+sp3y:           equ vic + $07
+sp4x:           equ vic + $08
+sp4y:           equ vic + $09
+sp5x:           equ vic + $0a
+sp5y:           equ vic + $0b
+sp6x:           equ vic + $0c
+sp6y:           equ vic + $0d
+sp7x:           equ vic + $0e
+sp7y:           equ vic + $0f
 scroly:         equ vic + $11
 raster:         equ vic + $12
 spena:          equ vic + $15
@@ -119,14 +134,19 @@ spyscog:        equ 50          ;sprite y screen origin
 maxpell:        equ 182         ;maximum number of pellets (incl. energizers)
 maxmen:         equ 3           ;maximum number of "men"
 
+        ;; Fruit
+frxpos:        equ $67          ;fruit x loc
+frypos:        equ $a2          ;fruit y loc
+frttim:        equ 38           ;fruit timer: 39 x 240ms = 9.1s
+
         ;; Screen memory indexes
 scrmsdi:        equ $185        ;most significant digit of score
         
         ;; Node indexes
 wrpnixw:        equ $1b         ;western warp tunnel node index
 wrpnixe:        equ $21         ;eastern warp tunnel node index
-pacstnd:        equ $31         ;Pac-Man's starting node index
-gsthmnd:        equ $1e         ;ghost home node
+pacstnd:        equ $31         ;Pac-Man's starting node index        
+gsthmnd:        equ $1e         ;ghost home node        
 
         ;; Character constants
 spcechr:        equ $20         ;space char

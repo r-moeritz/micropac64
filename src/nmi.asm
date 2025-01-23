@@ -6,7 +6,7 @@
 setupnmi:
         sei
         ldwimm $740d, ti2a              ;timer A fires every ~30ms (PAL)
-        ldwimm 6, ti2b                  ;timer B fires every ~180ms (PAL)
+        ldwimm 8, ti2b                  ;timer B fires every ~240ms (PAL)
         ldbimm %00010001, ci2cra
         ldbimm %01010001, ci2crb
         lda ci2icr
@@ -67,9 +67,19 @@ ldanim: clc
         sta sp0ptr
         jmp finnmi
         
-        ;; Timer B fired: animate energizers or flash maze on level end
-timbev: lda npelrem
-        beq flshmaz                     ;all pellets eaten, flash maze
+        ;; Timer B fired:
+        ;;  - animate energizers
+        ;;  - flash maze on level end
+        ;;  - hide fruit
+timbev: lda frtena
+        beq :++                         ;fruit enabled?
+        cmp #frttim
+        bne :+                          ;yes, fruit timer expired?
+        jsr hidefrt                     ;yes, hide fruit
+        jmp :++
+:       inc frtena                      ;no, increment timer
+:       lda npelrem
+        jeq flshmaz                     ;all pellets eaten, flash maze
         lda enzraix
         beq tic
         dec enzraix

@@ -4,18 +4,19 @@
 
         ;; Initialize sprites
 initsprt:
+        ;; Sprite 0: Pac-Man
         ldbimm sp0loc, sp0ptr   ;set sprite 0 pointer
         lda sp0mem+$3f          ;read byte 63
-        and #$0f                ;mask out hi nybble
-        sta sp0col              ;set sprite 0 colour
+        and #%00001111          ;mask out hi nybble
+        sta sp0col              ;set sprite 0 (Pac-Man) colour        
         lda #pacstnd
         ldx #0
         jsr nodeadr             ;get address of Pac's starting node
         ldbptr wrd1, 0, sp0x    ;set Pac's x loc
         ldbptr wrd1, 1, sp0y    ;set Pac's y loc
-        lda spena
-        ora #1
+        lda #%00000001
         sta spena               ;enable sprite 0 (Pac-Man)
+        ;; Init Pac's direction & calc distance between source & target nodes
         ldbimm w, pacdir        ;set Pac's initial direction to west
         ldbimm pacstnd, pacsrc  ;set Pac's starting node as source node
         ldbptr wrd1, w, pactar  ;set western neighbour as target node

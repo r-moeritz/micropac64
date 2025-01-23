@@ -34,11 +34,34 @@ adcbimm: macro val, byt
         sta \byt
         endm
 
+        ;; Subtract immediate value from byte and store
 sbcbimm: macro val, byt
         sec
         lda \byt
         sbc #\val
         sta \byt
+        endm
+
+        ;; Add immediate word value to word and store
+adcwimm: macro val, wrd
+        clc
+        lda \wrd
+        adc #<\val
+        sta \wrd
+        lda \wrd+1
+        adc #>\val
+        sta \wrd+1
+        endm
+
+        ;; Subtract immediate word value from word and store
+sbcwimm: macro val, wrd
+        sec
+        lda \wrd
+        sbc #<\val
+        sta \wrd
+        lda \wrd+1
+        sbc #>\val
+        sta \wrd+1
         endm
         
         ;; Conditional jumps

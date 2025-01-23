@@ -31,6 +31,7 @@ nxl:    word 0
         include nmi.asm
         include game.asm
         include score.asm
+        include fruit.asm
 
         ;; Include tables
         include tables.asm
