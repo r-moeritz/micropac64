@@ -34,7 +34,7 @@ chkirq: lda spbgcl
         and #%00000100          ;check for sprite-sprite collision
         jeq rasirq              ;no, must be raster IRQ
         ;; Handle Pac-Man collision with fruit
-frtcol: jsr hidefrt             ;hide the fruit
+        jsr hidefrt             ;hide the fruit
         jsr scrfrt              ;score the fruit
         jsr printscr            ;print the score
         ;; TODO: Show points earned sprite
@@ -63,7 +63,9 @@ rmpel:  ldwptr irqwrd1, 0, irqwrd2
         jsr showfrt             ;conditionally enable bonus fruit
         lda npelrem
         jne fincol
-        jsr dissprt
+        lda spena
+        and #%00000001
+        sta spena               ;disable all but Pac-Man's sprite
 fincol: lda vicirq
         and #%00000001
         bne rasirq              ;check for raster IRQ

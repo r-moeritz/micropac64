@@ -43,13 +43,13 @@ npelrem:        equ $a7          ;number of pellets remaining
 nmenrem:        equ $a8          ;number of remaining "men"
 lvlnum:         equ $a9          ;level number
 score:          equ $f7          ;player's score in BCD (4 bytes: $f7-$fa)
-frtena:         equ $fd          ;whether or not fruit is enabled
+frtena:         equ $fb          ;whether or not fruit is enabled
 
         ;; Animation
-pacaix:         equ $fb          ;Pac-Man animation frame index
-enzraix:        equ $fc          ;energizer animation frame index
+pacaix:         equ $fc          ;Pac-Man animation frame index
+enzraix:        equ $fd          ;energizer animation frame index
 
-        ;; Still available: $fd,$fe
+        ;; Still available: $fe
         
         ;; Memory-mapped hardware registers
         ;; ------------------------------------------------------------
