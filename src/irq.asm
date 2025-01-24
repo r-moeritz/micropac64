@@ -25,13 +25,24 @@ procirq:
         asl vicirq              ;acknowledge IRQ
         jmp sysirq              ;return from interrupt
         
-chkirq: lda spbgcl              ;clear collision register by reading it
+chkirq: lda spbgcl
+        lda spspcl              ;clear collision registers by reading them
         lda vicirq
-        and #$02                ;check for sprite-background collision
-        jeq rasirq
-       
-        ;; Handle sprite-background collision IRQ
-        jsr findpel             ;find pellet collided with & mark as eaten
+        and #%00000010          ;check for sprite-background collision
+        jne pelcol
+        lda vicirq
+        and #%00000100          ;check for sprite-sprite collision
+        jeq rasirq              ;no, must be raster IRQ
+        ;; Handle Pac-Man collision with fruit
+frtcol: jsr hidefrt             ;hide the fruit
+        jsr scrfrt              ;score the fruit
+        jsr printscr            ;print the score
+        ;; TODO: Show points earned sprite
+        ;; (NMI timer to hide after ~1.5s)
+        jmp fincol
+
+        ;; Handle Pac-Man collision with pellet
+pelcol: jsr findpel             ;find pellet collided with & mark as eaten
         lda irqwrd1+1           ;load pellet address hi-byte
         cmp #$ff                ;pellet found?
         jeq fincol              ;no, do nothing
@@ -42,7 +53,7 @@ chkirq: lda spbgcl              ;clear collision register by reading it
         jsr screnzr             ;yes, score it
         jmp rmpel
 :       ldx #irqblki+2
-        jsr scrpell             ;no, score as regular pellet
+        jsr scrpel              ;no, score as regular pellet
 rmpel:  ldwptr irqwrd1, 0, irqwrd2
         ldy #spcechr
         jsr printchr            ;erase pellet
@@ -54,8 +65,8 @@ rmpel:  ldwptr irqwrd1, 0, irqwrd2
         jne fincol
         jsr dissprt
 fincol: lda vicirq
-        and #$01
-        bne rasirq
+        and #%00000001
+        bne rasirq              ;check for raster IRQ
         asl vicirq              ;acknowledge IRQ
         jmp sysirq              ;return from interrupt
 

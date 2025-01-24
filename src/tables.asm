@@ -540,41 +540,41 @@ plrowix:
         ;;  - byte lvl (level number)
         ;;  - byte spx (sprite index)
         ;;  - word ofs (sp0mem offset)
-        ;;  - word pts (bonus points)
+        ;;  - word pts (bonus points: 4 BCD digits)
 frtsptbl:
         ;; 1st level: Cherries
         byte $00,$0d
-        word $0d*$40,$0064
+        word $0d*$40,$0100
         ;; 2nd level: Strawberry
         byte $01,$0f
-        word $0f*$40,$012c
+        word $0f*$40,$0300
         ;; 3rd & 4th level: Peach
         byte $02,$11
-        word $11*$40,$01f4
+        word $11*$40,$0500
         byte $03,$13
-        word $13*$40,$01f4
+        word $13*$40,$0500
         ;; 5th & 6th level: Apple
         byte $04,$15
-        word $15*$40,$02bc
+        word $15*$40,$0700
         byte $05,$17
-        word $17*$40,$02bc
+        word $17*$40,$0700
         ;; 7th & 8th level: Grapes
         byte $06,$19
-        word $19*$40,$03e8
+        word $19*$40,$1000
         byte $07,$1b
-        word $1b*$40,$03e8
+        word $1b*$40,$1000
         ;; 9th & 10th levels: Galaxian
         byte $08,$1d
-        word $1d*$40,$07d0
+        word $1d*$40,$2000
         byte $09,$1f
-        word $1f*$40,$07d0
+        word $1f*$40,$2000
         ;; 11th & 12th level: Bell
         byte $0a,$21
-        word $21*$40,$0bb8
+        word $21*$40,$3000
         byte $0b,$23
-        word $23*$40,$0bb8
+        word $23*$40,$3000
         ;; level 13 onwards: Key
         byte $0c,$25
-        word $25*$40,$1388
+        word $25*$40,$5000
         ;; End Marker
         byte $ff

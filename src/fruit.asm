@@ -3,6 +3,39 @@
         ;; Fruit related sub-routines
         ;; ============================================================
 
+        ;; Get fruit bonus points by level number
+        ;; Reads:
+        ;;  - lvlnum
+        ;;  - frtsptbl
+        ;; Write:
+        ;;  - .Y (points lo-byte)
+        ;;  - .A (points hi-byte)
+        ;; Clobbers:
+        ;;  - .X
+lvlfrtpts:
+        ldx #0
+:       lda frtsptbl,x
+        cmp #$ff
+        beq :++
+        cmp lvlnum
+        beq :+
+        inx
+        inx
+        inx
+        inx
+        inx
+        inx
+        jmp :-
+:       inx
+        inx
+        inx
+        inx
+        lda frtsptbl,x          ;load points (lo)
+        tay
+        inx
+        lda frtsptbl,x          ;load points (hi)
+:       rts
+
         ;; Get fruit sprite index by level number
         ;; Reads:
         ;;  - lvlnum

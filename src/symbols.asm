@@ -78,6 +78,7 @@ spena:          equ vic + $15
 vmcsb:          equ vic + $18
 vicirq:         equ vic + $19
 irqmsk:         equ vic + $1a
+spspcl:         equ vic + $1e
 spbgcl:         equ vic + $1f
 extcol:         equ vic + $20
 bgcol0:         equ vic + $21
@@ -164,8 +165,8 @@ w:              equ 4
 e:              equ 5
 
         ;; Scores, expressed as BCD pairs
-pellpts:        equ %00010000   ;10 pts for pellets
-enzrpts:        equ %01010000   ;50 pts for energizers
+pellpts:        equ $10        ;10 pts for pellets
+enzrpts:        equ $50        ;50 pts for energizers
 
         ;; Index into buf to access memory block
         ;; reservedf for gameloop

@@ -3,22 +3,33 @@
         ;; ============================================================
 
         ;; Reset the score to 0
-rstscr:
-        lda #0
+rstscr: lda #0
         ldx #3
 :       bmi :+
         sta score,x
         dex
         jmp :-
 :       rts
+
+        ;; Score fruit (pts vary by level)
+        ;; May only be called from IRQ handler!
+        ;; Reads:
+        ;;  - lvlnum
+        ;; Writes:
+        ;;  - irqwrd2
+        ;;  - score
+scrfrt: jsr lvlfrtpts           ;read fruit points
+        sty irqwrd1
+        sta irqwrd1+1
+        ldx #irqblki
+        jmp addscr
         
         ;; Score pellet (10 pts)
         ;; Reads:
         ;;  - .X (offset to memory block)
         ;; Writes:
         ;;  - score
-scrpell:
-        lda #pellpts
+scrpel: lda #pellpts
         sta buf,x
         inx
         lda #0
@@ -47,8 +58,7 @@ screnzr:
         ;;  - 1st word in memory block containing 4 BCD digits
         ;; Writes:
         ;;  - score
-addscr:
-        sed
+addscr: sed
         clc
         lda score
         adc buf,x
