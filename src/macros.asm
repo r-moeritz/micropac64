@@ -211,3 +211,17 @@ incwrd: macro wrd
         adc #0
         sta \wrd+1
         endm
+
+        ;; Increment accumulator
+ina:    macro
+        tay
+        iny
+        tya
+        endm
+
+        ;; Decrement accumulator
+dea:    macro
+        tay
+        dey
+        tya
+        endm

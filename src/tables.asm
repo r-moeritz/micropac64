@@ -551,30 +551,30 @@ frtsptbl:
         ;; 3rd & 4th level: Peach
         byte $02,$11
         word $11*$40,$0500
-        byte $03,$13
-        word $13*$40,$0500
+        byte $03,$11
+        word $11*$40,$0500
         ;; 5th & 6th level: Apple
-        byte $04,$15
-        word $15*$40,$0700
-        byte $05,$17
-        word $17*$40,$0700
+        byte $04,$13
+        word $13*$40,$0700
+        byte $05,$13
+        word $13*$40,$0700
         ;; 7th & 8th level: Grapes
-        byte $06,$19
-        word $19*$40,$1000
-        byte $07,$1b
-        word $1b*$40,$1000
+        byte $06,$15
+        word $15*$40,$1000
+        byte $07,$15
+        word $15*$40,$1000
         ;; 9th & 10th levels: Galaxian
-        byte $08,$1d
-        word $1d*$40,$2000
-        byte $09,$1f
-        word $1f*$40,$2000
+        byte $08,$17
+        word $17*$40,$2000
+        byte $09,$17
+        word $17*$40,$2000
         ;; 11th & 12th level: Bell
-        byte $0a,$21
-        word $21*$40,$3000
-        byte $0b,$23
-        word $23*$40,$3000
+        byte $0a,$19
+        word $19*$40,$3000
+        byte $0b,$19
+        word $19*$40,$3000
         ;; level 13 onwards: Key
-        byte $0c,$25
-        word $25*$40,$5000
+        byte $0c,$1b
+        word $1b*$40,$5000
         ;; End Marker
         byte $ff

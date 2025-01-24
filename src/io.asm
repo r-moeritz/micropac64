@@ -118,13 +118,13 @@ printchr:
         ;;  - Set border & background colours
 initvic:
         ;; select vic bank
-        lda #3
-        ora c2ddra
-        sta c2ddra
-        lda #$fc
-        and ci2pra
-        ora #2
-        sta ci2pra
+        lda c2ddra
+        ora #%00000011
+        sta c2ddra              ;set bits 0+1 of ci2pra as output bits
+        lda ci2pra
+        and #%11111100
+        ora #%00000010
+        sta ci2pra              ;select vic bank 1: $4000-$7fff
 
         ;; select screen memory loc
         lda #$0f

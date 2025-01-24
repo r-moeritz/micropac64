@@ -107,26 +107,22 @@ showfrt:
         rts
         ;; Set sprite pointers
 :       jsr lvlfrtspix          ;find fruit sprite index for level, store in .A
-        tay                     ;save sprite index to .Y
         clc
         adc #sp0loc
-        sta sp0ptr+1            ;Write to sprite 1 pointer 
-        iny                     ;increment sprite index in .Y
-        tya                     ;transfer sprite index back to .A
-        clc
-        adc #sp0loc
-        sta sp0ptr+2            ;Write to sprite 2 pointer
+        sta sp0ptr+1            ;write to sprite 1 pointer
+        ina                     ;increment .A
+        sta sp0ptr+2            ;write to sprite 2 pointer
         ;; Set sprite colours
         jsr lvlfrtspof          ;find fruit sprite memory offset
         sty irqwrd1             ;save offset (lo) onto irqwrd (lo)
         sta irqwrd1+1           ;save offset (hi) onto irqwrd (hi)
         adcwimm sp0mem, irqwrd1
-        ldy #$3f                ;offset to sprite colour value
+        ldy #$3f                ;index to sprite colour value
         lda (irqwrd1),y         ;load sprite colour value
         and #%00001111          ;mask out hi nybble
         sta sp0col+1            ;write to sprite 1 colour register 
-        adcwimm $40, irqwrd1    ;Add $40 to offset to advance to next sprite
-        lda (irqwrd2),y         ;load sprite colour value
+        adcwimm $0040, irqwrd1  ;Add $40 to offset to advance to next sprite
+        lda (irqwrd1),y         ;load sprite colour value
         and #%00001111          ;mask out hi nybble
         sta sp0col+2            ;write to sprite 2 colour register
         ;; Set sprite x,y locations
