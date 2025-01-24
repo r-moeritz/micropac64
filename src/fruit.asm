@@ -1,4 +1,3 @@
-
         ;; ============================================================
         ;; Fruit related sub-routines
         ;; ============================================================
@@ -140,7 +139,7 @@ showfrt:
         ora #%00000110
         sta spena
         ;; Start fruit timer countdown
-        inc frtena
+        ldbimm 1, frtena
         rts
 
         ;; Hide fruit

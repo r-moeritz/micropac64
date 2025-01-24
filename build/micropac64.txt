@@ -1,8 +1,8 @@
 Sections:
-00: "org0001:801" (801-174F)
+00: "org0001:801" (801-1751)
 01: "org0002:4000" (4000-4900)
 02: "org0003:4bf0" (4BF0-4FE8)
-03: "org0004:5000" (5000-5440)
+03: "org0004:5000" (5000-54C0)
 
 
 Source: "./src/startup.asm"
@@ -819,7 +819,7 @@ Source: "maze.asm"
 00:09C6 202208          	    13:         jsr mula5               ;multiply pellet index by 5
 00:09C9 18              	    14:         clc
 00:09CA B516            	    15:         lda buf,x               ;load product (lo)
-00:09CC 690C            	    16:         adc #<pelltbl           ;add pellet table address (lo)
+00:09CC 690E            	    16:         adc #<pelltbl           ;add pellet table address (lo)
 00:09CE 9516            	    17:         sta buf,x               ;write sum (lo)
 00:09D0 E8              	    18:         inx
 00:09D1 B516            	    19:         lda buf,x               ;load product (hi)
@@ -1004,7 +1004,7 @@ Source: "maze.asm"
                         	   158:         ;; Writes:
                         	   159:         ;;  - irqtmp: y loc of next row to the south
 00:0AFB A000            	   160: fprixs: ldy #0
-00:0AFD B9BB16          	   161: :       lda plrowix,y
+00:0AFD B9BD16          	   161: :       lda plrowix,y
 00:0B00 C51F            	   162:         cmp irqtmp
 00:0B02 B006            	   163:         bcs :+
 00:0B04 C8              	   164:         iny
@@ -1020,7 +1020,7 @@ Source: "maze.asm"
                         	   174:         ;; Writes:
                         	   175:         ;;  - irqtmp: y loc of next row to the north
 00:0B0D A042            	   176: fprixn: ldy #66
-00:0B0F B9BB16          	   177: :       lda plrowix,y
+00:0B0F B9BD16          	   177: :       lda plrowix,y
 00:0B12 C51F            	   178:         cmp irqtmp
 00:0B14 9006            	   179:         bcc :+
 00:0B16 88              	   180:         dey
@@ -1040,7 +1040,7 @@ Source: "maze.asm"
                         	   194:         ;;  - irqwrd2: indexes of west-most & east-most pellets in row
                         	   195: fpinrow:
 00:0B1F A000            	   196:         ldy #0
-00:0B21 B9BB16          	   197: :       lda plrowix,y
+00:0B21 B9BD16          	   197: :       lda plrowix,y
 00:0B24 C51F            	   198:         cmp irqtmp
 00:0B26 F006            	   199:         beq :+
 00:0B28 C8              	   200:         iny
@@ -1048,10 +1048,10 @@ Source: "maze.asm"
 00:0B2A C8              	   202:         iny
 00:0B2B 4C210B          	   203:         jmp :-
 00:0B2E C8              	   204: :       iny
-00:0B2F B9BB16          	   205:         lda plrowix,y
+00:0B2F B9BD16          	   205:         lda plrowix,y
 00:0B32 851D            	   206:         sta irqwrd2
 00:0B34 C8              	   207:         iny
-00:0B35 B9BB16          	   208:         lda plrowix,y
+00:0B35 B9BD16          	   208:         lda plrowix,y
 00:0B38 851E            	   209:         sta irqwrd2+1
 00:0B3A 60              	   210:         rts
                         	   211: 
@@ -1064,7 +1064,7 @@ Source: "maze.asm"
 00:0B3B A003            	   218: isenzr: ldy #3
 00:0B3D 300B            	   219: :       bmi :+
 00:0B3F B516            	   220:         lda buf,x
-00:0B41 D99F16          	   221:         cmp enzrlst,y
+00:0B41 D9A116          	   221:         cmp enzrlst,y
 00:0B44 F004            	   222:         beq :+
 00:0B46 88              	   223:         dey
 00:0B47 4C3D0B          	   224:         jmp :-
@@ -1090,7 +1090,7 @@ Source: "nodes.asm"
 00:0B4B 204B08          	    13:         jsr mula6
 00:0B4E 18              	    14:         clc
 00:0B4F B516            	    15:         lda buf,x
-00:0B51 696E            	    16:         adc #<nodetbl
+00:0B51 6970            	    16:         adc #<nodetbl
 00:0B53 9516            	    17:         sta buf,x
 00:0B55 E8              	    18:         inx
 00:0B56 B516            	    19:         lda buf,x
@@ -1364,7 +1364,7 @@ Source: "irq.asm"
 00:0CAB 4C0D0D          	     2M         jmp rasirq              
                         	     3M :
                         	    36:         ;; Handle Pac-Man collision with fruit
-00:0CAE 206111          	    37: frtcol: jsr hidefrt             ;hide the fruit
+00:0CAE 206311          	    37: frtcol: jsr hidefrt             ;hide the fruit
 00:0CB1 205110          	    38:         jsr scrfrt              ;score the fruit
 00:0CB4 208108          	    39:         jsr printscr            ;print the score
                         	    40:         ;; TODO: Show points earned sprite
@@ -1580,25 +1580,25 @@ Source: "nmi.asm"
 00:0E02 C904            	    55:         cmp #w
 00:0E04 F021            	    56:         beq :+++
                         	    57:         ldwimm pacalste, nmiwrd1        ;east
-00:0E06 A9B5            	     1M         lda #<pacalste
+00:0E06 A9B7            	     1M         lda #<pacalste
 00:0E08 8520            	     2M         sta nmiwrd1        
 00:0E0A A916            	     3M         lda #>pacalste
 00:0E0C 8521            	     4M         sta nmiwrd1        +1
 00:0E0E 4C2F0E          	    58:         jmp ldanim
                         	    59: :       ldwimm pacalstn, nmiwrd1        ;north
-00:0E11 A9A3            	     1M         lda #<pacalstn
+00:0E11 A9A5            	     1M         lda #<pacalstn
 00:0E13 8520            	     2M         sta nmiwrd1        
 00:0E15 A916            	     3M         lda #>pacalstn
 00:0E17 8521            	     4M         sta nmiwrd1        +1
 00:0E19 4C2F0E          	    60:         jmp ldanim
                         	    61: :       ldwimm pacalsts, nmiwrd1        ;south
-00:0E1C A9A9            	     1M         lda #<pacalsts
+00:0E1C A9AB            	     1M         lda #<pacalsts
 00:0E1E 8520            	     2M         sta nmiwrd1        
 00:0E20 A916            	     3M         lda #>pacalsts
 00:0E22 8521            	     4M         sta nmiwrd1        +1
 00:0E24 4C2F0E          	    62:         jmp ldanim
                         	    63: :       ldwimm pacalstw, nmiwrd1        ;west
-00:0E27 A9AF            	     1M         lda #<pacalstw
+00:0E27 A9B1            	     1M         lda #<pacalstw
 00:0E29 8520            	     2M         sta nmiwrd1        
 00:0E2B A916            	     3M         lda #>pacalstw
 00:0E2D 8521            	     4M         sta nmiwrd1        +1
@@ -1616,7 +1616,7 @@ Source: "nmi.asm"
 00:0E3C F00C            	    75:         beq :++                         ;fruit enabled?
 00:0E3E C926            	    76:         cmp #frttim
 00:0E40 D006            	    77:         bne :+                          ;yes, fruit timer expired?
-00:0E42 206111          	    78:         jsr hidefrt                     ;yes, hide fruit
+00:0E42 206311          	    78:         jsr hidefrt                     ;yes, hide fruit
 00:0E45 4C4A0E          	    79:         jmp :++
 00:0E48 E6FD            	    80: :       inc frtena                      ;no, increment timer
 00:0E4A A5A7            	    81: :       lda npelrem
@@ -1636,7 +1636,7 @@ Source: "nmi.asm"
                         	    89:         phy                             ;save loop counter onto stack        
 00:0E5E 98              	     1M         tya
 00:0E5F 48              	     2M         pha
-00:0E60 B99F16          	    90:         lda enzrlst,y                   ;load energizer pelltbl index into .A
+00:0E60 B9A116          	    90:         lda enzrlst,y                   ;load energizer pelltbl index into .A
 00:0E63 A20A            	    91:         ldx #nmiblki
 00:0E65 20C609          	    92:         jsr pelladr                     ;load pellet address into nmiwrd1
 00:0E68 A002            	    93:         ldy #2
@@ -1672,7 +1672,7 @@ Source: "nmi.asm"
                         	   110:         phy                             ;push loop counter onto stack
 00:0E95 98              	     1M         tya
 00:0E96 48              	     2M         pha
-00:0E97 B99F16          	   111:         lda enzrlst,y                   ;load energizer pelltbl index into .A
+00:0E97 B9A116          	   111:         lda enzrlst,y                   ;load energizer pelltbl index into .A
 00:0E9A A20A            	   112:         ldx #nmiblki
 00:0E9C 20C609          	   113:         jsr pelladr                     ;load pellet address into nmiwrd1
                         	   114:         ldwptr nmiwrd1, 0, nmiwrd2
@@ -2032,130 +2032,129 @@ Source: "./src/startup.asm"
                         	    34:         include fruit.asm
 
 Source: "fruit.asm"
-                        	     1: 
-                        	     2:         ;; ============================================================
-                        	     3:         ;; Fruit related sub-routines
-                        	     4:         ;; ============================================================
-                        	     5: 
-                        	     6:         ;; Get fruit bonus points by level number
-                        	     7:         ;; Reads:
-                        	     8:         ;;  - lvlnum
-                        	     9:         ;;  - frtsptbl
-                        	    10:         ;; Write:
-                        	    11:         ;;  - .Y (points lo-byte)
-                        	    12:         ;;  - .A (points hi-byte)
-                        	    13:         ;; Clobbers:
-                        	    14:         ;;  - .X
-                        	    15: lvlfrtpts:
-00:1095 A200            	    16:         ldx #0
-00:1097 BD0017          	    17: :       lda frtsptbl,x
-00:109A C9FF            	    18:         cmp #$ff
-00:109C F019            	    19:         beq :++
-00:109E C5A9            	    20:         cmp lvlnum
-00:10A0 F009            	    21:         beq :+
-00:10A2 E8              	    22:         inx
-00:10A3 E8              	    23:         inx
-00:10A4 E8              	    24:         inx
-00:10A5 E8              	    25:         inx
-00:10A6 E8              	    26:         inx
-00:10A7 E8              	    27:         inx
-00:10A8 4C9710          	    28:         jmp :-
-00:10AB E8              	    29: :       inx
-00:10AC E8              	    30:         inx
-00:10AD E8              	    31:         inx
-00:10AE E8              	    32:         inx
-00:10AF BD0017          	    33:         lda frtsptbl,x          ;load points (lo)
-00:10B2 A8              	    34:         tay
-00:10B3 E8              	    35:         inx
-00:10B4 BD0017          	    36:         lda frtsptbl,x          ;load points (hi)
-00:10B7 60              	    37: :       rts
-                        	    38: 
-                        	    39:         ;; Get fruit sprite index by level number
-                        	    40:         ;; Reads:
-                        	    41:         ;;  - lvlnum
-                        	    42:         ;;  - frtsptbl
-                        	    43:         ;; Writes:
-                        	    44:         ;;  - .A (fruit sprite index)
-                        	    45:         ;; Clobbers:
-                        	    46:         ;;  - .X
-                        	    47: lvlfrtspix:
-00:10B8 A200            	    48:         ldx #0
-00:10BA BD0017          	    49: :       lda frtsptbl,x
-00:10BD C9FF            	    50:         cmp #$ff        
-00:10BF F011            	    51:         beq :++                 ;end marker?
-00:10C1 C5A9            	    52:         cmp lvlnum
-00:10C3 F009            	    53:         beq :+                  ;found row for level?
-00:10C5 E8              	    54:         inx
-00:10C6 E8              	    55:         inx
-00:10C7 E8              	    56:         inx
-00:10C8 E8              	    57:         inx
-00:10C9 E8              	    58:         inx
-00:10CA E8              	    59:         inx
-00:10CB 4CBA10          	    60:         jmp :-                  ;no, keep looking
-00:10CE E8              	    61: :       inx                     ;yes...
-00:10CF BD0017          	    62:         lda frtsptbl,x          ;...load sprite index
-00:10D2 60              	    63: :       rts
-                        	    64: 
-                        	    65:         ;; Get fruit sp0mem offset
-                        	    66:         ;; Reads:
-                        	    67:         ;;  - lvlnum
-                        	    68:         ;;  - frtsptbl
-                        	    69:         ;; Writes:
-                        	    70:         ;;  - .Y (offset lo byte)
-                        	    71:         ;;  - .A (offset hi byte)
-                        	    72:         ;; Clobbers:
-                        	    73:         ;;  - .X
-                        	    74: lvlfrtspof:
-00:10D3 A200            	    75:         ldx #0
-00:10D5 BD0017          	    76: :       lda frtsptbl,x
-00:10D8 C9FF            	    77:         cmp #$ff        
-00:10DA F017            	    78:         beq :++                 ;end marker?
-00:10DC C5A9            	    79:         cmp lvlnum
-00:10DE F009            	    80:         beq :+                  ;found row for level?
-00:10E0 E8              	    81:         inx
-00:10E1 E8              	    82:         inx
-00:10E2 E8              	    83:         inx
-00:10E3 E8              	    84:         inx
-00:10E4 E8              	    85:         inx
-00:10E5 E8              	    86:         inx
-00:10E6 4CD510          	    87:         jmp :-                  ;no, keep looking
-00:10E9 E8              	    88: :       inx                     ;yes...
-00:10EA E8              	    89:         inx
-00:10EB BD0017          	    90:         lda frtsptbl,x          ;load offset (lo)
-00:10EE A8              	    91:         tay
-00:10EF E8              	    92:         inx
-00:10F0 BD0017          	    93:         lda frtsptbl,x          ;load offset (hi)
-00:10F3 60              	    94: :       rts
-                        	    95:         
-                        	    96:         ;; Check number of pellets remaining and enable fruit if
-                        	    97:         ;; - 130 pellets remaining OR
-                        	    98:         ;; - 55 pellets remaining
-                        	    99:         ;; May only be called from IRQ handler!
-                        	   100:         ;; Clobbers:
-                        	   101:         ;;  - irqwrd1
-                        	   102: showfrt:
-00:10F4 A5A7            	   103:         lda npelrem
-00:10F6 C982            	   104:         cmp #130
-00:10F8 F005            	   105:         beq :+
-00:10FA C937            	   106:         cmp #55
-00:10FC F001            	   107:         beq :+
-00:10FE 60              	   108:         rts
-                        	   109:         ;; Set sprite pointers
-00:10FF 20B810          	   110: :       jsr lvlfrtspix          ;find fruit sprite index for level, store in .A
-00:1102 A8              	   111:         tay                     ;save sprite index to .Y
-00:1103 18              	   112:         clc
-00:1104 6940            	   113:         adc #sp0loc
-00:1106 8DF94F          	   114:         sta sp0ptr+1            ;Write to sprite 1 pointer 
-00:1109 C8              	   115:         iny                     ;increment sprite index in .Y
-00:110A 98              	   116:         tya                     ;transfer sprite index back to .A
-00:110B 18              	   117:         clc
-00:110C 6940            	   118:         adc #sp0loc
-00:110E 8DFA4F          	   119:         sta sp0ptr+2            ;Write to sprite 2 pointer
-                        	   120:         ;; Set sprite colours
-00:1111 20D310          	   121:         jsr lvlfrtspof          ;find fruit sprite memory offset
-00:1114 841B            	   122:         sty irqwrd1             ;save offset (lo) onto irqwrd (lo)
-00:1116 851C            	   123:         sta irqwrd1+1           ;save offset (hi) onto irqwrd (hi)
-                        	   124:         adcwimm sp0mem, irqwrd1
+                        	     1:         ;; ============================================================
+                        	     2:         ;; Fruit related sub-routines
+                        	     3:         ;; ============================================================
+                        	     4: 
+                        	     5:         ;; Get fruit bonus points by level number
+                        	     6:         ;; Reads:
+                        	     7:         ;;  - lvlnum
+                        	     8:         ;;  - frtsptbl
+                        	     9:         ;; Write:
+                        	    10:         ;;  - .Y (points lo-byte)
+                        	    11:         ;;  - .A (points hi-byte)
+                        	    12:         ;; Clobbers:
+                        	    13:         ;;  - .X
+                        	    14: lvlfrtpts:
+00:1095 A200            	    15:         ldx #0
+00:1097 BD0217          	    16: :       lda frtsptbl,x
+00:109A C9FF            	    17:         cmp #$ff
+00:109C F019            	    18:         beq :++
+00:109E C5A9            	    19:         cmp lvlnum
+00:10A0 F009            	    20:         beq :+
+00:10A2 E8              	    21:         inx
+00:10A3 E8              	    22:         inx
+00:10A4 E8              	    23:         inx
+00:10A5 E8              	    24:         inx
+00:10A6 E8              	    25:         inx
+00:10A7 E8              	    26:         inx
+00:10A8 4C9710          	    27:         jmp :-
+00:10AB E8              	    28: :       inx
+00:10AC E8              	    29:         inx
+00:10AD E8              	    30:         inx
+00:10AE E8              	    31:         inx
+00:10AF BD0217          	    32:         lda frtsptbl,x          ;load points (lo)
+00:10B2 A8              	    33:         tay
+00:10B3 E8              	    34:         inx
+00:10B4 BD0217          	    35:         lda frtsptbl,x          ;load points (hi)
+00:10B7 60              	    36: :       rts
+                        	    37: 
+                        	    38:         ;; Get fruit sprite index by level number
+                        	    39:         ;; Reads:
+                        	    40:         ;;  - lvlnum
+                        	    41:         ;;  - frtsptbl
+                        	    42:         ;; Writes:
+                        	    43:         ;;  - .A (fruit sprite index)
+                        	    44:         ;; Clobbers:
+                        	    45:         ;;  - .X
+                        	    46: lvlfrtspix:
+00:10B8 A200            	    47:         ldx #0
+00:10BA BD0217          	    48: :       lda frtsptbl,x
+00:10BD C9FF            	    49:         cmp #$ff        
+00:10BF F011            	    50:         beq :++                 ;end marker?
+00:10C1 C5A9            	    51:         cmp lvlnum
+00:10C3 F009            	    52:         beq :+                  ;found row for level?
+00:10C5 E8              	    53:         inx
+00:10C6 E8              	    54:         inx
+00:10C7 E8              	    55:         inx
+00:10C8 E8              	    56:         inx
+00:10C9 E8              	    57:         inx
+00:10CA E8              	    58:         inx
+00:10CB 4CBA10          	    59:         jmp :-                  ;no, keep looking
+00:10CE E8              	    60: :       inx                     ;yes...
+00:10CF BD0217          	    61:         lda frtsptbl,x          ;...load sprite index
+00:10D2 60              	    62: :       rts
+                        	    63: 
+                        	    64:         ;; Get fruit sp0mem offset
+                        	    65:         ;; Reads:
+                        	    66:         ;;  - lvlnum
+                        	    67:         ;;  - frtsptbl
+                        	    68:         ;; Writes:
+                        	    69:         ;;  - .Y (offset lo byte)
+                        	    70:         ;;  - .A (offset hi byte)
+                        	    71:         ;; Clobbers:
+                        	    72:         ;;  - .X
+                        	    73: lvlfrtspof:
+00:10D3 A200            	    74:         ldx #0
+00:10D5 BD0217          	    75: :       lda frtsptbl,x
+00:10D8 C9FF            	    76:         cmp #$ff        
+00:10DA F017            	    77:         beq :++                 ;end marker?
+00:10DC C5A9            	    78:         cmp lvlnum
+00:10DE F009            	    79:         beq :+                  ;found row for level?
+00:10E0 E8              	    80:         inx
+00:10E1 E8              	    81:         inx
+00:10E2 E8              	    82:         inx
+00:10E3 E8              	    83:         inx
+00:10E4 E8              	    84:         inx
+00:10E5 E8              	    85:         inx
+00:10E6 4CD510          	    86:         jmp :-                  ;no, keep looking
+00:10E9 E8              	    87: :       inx                     ;yes...
+00:10EA E8              	    88:         inx
+00:10EB BD0217          	    89:         lda frtsptbl,x          ;load offset (lo)
+00:10EE A8              	    90:         tay
+00:10EF E8              	    91:         inx
+00:10F0 BD0217          	    92:         lda frtsptbl,x          ;load offset (hi)
+00:10F3 60              	    93: :       rts
+                        	    94:         
+                        	    95:         ;; Check number of pellets remaining and enable fruit if
+                        	    96:         ;; - 130 pellets remaining OR
+                        	    97:         ;; - 55 pellets remaining
+                        	    98:         ;; May only be called from IRQ handler!
+                        	    99:         ;; Clobbers:
+                        	   100:         ;;  - irqwrd1
+                        	   101: showfrt:
+00:10F4 A5A7            	   102:         lda npelrem
+00:10F6 C982            	   103:         cmp #130
+00:10F8 F005            	   104:         beq :+
+00:10FA C937            	   105:         cmp #55
+00:10FC F001            	   106:         beq :+
+00:10FE 60              	   107:         rts
+                        	   108:         ;; Set sprite pointers
+00:10FF 20B810          	   109: :       jsr lvlfrtspix          ;find fruit sprite index for level, store in .A
+00:1102 A8              	   110:         tay                     ;save sprite index to .Y
+00:1103 18              	   111:         clc
+00:1104 6940            	   112:         adc #sp0loc
+00:1106 8DF94F          	   113:         sta sp0ptr+1            ;Write to sprite 1 pointer 
+00:1109 C8              	   114:         iny                     ;increment sprite index in .Y
+00:110A 98              	   115:         tya                     ;transfer sprite index back to .A
+00:110B 18              	   116:         clc
+00:110C 6940            	   117:         adc #sp0loc
+00:110E 8DFA4F          	   118:         sta sp0ptr+2            ;Write to sprite 2 pointer
+                        	   119:         ;; Set sprite colours
+00:1111 20D310          	   120:         jsr lvlfrtspof          ;find fruit sprite memory offset
+00:1114 841B            	   121:         sty irqwrd1             ;save offset (lo) onto irqwrd (lo)
+00:1116 851C            	   122:         sta irqwrd1+1           ;save offset (hi) onto irqwrd (hi)
+                        	   123:         adcwimm sp0mem, irqwrd1
 00:1118 18              	     1M         clc
 00:1119 A51B            	     2M         lda irqwrd1
 00:111B 6900            	     3M         adc #<sp0mem
@@ -2163,11 +2162,11 @@ Source: "fruit.asm"
 00:111F A51C            	     5M         lda irqwrd1+1
 00:1121 6950            	     6M         adc #>sp0mem
 00:1123 851C            	     7M         sta irqwrd1+1
-00:1125 A03F            	   125:         ldy #$3f                ;offset to sprite colour value
-00:1127 B11B            	   126:         lda (irqwrd1),y         ;load sprite colour value
-00:1129 290F            	   127:         and #%00001111          ;mask out hi nybble
-00:112B 8D28D0          	   128:         sta sp0col+1            ;write to sprite 1 colour register 
-                        	   129:         adcwimm $40, irqwrd1    ;Add $40 to offset to advance to next sprite
+00:1125 A03F            	   124:         ldy #$3f                ;offset to sprite colour value
+00:1127 B11B            	   125:         lda (irqwrd1),y         ;load sprite colour value
+00:1129 290F            	   126:         and #%00001111          ;mask out hi nybble
+00:112B 8D28D0          	   127:         sta sp0col+1            ;write to sprite 1 colour register 
+                        	   128:         adcwimm $40, irqwrd1    ;Add $40 to offset to advance to next sprite
 00:112E 18              	     1M         clc
 00:112F A51B            	     2M         lda irqwrd1    
 00:1131 6940            	     3M         adc #<$40
@@ -2175,40 +2174,42 @@ Source: "fruit.asm"
 00:1135 A51C            	     5M         lda irqwrd1    +1
 00:1137 6900            	     6M         adc #>$40
 00:1139 851C            	     7M         sta irqwrd1    +1
-00:113B B11D            	   130:         lda (irqwrd2),y         ;load sprite colour value
-00:113D 290F            	   131:         and #%00001111          ;mask out hi nybble
-00:113F 8D29D0          	   132:         sta sp0col+2            ;write to sprite 2 colour register
-                        	   133:         ;; Set sprite x,y locations
-                        	   134:         ldbimm frxpos, sp1x
+00:113B B11D            	   129:         lda (irqwrd2),y         ;load sprite colour value
+00:113D 290F            	   130:         and #%00001111          ;mask out hi nybble
+00:113F 8D29D0          	   131:         sta sp0col+2            ;write to sprite 2 colour register
+                        	   132:         ;; Set sprite x,y locations
+                        	   133:         ldbimm frxpos, sp1x
 00:1142 A967            	     1M         lda #frxpos
 00:1144 8D02D0          	     2M         sta sp1x
-                        	   135:         ldbimm frxpos, sp2x
+                        	   134:         ldbimm frxpos, sp2x
 00:1147 A967            	     1M         lda #frxpos
 00:1149 8D04D0          	     2M         sta sp2x
-                        	   136:         ldbimm frypos, sp1y
+                        	   135:         ldbimm frypos, sp1y
 00:114C A9A2            	     1M         lda #frypos
 00:114E 8D03D0          	     2M         sta sp1y
-                        	   137:         ldbimm frypos, sp2y
+                        	   136:         ldbimm frypos, sp2y
 00:1151 A9A2            	     1M         lda #frypos
 00:1153 8D05D0          	     2M         sta sp2y
-                        	   138:         ;; Enable sprites 1+2
-00:1156 AD15D0          	   139:         lda spena
-00:1159 0906            	   140:         ora #%00000110
-00:115B 8D15D0          	   141:         sta spena
-                        	   142:         ;; Start fruit timer countdown
-00:115E E6FD            	   143:         inc frtena
-00:1160 60              	   144:         rts
-                        	   145: 
-                        	   146:         ;; Hide fruit
-                        	   147: hidefrt:
-00:1161 AD15D0          	   148:         lda spena
-00:1164 29F9            	   149:         and #%11111001
-00:1166 8D15D0          	   150:         sta spena               ;disable sprites 1+2
-                        	   151:         ldbimm 0, frtena        ;disable fruit timer
-00:1169 A900            	     1M         lda #0
-00:116B 85FD            	     2M         sta frtena        
-00:116D 60              	   152:         rts
-                        	   153: 
+                        	   137:         ;; Enable sprites 1+2
+00:1156 AD15D0          	   138:         lda spena
+00:1159 0906            	   139:         ora #%00000110
+00:115B 8D15D0          	   140:         sta spena
+                        	   141:         ;; Start fruit timer countdown
+                        	   142:         ldbimm 1, frtena
+00:115E A901            	     1M         lda #1
+00:1160 85FD            	     2M         sta frtena
+00:1162 60              	   143:         rts
+                        	   144: 
+                        	   145:         ;; Hide fruit
+                        	   146: hidefrt:
+00:1163 AD15D0          	   147:         lda spena
+00:1166 29F9            	   148:         and #%11111001
+00:1168 8D15D0          	   149:         sta spena               ;disable sprites 1+2
+                        	   150:         ldbimm 0, frtena        ;disable fruit timer
+00:116B A900            	     1M         lda #0
+00:116D 85FD            	     2M         sta frtena        
+00:116F 60              	   151:         rts
+                        	   152: 
 
 Source: "./src/startup.asm"
                         	    35: 
@@ -2226,429 +2227,429 @@ Source: "tables.asm"
                         	     8:         ;;  - byte n,s,w,e (indices of neighboring nodes)
                         	     9: nodetbl:
                         	    10:         ;; Row 1
-00:116E 20              	    11:         byte $20,$3a,$ff,$06,$ff,$01
-00:116F 3A
-00:1170 FF
-00:1171 06
+00:1170 20              	    11:         byte $20,$3a,$ff,$06,$ff,$01
+00:1171 3A
 00:1172 FF
-00:1173 01
-00:1174 40              	    12:         byte $40,$3a,$ff,$07,$00,$02
-00:1175 3A
-00:1176 FF
-00:1177 07
-00:1178 00
-00:1179 02
-00:117A 60              	    13:         byte $60,$3a,$ff,$09,$01,$ff
-00:117B 3A
-00:117C FF
-00:117D 09
-00:117E 01
-00:117F FF
-00:1180 70              	    14:         byte $70,$3a,$ff,$0a,$ff,$04
-00:1181 3A
-00:1182 FF
-00:1183 0A
+00:1173 06
+00:1174 FF
+00:1175 01
+00:1176 40              	    12:         byte $40,$3a,$ff,$07,$00,$02
+00:1177 3A
+00:1178 FF
+00:1179 07
+00:117A 00
+00:117B 02
+00:117C 60              	    13:         byte $60,$3a,$ff,$09,$01,$ff
+00:117D 3A
+00:117E FF
+00:117F 09
+00:1180 01
+00:1181 FF
+00:1182 70              	    14:         byte $70,$3a,$ff,$0a,$ff,$04
+00:1183 3A
 00:1184 FF
-00:1185 04
-00:1186 90              	    15:         byte $90,$3a,$ff,$0c,$03,$05
-00:1187 3A
-00:1188 FF
-00:1189 0C
-00:118A 03
-00:118B 05
-00:118C B0              	    16:         byte $b0,$3a,$ff,$0d,$04,$ff
-00:118D 3A
-00:118E FF
-00:118F 0D
-00:1190 04
-00:1191 FF
+00:1185 0A
+00:1186 FF
+00:1187 04
+00:1188 90              	    15:         byte $90,$3a,$ff,$0c,$03,$05
+00:1189 3A
+00:118A FF
+00:118B 0C
+00:118C 03
+00:118D 05
+00:118E B0              	    16:         byte $b0,$3a,$ff,$0d,$04,$ff
+00:118F 3A
+00:1190 FF
+00:1191 0D
+00:1192 04
+00:1193 FF
                         	    17:         ;; Row 2
-00:1192 20              	    18:         byte $20,$52,$00,$0e,$ff,$07
-00:1193 52
-00:1194 00
-00:1195 0E
-00:1196 FF
-00:1197 07
-00:1198 40              	    19:         byte $40,$52,$01,$0f,$06,$08
-00:1199 52
-00:119A 01
-00:119B 0F
-00:119C 06
-00:119D 08
-00:119E 50              	    20:         byte $50,$52,$ff,$10,$07,$09
-00:119F 52
-00:11A0 FF
-00:11A1 10
-00:11A2 07
-00:11A3 09
-00:11A4 60              	    21:         byte $60,$52,$02,$ff,$08,$0a
-00:11A5 52
-00:11A6 02
-00:11A7 FF
-00:11A8 08
-00:11A9 0A
-00:11AA 70              	    22:         byte $70,$52,$03,$ff,$09,$0b
-00:11AB 52
-00:11AC 03
-00:11AD FF
-00:11AE 09
-00:11AF 0B
-00:11B0 80              	    23:         byte $80,$52,$ff,$13,$0a,$0c
-00:11B1 52
-00:11B2 FF
-00:11B3 13
-00:11B4 0A
-00:11B5 0C
-00:11B6 90              	    24:         byte $90,$52,$04,$14,$0b,$0d
-00:11B7 52
-00:11B8 04
-00:11B9 14
-00:11BA 0B
-00:11BB 0D
-00:11BC B0              	    25:         byte $b0,$52,$05,$15,$0c,$ff
-00:11BD 52
-00:11BE 05
-00:11BF 15
-00:11C0 0C
-00:11C1 FF
+00:1194 20              	    18:         byte $20,$52,$00,$0e,$ff,$07
+00:1195 52
+00:1196 00
+00:1197 0E
+00:1198 FF
+00:1199 07
+00:119A 40              	    19:         byte $40,$52,$01,$0f,$06,$08
+00:119B 52
+00:119C 01
+00:119D 0F
+00:119E 06
+00:119F 08
+00:11A0 50              	    20:         byte $50,$52,$ff,$10,$07,$09
+00:11A1 52
+00:11A2 FF
+00:11A3 10
+00:11A4 07
+00:11A5 09
+00:11A6 60              	    21:         byte $60,$52,$02,$ff,$08,$0a
+00:11A7 52
+00:11A8 02
+00:11A9 FF
+00:11AA 08
+00:11AB 0A
+00:11AC 70              	    22:         byte $70,$52,$03,$ff,$09,$0b
+00:11AD 52
+00:11AE 03
+00:11AF FF
+00:11B0 09
+00:11B1 0B
+00:11B2 80              	    23:         byte $80,$52,$ff,$13,$0a,$0c
+00:11B3 52
+00:11B4 FF
+00:11B5 13
+00:11B6 0A
+00:11B7 0C
+00:11B8 90              	    24:         byte $90,$52,$04,$14,$0b,$0d
+00:11B9 52
+00:11BA 04
+00:11BB 14
+00:11BC 0B
+00:11BD 0D
+00:11BE B0              	    25:         byte $b0,$52,$05,$15,$0c,$ff
+00:11BF 52
+00:11C0 05
+00:11C1 15
+00:11C2 0C
+00:11C3 FF
                         	    26:         ;; Row 3
-00:11C2 20              	    27:         byte $20,$6a,$06,$ff,$ff,$0f
-00:11C3 6A
-00:11C4 06
-00:11C5 FF
-00:11C6 FF
-00:11C7 0F
-00:11C8 40              	    28:         byte $40,$6a,$07,$1c,$0e,$ff
-00:11C9 6A
-00:11CA 07
-00:11CB 1C
-00:11CC 0E
-00:11CD FF
-00:11CE 50              	    29:         byte $50,$6a,$08,$ff,$ff,$11
-00:11CF 6A
-00:11D0 08
-00:11D1 FF
-00:11D2 FF
-00:11D3 11
-00:11D4 60              	    30:         byte $60,$6a,$ff,$17,$10,$ff
-00:11D5 6A
-00:11D6 FF
-00:11D7 17
-00:11D8 10
-00:11D9 FF
-00:11DA 70              	    31:         byte $70,$6a,$ff,$19,$ff,$13
-00:11DB 6A
-00:11DC FF
-00:11DD 19
+00:11C4 20              	    27:         byte $20,$6a,$06,$ff,$ff,$0f
+00:11C5 6A
+00:11C6 06
+00:11C7 FF
+00:11C8 FF
+00:11C9 0F
+00:11CA 40              	    28:         byte $40,$6a,$07,$1c,$0e,$ff
+00:11CB 6A
+00:11CC 07
+00:11CD 1C
+00:11CE 0E
+00:11CF FF
+00:11D0 50              	    29:         byte $50,$6a,$08,$ff,$ff,$11
+00:11D1 6A
+00:11D2 08
+00:11D3 FF
+00:11D4 FF
+00:11D5 11
+00:11D6 60              	    30:         byte $60,$6a,$ff,$17,$10,$ff
+00:11D7 6A
+00:11D8 FF
+00:11D9 17
+00:11DA 10
+00:11DB FF
+00:11DC 70              	    31:         byte $70,$6a,$ff,$19,$ff,$13
+00:11DD 6A
 00:11DE FF
-00:11DF 13
-00:11E0 80              	    32:         byte $80,$6a,$0b,$ff,$12,$ff
-00:11E1 6A
-00:11E2 0B
-00:11E3 FF
-00:11E4 12
+00:11DF 19
+00:11E0 FF
+00:11E1 13
+00:11E2 80              	    32:         byte $80,$6a,$0b,$ff,$12,$ff
+00:11E3 6A
+00:11E4 0B
 00:11E5 FF
-00:11E6 90              	    33:         byte $90,$6a,$0c,$20,$ff,$15
-00:11E7 6A
-00:11E8 0C
-00:11E9 20
-00:11EA FF
-00:11EB 15
-00:11EC B0              	    34:         byte $b0,$6a,$0d,$ff,$14,$ff
-00:11ED 6A
-00:11EE 0D
-00:11EF FF
-00:11F0 14
+00:11E6 12
+00:11E7 FF
+00:11E8 90              	    33:         byte $90,$6a,$0c,$20,$ff,$15
+00:11E9 6A
+00:11EA 0C
+00:11EB 20
+00:11EC FF
+00:11ED 15
+00:11EE B0              	    34:         byte $b0,$6a,$0d,$ff,$14,$ff
+00:11EF 6A
+00:11F0 0D
 00:11F1 FF
+00:11F2 14
+00:11F3 FF
                         	    35:         ;; Row 4
-00:11F2 50              	    36:         byte $50,$7a,$ff,$1d,$ff,$17
-00:11F3 7A
-00:11F4 FF
-00:11F5 1D
+00:11F4 50              	    36:         byte $50,$7a,$ff,$1d,$ff,$17
+00:11F5 7A
 00:11F6 FF
-00:11F7 17
-00:11F8 60              	    37:         byte $60,$7a,$11,$ff,$16,$18
-00:11F9 7A
-00:11FA 11
-00:11FB FF
-00:11FC 16
-00:11FD 18
-00:11FE 68              	    38:         byte $68,$7a,$ff,$1e,$17,$19
-00:11FF 7A
-00:1200 FF
-00:1201 1E
-00:1202 17
-00:1203 19
-00:1204 70              	    39:         byte $70,$7a,$12,$ff,$18,$1a
-00:1205 7A
-00:1206 12
-00:1207 FF
-00:1208 18
-00:1209 1A
-00:120A 80              	    40:         byte $80,$7a,$ff,$1f,$19,$ff
-00:120B 7A
-00:120C FF
-00:120D 1F
-00:120E 19
-00:120F FF
+00:11F7 1D
+00:11F8 FF
+00:11F9 17
+00:11FA 60              	    37:         byte $60,$7a,$11,$ff,$16,$18
+00:11FB 7A
+00:11FC 11
+00:11FD FF
+00:11FE 16
+00:11FF 18
+00:1200 68              	    38:         byte $68,$7a,$ff,$1e,$17,$19
+00:1201 7A
+00:1202 FF
+00:1203 1E
+00:1204 17
+00:1205 19
+00:1206 70              	    39:         byte $70,$7a,$12,$ff,$18,$1a
+00:1207 7A
+00:1208 12
+00:1209 FF
+00:120A 18
+00:120B 1A
+00:120C 80              	    40:         byte $80,$7a,$ff,$1f,$19,$ff
+00:120D 7A
+00:120E FF
+00:120F 1F
+00:1210 19
+00:1211 FF
                         	    41:         ;; Row 5
-00:1210 18              	    42:         byte $18,$92,$ff,$ff,$21,$1c
-00:1211 92
-00:1212 FF
-00:1213 FF
-00:1214 21
-00:1215 1C
-00:1216 40              	    43:         byte $40,$92,$0f,$25,$1b,$1d
-00:1217 92
-00:1218 0F
-00:1219 25
-00:121A 1B
-00:121B 1D
-00:121C 50              	    44:         byte $50,$92,$16,$22,$1c,$ff
-00:121D 92
-00:121E 16
-00:121F 22
-00:1220 1C
-00:1221 FF
-00:1222 68              	    45:         byte $68,$92,$18,$ff,$ff,$ff
-00:1223 92
-00:1224 18
-00:1225 FF
-00:1226 FF
+00:1212 18              	    42:         byte $18,$92,$ff,$ff,$21,$1c
+00:1213 92
+00:1214 FF
+00:1215 FF
+00:1216 21
+00:1217 1C
+00:1218 40              	    43:         byte $40,$92,$0f,$25,$1b,$1d
+00:1219 92
+00:121A 0F
+00:121B 25
+00:121C 1B
+00:121D 1D
+00:121E 50              	    44:         byte $50,$92,$16,$22,$1c,$ff
+00:121F 92
+00:1220 16
+00:1221 22
+00:1222 1C
+00:1223 FF
+00:1224 68              	    45:         byte $68,$92,$18,$ff,$ff,$ff
+00:1225 92
+00:1226 18
 00:1227 FF
-00:1228 80              	    46:         byte $80,$92,$1a,$23,$ff,$20
-00:1229 92
-00:122A 1A
-00:122B 23
-00:122C FF
-00:122D 20
-00:122E 90              	    47:         byte $90,$92,$14,$2a,$1f,$21
-00:122F 92
-00:1230 14
-00:1231 2A
-00:1232 1F
-00:1233 21
-00:1234 B8              	    48:         byte $b8,$92,$ff,$ff,$20,$1b
-00:1235 92
-00:1236 FF
-00:1237 FF
-00:1238 20
-00:1239 1B
+00:1228 FF
+00:1229 FF
+00:122A 80              	    46:         byte $80,$92,$1a,$23,$ff,$20
+00:122B 92
+00:122C 1A
+00:122D 23
+00:122E FF
+00:122F 20
+00:1230 90              	    47:         byte $90,$92,$14,$2a,$1f,$21
+00:1231 92
+00:1232 14
+00:1233 2A
+00:1234 1F
+00:1235 21
+00:1236 B8              	    48:         byte $b8,$92,$ff,$ff,$20,$1b
+00:1237 92
+00:1238 FF
+00:1239 FF
+00:123A 20
+00:123B 1B
                         	    49:         ;; Row 6
-00:123A 50              	    50:         byte $50,$a2,$1d,$26,$ff,$23
-00:123B A2
-00:123C 1D
-00:123D 26
-00:123E FF
-00:123F 23
-00:1240 80              	    51:         byte $80,$a2,$1f,$29,$22,$ff
-00:1241 A2
-00:1242 1F
-00:1243 29
-00:1244 22
-00:1245 FF
+00:123C 50              	    50:         byte $50,$a2,$1d,$26,$ff,$23
+00:123D A2
+00:123E 1D
+00:123F 26
+00:1240 FF
+00:1241 23
+00:1242 80              	    51:         byte $80,$a2,$1f,$29,$22,$ff
+00:1243 A2
+00:1244 1F
+00:1245 29
+00:1246 22
+00:1247 FF
                         	    52:         ;; Row 7
-00:1246 20              	    53:         byte $20,$ba,$ff,$2c,$ff,$25
-00:1247 BA
-00:1248 FF
-00:1249 2C
+00:1248 20              	    53:         byte $20,$ba,$ff,$2c,$ff,$25
+00:1249 BA
 00:124A FF
-00:124B 25
-00:124C 40              	    54:         byte $40,$ba,$1c,$2e,$24,$26
-00:124D BA
-00:124E 1C
-00:124F 2E
-00:1250 24
-00:1251 26
-00:1252 50              	    55:         byte $50,$ba,$22,$ff,$25,$27
-00:1253 BA
-00:1254 22
-00:1255 FF
-00:1256 25
-00:1257 27
-00:1258 60              	    56:         byte $60,$ba,$ff,$30,$26,$ff
-00:1259 BA
-00:125A FF
-00:125B 30
-00:125C 26
-00:125D FF
-00:125E 70              	    57:         byte $70,$ba,$ff,$32,$ff,$29
-00:125F BA
-00:1260 FF
-00:1261 32
+00:124B 2C
+00:124C FF
+00:124D 25
+00:124E 40              	    54:         byte $40,$ba,$1c,$2e,$24,$26
+00:124F BA
+00:1250 1C
+00:1251 2E
+00:1252 24
+00:1253 26
+00:1254 50              	    55:         byte $50,$ba,$22,$ff,$25,$27
+00:1255 BA
+00:1256 22
+00:1257 FF
+00:1258 25
+00:1259 27
+00:125A 60              	    56:         byte $60,$ba,$ff,$30,$26,$ff
+00:125B BA
+00:125C FF
+00:125D 30
+00:125E 26
+00:125F FF
+00:1260 70              	    57:         byte $70,$ba,$ff,$32,$ff,$29
+00:1261 BA
 00:1262 FF
-00:1263 29
-00:1264 80              	    58:         byte $80,$ba,$23,$ff,$28,$2a
-00:1265 BA
-00:1266 23
-00:1267 FF
-00:1268 28
-00:1269 2A
-00:126A 90              	    59:         byte $90,$ba,$20,$34,$29,$2b
-00:126B BA
-00:126C 20
-00:126D 34
-00:126E 29
-00:126F 2B
-00:1270 B0              	    60:         byte $b0,$ba,$ff,$36,$2a,$ff
-00:1271 BA
-00:1272 FF
-00:1273 36
-00:1274 2A
-00:1275 FF
+00:1263 32
+00:1264 FF
+00:1265 29
+00:1266 80              	    58:         byte $80,$ba,$23,$ff,$28,$2a
+00:1267 BA
+00:1268 23
+00:1269 FF
+00:126A 28
+00:126B 2A
+00:126C 90              	    59:         byte $90,$ba,$20,$34,$29,$2b
+00:126D BA
+00:126E 20
+00:126F 34
+00:1270 29
+00:1271 2B
+00:1272 B0              	    60:         byte $b0,$ba,$ff,$36,$2a,$ff
+00:1273 BA
+00:1274 FF
+00:1275 36
+00:1276 2A
+00:1277 FF
                         	    61:         ;; Row 8
-00:1276 20              	    62:         byte $20,$ca,$24,$ff,$ff,$2d
-00:1277 CA
-00:1278 24
-00:1279 FF
-00:127A FF
-00:127B 2D
-00:127C 30              	    63:         byte $30,$ca,$ff,$38,$2c,$ff
-00:127D CA
-00:127E FF
-00:127F 38
-00:1280 2C
-00:1281 FF
-00:1282 40              	    64:         byte $40,$ca,$25,$39,$ff,$2f
-00:1283 CA
-00:1284 25
-00:1285 39
-00:1286 FF
-00:1287 2F
-00:1288 50              	    65:         byte $50,$ca,$ff,$3a,$2e,$30
-00:1289 CA
-00:128A FF
-00:128B 3A
-00:128C 2E
-00:128D 30
-00:128E 60              	    66:         byte $60,$ca,$27,$ff,$2f,$31
-00:128F CA
-00:1290 27
-00:1291 FF
-00:1292 2F
-00:1293 31
-00:1294 68              	    67:         byte $68,$ca,$ff,$ff,$30,$32
-00:1295 CA
-00:1296 FF
-00:1297 FF
-00:1298 30
-00:1299 32
-00:129A 70              	    68:         byte $70,$ca,$28,$ff,$31,$33
-00:129B CA
-00:129C 28
-00:129D FF
-00:129E 31
-00:129F 33
-00:12A0 80              	    69:         byte $80,$ca,$ff,$3d,$32,$34
-00:12A1 CA
-00:12A2 FF
-00:12A3 3D
-00:12A4 32
-00:12A5 34
-00:12A6 90              	    70:         byte $90,$ca,$2a,$3e,$33,$ff
-00:12A7 CA
-00:12A8 2A
-00:12A9 3E
-00:12AA 33
-00:12AB FF
-00:12AC A0              	    71:         byte $a0,$ca,$ff,$3f,$ff,$36
-00:12AD CA
-00:12AE FF
-00:12AF 3F
+00:1278 20              	    62:         byte $20,$ca,$24,$ff,$ff,$2d
+00:1279 CA
+00:127A 24
+00:127B FF
+00:127C FF
+00:127D 2D
+00:127E 30              	    63:         byte $30,$ca,$ff,$38,$2c,$ff
+00:127F CA
+00:1280 FF
+00:1281 38
+00:1282 2C
+00:1283 FF
+00:1284 40              	    64:         byte $40,$ca,$25,$39,$ff,$2f
+00:1285 CA
+00:1286 25
+00:1287 39
+00:1288 FF
+00:1289 2F
+00:128A 50              	    65:         byte $50,$ca,$ff,$3a,$2e,$30
+00:128B CA
+00:128C FF
+00:128D 3A
+00:128E 2E
+00:128F 30
+00:1290 60              	    66:         byte $60,$ca,$27,$ff,$2f,$31
+00:1291 CA
+00:1292 27
+00:1293 FF
+00:1294 2F
+00:1295 31
+00:1296 68              	    67:         byte $68,$ca,$ff,$ff,$30,$32
+00:1297 CA
+00:1298 FF
+00:1299 FF
+00:129A 30
+00:129B 32
+00:129C 70              	    68:         byte $70,$ca,$28,$ff,$31,$33
+00:129D CA
+00:129E 28
+00:129F FF
+00:12A0 31
+00:12A1 33
+00:12A2 80              	    69:         byte $80,$ca,$ff,$3d,$32,$34
+00:12A3 CA
+00:12A4 FF
+00:12A5 3D
+00:12A6 32
+00:12A7 34
+00:12A8 90              	    70:         byte $90,$ca,$2a,$3e,$33,$ff
+00:12A9 CA
+00:12AA 2A
+00:12AB 3E
+00:12AC 33
+00:12AD FF
+00:12AE A0              	    71:         byte $a0,$ca,$ff,$3f,$ff,$36
+00:12AF CA
 00:12B0 FF
-00:12B1 36
-00:12B2 B0              	    72:         byte $b0,$ca,$2b,$ff,$35,$ff
-00:12B3 CA
-00:12B4 2B
-00:12B5 FF
-00:12B6 35
+00:12B1 3F
+00:12B2 FF
+00:12B3 36
+00:12B4 B0              	    72:         byte $b0,$ca,$2b,$ff,$35,$ff
+00:12B5 CA
+00:12B6 2B
 00:12B7 FF
+00:12B8 35
+00:12B9 FF
                         	    73:         ;; Row 9
-00:12B8 20              	    74:         byte $20,$da,$ff,$41,$ff,$38
-00:12B9 DA
-00:12BA FF
-00:12BB 41
+00:12BA 20              	    74:         byte $20,$da,$ff,$41,$ff,$38
+00:12BB DA
 00:12BC FF
-00:12BD 38
-00:12BE 30              	    75:         byte $30,$da,$2d,$ff,$37,$39
-00:12BF DA
-00:12C0 2D
-00:12C1 FF
-00:12C2 37
-00:12C3 39
-00:12C4 40              	    76:         byte $40,$da,$2e,$ff,$38,$ff
-00:12C5 DA
-00:12C6 2E
-00:12C7 FF
-00:12C8 38
+00:12BD 41
+00:12BE FF
+00:12BF 38
+00:12C0 30              	    75:         byte $30,$da,$2d,$ff,$37,$39
+00:12C1 DA
+00:12C2 2D
+00:12C3 FF
+00:12C4 37
+00:12C5 39
+00:12C6 40              	    76:         byte $40,$da,$2e,$ff,$38,$ff
+00:12C7 DA
+00:12C8 2E
 00:12C9 FF
-00:12CA 50              	    77:         byte $50,$da,$2f,$ff,$ff,$3b
-00:12CB DA
-00:12CC 2F
-00:12CD FF
-00:12CE FF
-00:12CF 3B
-00:12D0 60              	    78:         byte $60,$da,$ff,$42,$3a,$ff
-00:12D1 DA
-00:12D2 FF
-00:12D3 42
-00:12D4 3A
-00:12D5 FF
-00:12D6 70              	    79:         byte $70,$da,$ff,$43,$ff,$3d
-00:12D7 DA
-00:12D8 FF
-00:12D9 43
+00:12CA 38
+00:12CB FF
+00:12CC 50              	    77:         byte $50,$da,$2f,$ff,$ff,$3b
+00:12CD DA
+00:12CE 2F
+00:12CF FF
+00:12D0 FF
+00:12D1 3B
+00:12D2 60              	    78:         byte $60,$da,$ff,$42,$3a,$ff
+00:12D3 DA
+00:12D4 FF
+00:12D5 42
+00:12D6 3A
+00:12D7 FF
+00:12D8 70              	    79:         byte $70,$da,$ff,$43,$ff,$3d
+00:12D9 DA
 00:12DA FF
-00:12DB 3D
-00:12DC 80              	    80:         byte $80,$da,$33,$ff,$3c,$ff
-00:12DD DA
-00:12DE 33
-00:12DF FF
-00:12E0 3C
+00:12DB 43
+00:12DC FF
+00:12DD 3D
+00:12DE 80              	    80:         byte $80,$da,$33,$ff,$3c,$ff
+00:12DF DA
+00:12E0 33
 00:12E1 FF
-00:12E2 90              	    81:         byte $90,$da,$34,$ff,$ff,$3f
-00:12E3 DA
-00:12E4 34
-00:12E5 FF
-00:12E6 FF
-00:12E7 3F
-00:12E8 A0              	    82:         byte $a0,$da,$35,$ff,$3e,$40
-00:12E9 DA
-00:12EA 35
-00:12EB FF
-00:12EC 3E
-00:12ED 40
-00:12EE B0              	    83:         byte $b0,$da,$ff,$44,$3f,$ff
-00:12EF DA
-00:12F0 FF
-00:12F1 44
-00:12F2 3F
-00:12F3 FF
+00:12E2 3C
+00:12E3 FF
+00:12E4 90              	    81:         byte $90,$da,$34,$ff,$ff,$3f
+00:12E5 DA
+00:12E6 34
+00:12E7 FF
+00:12E8 FF
+00:12E9 3F
+00:12EA A0              	    82:         byte $a0,$da,$35,$ff,$3e,$40
+00:12EB DA
+00:12EC 35
+00:12ED FF
+00:12EE 3E
+00:12EF 40
+00:12F0 B0              	    83:         byte $b0,$da,$ff,$44,$3f,$ff
+00:12F1 DA
+00:12F2 FF
+00:12F3 44
+00:12F4 3F
+00:12F5 FF
                         	    84:         ;; Row 10
-00:12F4 20              	    85:         byte $20,$ea,$37,$ff,$ff,$42
-00:12F5 EA
-00:12F6 37
-00:12F7 FF
-00:12F8 FF
-00:12F9 42
-00:12FA 60              	    86:         byte $60,$ea,$3b,$ff,$41,$43
-00:12FB EA
-00:12FC 3B
-00:12FD FF
-00:12FE 41
-00:12FF 43
-00:1300 70              	    87:         byte $70,$ea,$3c,$ff,$42,$44
-00:1301 EA
-00:1302 3C
-00:1303 FF
-00:1304 42
-00:1305 44
-00:1306 B0              	    88:         byte $b0,$ea,$40,$ff,$43,$ff
-00:1307 EA
-00:1308 40
-00:1309 FF
-00:130A 43
+00:12F6 20              	    85:         byte $20,$ea,$37,$ff,$ff,$42
+00:12F7 EA
+00:12F8 37
+00:12F9 FF
+00:12FA FF
+00:12FB 42
+00:12FC 60              	    86:         byte $60,$ea,$3b,$ff,$41,$43
+00:12FD EA
+00:12FE 3B
+00:12FF FF
+00:1300 41
+00:1301 43
+00:1302 70              	    87:         byte $70,$ea,$3c,$ff,$42,$44
+00:1303 EA
+00:1304 3C
+00:1305 FF
+00:1306 42
+00:1307 44
+00:1308 B0              	    88:         byte $b0,$ea,$40,$ff,$43,$ff
+00:1309 EA
+00:130A 40
 00:130B FF
+00:130C 43
+00:130D FF
                         	    89: 
                         	    90: 
                         	    91:         ;; Pellet table
@@ -2658,801 +2659,801 @@ Source: "tables.asm"
                         	    95:         ;;  - byte x,y (sprite coordinates of char)
                         	    96: pelltbl:
                         	    97:         ;; Row 1
-00:130C 2900            	    98:         word $0029
-00:130E 01              	    99:         byte 1,$20,$3a
-00:130F 20
-00:1310 3A
-00:1311 2A00            	   100:         word $002a
-00:1313 01              	   101:         byte 1,$28,$3a
-00:1314 28
-00:1315 3A
-00:1316 2B00            	   102:         word $002b
-00:1318 01              	   103:         byte 1,$30,$3a
-00:1319 30
-00:131A 3A
-00:131B 2C00            	   104:         word $002c
-00:131D 01              	   105:         byte 1,$38,$3a
-00:131E 38
-00:131F 3A
-00:1320 2D00            	   106:         word $002d
-00:1322 01              	   107:         byte 1,$40,$3a
-00:1323 40
-00:1324 3A
-00:1325 2E00            	   108:         word $002e
-00:1327 01              	   109:         byte 1,$48,$3a
-00:1328 48
-00:1329 3A
-00:132A 2F00            	   110:         word $002f
-00:132C 01              	   111:         byte 1,$50,$3a
-00:132D 50
-00:132E 3A
-00:132F 3000            	   112:         word $0030
-00:1331 01              	   113:         byte 1,$58,$3a
-00:1332 58
-00:1333 3A
-00:1334 3100            	   114:         word $0031
-00:1336 01              	   115:         byte 1,$60,$3a
-00:1337 60
-00:1338 3A
-00:1339 3300            	   116:         word $0033
-00:133B 01              	   117:         byte 1,$70,$3a
-00:133C 70
-00:133D 3A
-00:133E 3400            	   118:         word $0034
-00:1340 01              	   119:         byte 1,$78,$3a
-00:1341 78
-00:1342 3A
-00:1343 3500            	   120:         word $0035
-00:1345 01              	   121:         byte 1,$80,$3a
-00:1346 80
-00:1347 3A
-00:1348 3600            	   122:         word $0036
-00:134A 01              	   123:         byte 1,$88,$3a
-00:134B 88
-00:134C 3A
-00:134D 3700            	   124:         word $0037
-00:134F 01              	   125:         byte 1,$90,$3a
-00:1350 90
-00:1351 3A
-00:1352 3800            	   126:         word $0038
-00:1354 01              	   127:         byte 1,$98,$3a
-00:1355 98
-00:1356 3A
-00:1357 3900            	   128:         word $0039
-00:1359 01              	   129:         byte 1,$a0,$3a
-00:135A A0
-00:135B 3A
-00:135C 3A00            	   130:         word $003a
-00:135E 01              	   131:         byte 1,$a8,$3a
-00:135F A8
-00:1360 3A
-00:1361 3B00            	   132:         word $003b
-00:1363 01              	   133:         byte 1,$b0,$3a
-00:1364 B0
-00:1365 3A
+00:130E 2900            	    98:         word $0029
+00:1310 01              	    99:         byte 1,$20,$3a
+00:1311 20
+00:1312 3A
+00:1313 2A00            	   100:         word $002a
+00:1315 01              	   101:         byte 1,$28,$3a
+00:1316 28
+00:1317 3A
+00:1318 2B00            	   102:         word $002b
+00:131A 01              	   103:         byte 1,$30,$3a
+00:131B 30
+00:131C 3A
+00:131D 2C00            	   104:         word $002c
+00:131F 01              	   105:         byte 1,$38,$3a
+00:1320 38
+00:1321 3A
+00:1322 2D00            	   106:         word $002d
+00:1324 01              	   107:         byte 1,$40,$3a
+00:1325 40
+00:1326 3A
+00:1327 2E00            	   108:         word $002e
+00:1329 01              	   109:         byte 1,$48,$3a
+00:132A 48
+00:132B 3A
+00:132C 2F00            	   110:         word $002f
+00:132E 01              	   111:         byte 1,$50,$3a
+00:132F 50
+00:1330 3A
+00:1331 3000            	   112:         word $0030
+00:1333 01              	   113:         byte 1,$58,$3a
+00:1334 58
+00:1335 3A
+00:1336 3100            	   114:         word $0031
+00:1338 01              	   115:         byte 1,$60,$3a
+00:1339 60
+00:133A 3A
+00:133B 3300            	   116:         word $0033
+00:133D 01              	   117:         byte 1,$70,$3a
+00:133E 70
+00:133F 3A
+00:1340 3400            	   118:         word $0034
+00:1342 01              	   119:         byte 1,$78,$3a
+00:1343 78
+00:1344 3A
+00:1345 3500            	   120:         word $0035
+00:1347 01              	   121:         byte 1,$80,$3a
+00:1348 80
+00:1349 3A
+00:134A 3600            	   122:         word $0036
+00:134C 01              	   123:         byte 1,$88,$3a
+00:134D 88
+00:134E 3A
+00:134F 3700            	   124:         word $0037
+00:1351 01              	   125:         byte 1,$90,$3a
+00:1352 90
+00:1353 3A
+00:1354 3800            	   126:         word $0038
+00:1356 01              	   127:         byte 1,$98,$3a
+00:1357 98
+00:1358 3A
+00:1359 3900            	   128:         word $0039
+00:135B 01              	   129:         byte 1,$a0,$3a
+00:135C A0
+00:135D 3A
+00:135E 3A00            	   130:         word $003a
+00:1360 01              	   131:         byte 1,$a8,$3a
+00:1361 A8
+00:1362 3A
+00:1363 3B00            	   132:         word $003b
+00:1365 01              	   133:         byte 1,$b0,$3a
+00:1366 B0
+00:1367 3A
                         	   134:         ;; Row 2
-00:1366 5100            	   135:         word $0051
-00:1368 01              	   136:         byte 1,$20,$42          ;energizer
-00:1369 20
-00:136A 42
-00:136B 5500            	   137:         word $0055
-00:136D 01              	   138:         byte 1,$40,$42
-00:136E 40
-00:136F 42
-00:1370 5900            	   139:         word $0059
-00:1372 01              	   140:         byte 1,$60,$42
-00:1373 60
-00:1374 42
-00:1375 5B00            	   141:         word $005b
-00:1377 01              	   142:         byte 1,$70,$42
-00:1378 70
-00:1379 42
-00:137A 5F00            	   143:         word $005f
-00:137C 01              	   144:         byte 1,$90,$42
-00:137D 90
-00:137E 42
-00:137F 6300            	   145:         word $0063
-00:1381 01              	   146:         byte 1,$b0,$42          ;energizer
-00:1382 B0
-00:1383 42
+00:1368 5100            	   135:         word $0051
+00:136A 01              	   136:         byte 1,$20,$42          ;energizer
+00:136B 20
+00:136C 42
+00:136D 5500            	   137:         word $0055
+00:136F 01              	   138:         byte 1,$40,$42
+00:1370 40
+00:1371 42
+00:1372 5900            	   139:         word $0059
+00:1374 01              	   140:         byte 1,$60,$42
+00:1375 60
+00:1376 42
+00:1377 5B00            	   141:         word $005b
+00:1379 01              	   142:         byte 1,$70,$42
+00:137A 70
+00:137B 42
+00:137C 5F00            	   143:         word $005f
+00:137E 01              	   144:         byte 1,$90,$42
+00:137F 90
+00:1380 42
+00:1381 6300            	   145:         word $0063
+00:1383 01              	   146:         byte 1,$b0,$42          ;energizer
+00:1384 B0
+00:1385 42
                         	   147:         ;; Row 3
-00:1384 7900            	   148:         word $0079
-00:1386 01              	   149:         byte 1,$20,$4a
-00:1387 20
-00:1388 4A
-00:1389 7D00            	   150:         word $007d
-00:138B 01              	   151:         byte 1,$40,$4a
-00:138C 40
-00:138D 4A
-00:138E 8100            	   152:         word $0081
-00:1390 01              	   153:         byte 1,$60,$4a
-00:1391 60
-00:1392 4A
-00:1393 8300            	   154:         word $0083
-00:1395 01              	   155:         byte 1,$70,$4a
-00:1396 70
-00:1397 4A
-00:1398 8700            	   156:         word $0087
-00:139A 01              	   157:         byte 1,$90,$4a
-00:139B 90
-00:139C 4A
-00:139D 8B00            	   158:         word $008b
-00:139F 01              	   159:         byte 1,$b0,$4a
-00:13A0 B0
-00:13A1 4A
+00:1386 7900            	   148:         word $0079
+00:1388 01              	   149:         byte 1,$20,$4a
+00:1389 20
+00:138A 4A
+00:138B 7D00            	   150:         word $007d
+00:138D 01              	   151:         byte 1,$40,$4a
+00:138E 40
+00:138F 4A
+00:1390 8100            	   152:         word $0081
+00:1392 01              	   153:         byte 1,$60,$4a
+00:1393 60
+00:1394 4A
+00:1395 8300            	   154:         word $0083
+00:1397 01              	   155:         byte 1,$70,$4a
+00:1398 70
+00:1399 4A
+00:139A 8700            	   156:         word $0087
+00:139C 01              	   157:         byte 1,$90,$4a
+00:139D 90
+00:139E 4A
+00:139F 8B00            	   158:         word $008b
+00:13A1 01              	   159:         byte 1,$b0,$4a
+00:13A2 B0
+00:13A3 4A
                         	   160:         ;; Row 4
-00:13A2 A100            	   161:         word $00a1
-00:13A4 01              	   162:         byte 1,$20,$52
-00:13A5 20
-00:13A6 52
-00:13A7 A200            	   163:         word $00a2
-00:13A9 01              	   164:         byte 1,$28,$52
-00:13AA 28
-00:13AB 52
-00:13AC A300            	   165:         word $00a3
-00:13AE 01              	   166:         byte 1,$30,$52
-00:13AF 30
-00:13B0 52
-00:13B1 A400            	   167:         word $00a4
-00:13B3 01              	   168:         byte 1,$38,$52
-00:13B4 38
-00:13B5 52
-00:13B6 A500            	   169:         word $00a5
-00:13B8 01              	   170:         byte 1,$40,$52
-00:13B9 40
-00:13BA 52
-00:13BB A600            	   171:         word $00a6
-00:13BD 01              	   172:         byte 1,$48,$52
-00:13BE 48
-00:13BF 52
-00:13C0 A700            	   173:         word $00a7
-00:13C2 01              	   174:         byte 1,$50,$52
-00:13C3 50
-00:13C4 52
-00:13C5 A800            	   175:         word $00a8
-00:13C7 01              	   176:         byte 1,$58,$52
-00:13C8 58
-00:13C9 52
-00:13CA A900            	   177:         word $00a9
-00:13CC 01              	   178:         byte 1,$60,$52
-00:13CD 60
-00:13CE 52
-00:13CF AA00            	   179:         word $00aa
-00:13D1 01              	   180:         byte 1,$68,$52
-00:13D2 68
-00:13D3 52
-00:13D4 AB00            	   181:         word $00ab
-00:13D6 01              	   182:         byte 1,$70,$52
-00:13D7 70
-00:13D8 52
-00:13D9 AC00            	   183:         word $00ac
-00:13DB 01              	   184:         byte 1,$78,$52
-00:13DC 78
-00:13DD 52
-00:13DE AD00            	   185:         word $00ad
-00:13E0 01              	   186:         byte 1,$80,$52
-00:13E1 80
-00:13E2 52
-00:13E3 AE00            	   187:         word $00ae
-00:13E5 01              	   188:         byte 1,$88,$52
-00:13E6 88
-00:13E7 52
-00:13E8 AF00            	   189:         word $00af
-00:13EA 01              	   190:         byte 1,$90,$52
-00:13EB 90
-00:13EC 52
-00:13ED B000            	   191:         word $00b0
-00:13EF 01              	   192:         byte 1,$98,$52
-00:13F0 98
-00:13F1 52
-00:13F2 B100            	   193:         word $00b1
-00:13F4 01              	   194:         byte 1,$a0,$52
-00:13F5 A0
-00:13F6 52
-00:13F7 B200            	   195:         word $00b2
-00:13F9 01              	   196:         byte 1,$a8,$52
-00:13FA A8
-00:13FB 52
-00:13FC B300            	   197:         word $00b3
-00:13FE 01              	   198:         byte 1,$b0,$52
-00:13FF B0
-00:1400 52
+00:13A4 A100            	   161:         word $00a1
+00:13A6 01              	   162:         byte 1,$20,$52
+00:13A7 20
+00:13A8 52
+00:13A9 A200            	   163:         word $00a2
+00:13AB 01              	   164:         byte 1,$28,$52
+00:13AC 28
+00:13AD 52
+00:13AE A300            	   165:         word $00a3
+00:13B0 01              	   166:         byte 1,$30,$52
+00:13B1 30
+00:13B2 52
+00:13B3 A400            	   167:         word $00a4
+00:13B5 01              	   168:         byte 1,$38,$52
+00:13B6 38
+00:13B7 52
+00:13B8 A500            	   169:         word $00a5
+00:13BA 01              	   170:         byte 1,$40,$52
+00:13BB 40
+00:13BC 52
+00:13BD A600            	   171:         word $00a6
+00:13BF 01              	   172:         byte 1,$48,$52
+00:13C0 48
+00:13C1 52
+00:13C2 A700            	   173:         word $00a7
+00:13C4 01              	   174:         byte 1,$50,$52
+00:13C5 50
+00:13C6 52
+00:13C7 A800            	   175:         word $00a8
+00:13C9 01              	   176:         byte 1,$58,$52
+00:13CA 58
+00:13CB 52
+00:13CC A900            	   177:         word $00a9
+00:13CE 01              	   178:         byte 1,$60,$52
+00:13CF 60
+00:13D0 52
+00:13D1 AA00            	   179:         word $00aa
+00:13D3 01              	   180:         byte 1,$68,$52
+00:13D4 68
+00:13D5 52
+00:13D6 AB00            	   181:         word $00ab
+00:13D8 01              	   182:         byte 1,$70,$52
+00:13D9 70
+00:13DA 52
+00:13DB AC00            	   183:         word $00ac
+00:13DD 01              	   184:         byte 1,$78,$52
+00:13DE 78
+00:13DF 52
+00:13E0 AD00            	   185:         word $00ad
+00:13E2 01              	   186:         byte 1,$80,$52
+00:13E3 80
+00:13E4 52
+00:13E5 AE00            	   187:         word $00ae
+00:13E7 01              	   188:         byte 1,$88,$52
+00:13E8 88
+00:13E9 52
+00:13EA AF00            	   189:         word $00af
+00:13EC 01              	   190:         byte 1,$90,$52
+00:13ED 90
+00:13EE 52
+00:13EF B000            	   191:         word $00b0
+00:13F1 01              	   192:         byte 1,$98,$52
+00:13F2 98
+00:13F3 52
+00:13F4 B100            	   193:         word $00b1
+00:13F6 01              	   194:         byte 1,$a0,$52
+00:13F7 A0
+00:13F8 52
+00:13F9 B200            	   195:         word $00b2
+00:13FB 01              	   196:         byte 1,$a8,$52
+00:13FC A8
+00:13FD 52
+00:13FE B300            	   197:         word $00b3
+00:1400 01              	   198:         byte 1,$b0,$52
+00:1401 B0
+00:1402 52
                         	   199:         ;; Row 5
-00:1401 C900            	   200:         word $00c9
-00:1403 01              	   201:         byte 1,$20,$5a
-00:1404 20
-00:1405 5A
-00:1406 CD00            	   202:         word $00cd
-00:1408 01              	   203:         byte 1,$40,$5a
-00:1409 40
-00:140A 5A
-00:140B CF00            	   204:         word $00cf
-00:140D 01              	   205:         byte 1,$50,$5a
-00:140E 50
-00:140F 5A
-00:1410 D500            	   206:         word $00d5
-00:1412 01              	   207:         byte 1,$80,$5a
-00:1413 80
-00:1414 5A
-00:1415 D700            	   208:         word $00d7
-00:1417 01              	   209:         byte 1,$90,$5a
-00:1418 90
-00:1419 5A
-00:141A DB00            	   210:         word $00db
-00:141C 01              	   211:         byte 1,$b0,$5a
-00:141D B0
-00:141E 5A
+00:1403 C900            	   200:         word $00c9
+00:1405 01              	   201:         byte 1,$20,$5a
+00:1406 20
+00:1407 5A
+00:1408 CD00            	   202:         word $00cd
+00:140A 01              	   203:         byte 1,$40,$5a
+00:140B 40
+00:140C 5A
+00:140D CF00            	   204:         word $00cf
+00:140F 01              	   205:         byte 1,$50,$5a
+00:1410 50
+00:1411 5A
+00:1412 D500            	   206:         word $00d5
+00:1414 01              	   207:         byte 1,$80,$5a
+00:1415 80
+00:1416 5A
+00:1417 D700            	   208:         word $00d7
+00:1419 01              	   209:         byte 1,$90,$5a
+00:141A 90
+00:141B 5A
+00:141C DB00            	   210:         word $00db
+00:141E 01              	   211:         byte 1,$b0,$5a
+00:141F B0
+00:1420 5A
                         	   212:         ;; Row 6
-00:141F F100            	   213:         word $00f1
-00:1421 01              	   214:         byte 1,$20,$62
-00:1422 20
-00:1423 62
-00:1424 F500            	   215:         word $00f5
-00:1426 01              	   216:         byte 1,$40,$62
-00:1427 40
-00:1428 62
-00:1429 F700            	   217:         word $00f7
-00:142B 01              	   218:         byte 1,$50,$62
-00:142C 50
-00:142D 62
-00:142E FD00            	   219:         word $00fd
-00:1430 01              	   220:         byte 1,$80,$62
-00:1431 80
-00:1432 62
-00:1433 FF00            	   221:         word $00ff
-00:1435 01              	   222:         byte 1,$90,$62
-00:1436 90
-00:1437 62
-00:1438 0301            	   223:         word $0103
-00:143A 01              	   224:         byte 1,$b0,$62
-00:143B B0
-00:143C 62
+00:1421 F100            	   213:         word $00f1
+00:1423 01              	   214:         byte 1,$20,$62
+00:1424 20
+00:1425 62
+00:1426 F500            	   215:         word $00f5
+00:1428 01              	   216:         byte 1,$40,$62
+00:1429 40
+00:142A 62
+00:142B F700            	   217:         word $00f7
+00:142D 01              	   218:         byte 1,$50,$62
+00:142E 50
+00:142F 62
+00:1430 FD00            	   219:         word $00fd
+00:1432 01              	   220:         byte 1,$80,$62
+00:1433 80
+00:1434 62
+00:1435 FF00            	   221:         word $00ff
+00:1437 01              	   222:         byte 1,$90,$62
+00:1438 90
+00:1439 62
+00:143A 0301            	   223:         word $0103
+00:143C 01              	   224:         byte 1,$b0,$62
+00:143D B0
+00:143E 62
                         	   225:         ;; Row 7
-00:143D 1901            	   226:         word $0119
-00:143F 01              	   227:         byte 1,$20,$6a
-00:1440 20
-00:1441 6A
-00:1442 1A01            	   228:         word $011a
-00:1444 01              	   229:         byte 1,$28,$6a
-00:1445 28
-00:1446 6A
-00:1447 1B01            	   230:         word $011b
-00:1449 01              	   231:         byte 1,$30,$6a
-00:144A 30
-00:144B 6A
-00:144C 1C01            	   232:         word $011c
-00:144E 01              	   233:         byte 1,$38,$6a
-00:144F 38
-00:1450 6A
-00:1451 1D01            	   234:         word $011d
-00:1453 01              	   235:         byte 1,$40,$6a
-00:1454 40
-00:1455 6A
-00:1456 1F01            	   236:         word $011f
-00:1458 01              	   237:         byte 1,$50,$6a
-00:1459 50
-00:145A 6A
-00:145B 2001            	   238:         word $0120
-00:145D 01              	   239:         byte 1,$58,$6a
-00:145E 58
-00:145F 6A
-00:1460 2101            	   240:         word $0121
-00:1462 01              	   241:         byte 1,$60,$6a
-00:1463 60
-00:1464 6A
-00:1465 2301            	   242:         word $0123
-00:1467 01              	   243:         byte 1,$70,$6a
-00:1468 70
-00:1469 6A
-00:146A 2401            	   244:         word $0124
-00:146C 01              	   245:         byte 1,$78,$6a
-00:146D 78
-00:146E 6A
-00:146F 2501            	   246:         word $0125
-00:1471 01              	   247:         byte 1,$80,$6a
-00:1472 80
-00:1473 6A
-00:1474 2701            	   248:         word $0127
-00:1476 01              	   249:         byte 1,$90,$6a
-00:1477 90
-00:1478 6A
-00:1479 2801            	   250:         word $0128
-00:147B 01              	   251:         byte 1,$98,$6a
-00:147C 98
-00:147D 6A
-00:147E 2901            	   252:         word $0129
-00:1480 01              	   253:         byte 1,$a0,$6a
-00:1481 A0
-00:1482 6A
-00:1483 2A01            	   254:         word $012a
-00:1485 01              	   255:         byte 1,$a8,$6a
-00:1486 A8
-00:1487 6A
-00:1488 2B01            	   256:         word $012b
-00:148A 01              	   257:         byte 1,$b0,$6a
-00:148B B0
-00:148C 6A
+00:143F 1901            	   226:         word $0119
+00:1441 01              	   227:         byte 1,$20,$6a
+00:1442 20
+00:1443 6A
+00:1444 1A01            	   228:         word $011a
+00:1446 01              	   229:         byte 1,$28,$6a
+00:1447 28
+00:1448 6A
+00:1449 1B01            	   230:         word $011b
+00:144B 01              	   231:         byte 1,$30,$6a
+00:144C 30
+00:144D 6A
+00:144E 1C01            	   232:         word $011c
+00:1450 01              	   233:         byte 1,$38,$6a
+00:1451 38
+00:1452 6A
+00:1453 1D01            	   234:         word $011d
+00:1455 01              	   235:         byte 1,$40,$6a
+00:1456 40
+00:1457 6A
+00:1458 1F01            	   236:         word $011f
+00:145A 01              	   237:         byte 1,$50,$6a
+00:145B 50
+00:145C 6A
+00:145D 2001            	   238:         word $0120
+00:145F 01              	   239:         byte 1,$58,$6a
+00:1460 58
+00:1461 6A
+00:1462 2101            	   240:         word $0121
+00:1464 01              	   241:         byte 1,$60,$6a
+00:1465 60
+00:1466 6A
+00:1467 2301            	   242:         word $0123
+00:1469 01              	   243:         byte 1,$70,$6a
+00:146A 70
+00:146B 6A
+00:146C 2401            	   244:         word $0124
+00:146E 01              	   245:         byte 1,$78,$6a
+00:146F 78
+00:1470 6A
+00:1471 2501            	   246:         word $0125
+00:1473 01              	   247:         byte 1,$80,$6a
+00:1474 80
+00:1475 6A
+00:1476 2701            	   248:         word $0127
+00:1478 01              	   249:         byte 1,$90,$6a
+00:1479 90
+00:147A 6A
+00:147B 2801            	   250:         word $0128
+00:147D 01              	   251:         byte 1,$98,$6a
+00:147E 98
+00:147F 6A
+00:1480 2901            	   252:         word $0129
+00:1482 01              	   253:         byte 1,$a0,$6a
+00:1483 A0
+00:1484 6A
+00:1485 2A01            	   254:         word $012a
+00:1487 01              	   255:         byte 1,$a8,$6a
+00:1488 A8
+00:1489 6A
+00:148A 2B01            	   256:         word $012b
+00:148C 01              	   257:         byte 1,$b0,$6a
+00:148D B0
+00:148E 6A
                         	   258:         ;; Row 8
-00:148D 4501            	   259:         word $0145
-00:148F 01              	   260:         byte 1,$40,$72
-00:1490 40
-00:1491 72
-00:1492 4901            	   261:         word $0149
-00:1494 01              	   262:         byte 1,$60,$72
-00:1495 60
-00:1496 72
-00:1497 4B01            	   263:         word $014b
-00:1499 01              	   264:         byte 1,$70,$72
-00:149A 70
-00:149B 72
-00:149C 4F01            	   265:         word $014f
-00:149E 01              	   266:         byte 1,$90,$72
-00:149F 90
-00:14A0 72
+00:148F 4501            	   259:         word $0145
+00:1491 01              	   260:         byte 1,$40,$72
+00:1492 40
+00:1493 72
+00:1494 4901            	   261:         word $0149
+00:1496 01              	   262:         byte 1,$60,$72
+00:1497 60
+00:1498 72
+00:1499 4B01            	   263:         word $014b
+00:149B 01              	   264:         byte 1,$70,$72
+00:149C 70
+00:149D 72
+00:149E 4F01            	   265:         word $014f
+00:14A0 01              	   266:         byte 1,$90,$72
+00:14A1 90
+00:14A2 72
                         	   267:         ;; Row 9
-00:14A1 6D01            	   268:         word $016d
-00:14A3 01              	   269:         byte 1,$40,$7a
-00:14A4 40
-00:14A5 7A
-00:14A6 7701            	   270:         word $0177
-00:14A8 01              	   271:         byte 1,$90,$7a
-00:14A9 90
-00:14AA 7A
+00:14A3 6D01            	   268:         word $016d
+00:14A5 01              	   269:         byte 1,$40,$7a
+00:14A6 40
+00:14A7 7A
+00:14A8 7701            	   270:         word $0177
+00:14AA 01              	   271:         byte 1,$90,$7a
+00:14AB 90
+00:14AC 7A
                         	   272:         ;; Row 10
-00:14AB 9501            	   273:         word $0195
-00:14AD 01              	   274:         byte 1,$40,$82
-00:14AE 40
-00:14AF 82
-00:14B0 9F01            	   275:         word $019f
-00:14B2 01              	   276:         byte 1,$90,$82
-00:14B3 90
-00:14B4 82
+00:14AD 9501            	   273:         word $0195
+00:14AF 01              	   274:         byte 1,$40,$82
+00:14B0 40
+00:14B1 82
+00:14B2 9F01            	   275:         word $019f
+00:14B4 01              	   276:         byte 1,$90,$82
+00:14B5 90
+00:14B6 82
                         	   277:         ;; Row 11
-00:14B5 BD01            	   278:         word $01bd
-00:14B7 01              	   279:         byte 1,$40,$8a
-00:14B8 40
-00:14B9 8A
-00:14BA C701            	   280:         word $01c7
-00:14BC 01              	   281:         byte 1,$90,$8a
-00:14BD 90
-00:14BE 8A
+00:14B7 BD01            	   278:         word $01bd
+00:14B9 01              	   279:         byte 1,$40,$8a
+00:14BA 40
+00:14BB 8A
+00:14BC C701            	   280:         word $01c7
+00:14BE 01              	   281:         byte 1,$90,$8a
+00:14BF 90
+00:14C0 8A
                         	   282:         ;; Row 12
-00:14BF E501            	   283:         word $01e5
-00:14C1 01              	   284:         byte 1,$40,$92
-00:14C2 40
-00:14C3 92
-00:14C4 EF01            	   285:         word $01ef
-00:14C6 01              	   286:         byte 1,$90,$92
-00:14C7 90
-00:14C8 92
+00:14C1 E501            	   283:         word $01e5
+00:14C3 01              	   284:         byte 1,$40,$92
+00:14C4 40
+00:14C5 92
+00:14C6 EF01            	   285:         word $01ef
+00:14C8 01              	   286:         byte 1,$90,$92
+00:14C9 90
+00:14CA 92
                         	   287:         ;; Row 13
-00:14C9 0D02            	   288:         word $020d
-00:14CB 01              	   289:         byte 1,$40,$9a
-00:14CC 40
-00:14CD 9A
-00:14CE 1702            	   290:         word $0217
-00:14D0 01              	   291:         byte 1,$90,$9a
-00:14D1 90
-00:14D2 9A
+00:14CB 0D02            	   288:         word $020d
+00:14CD 01              	   289:         byte 1,$40,$9a
+00:14CE 40
+00:14CF 9A
+00:14D0 1702            	   290:         word $0217
+00:14D2 01              	   291:         byte 1,$90,$9a
+00:14D3 90
+00:14D4 9A
                         	   292:         ;; Row 14
-00:14D3 3502            	   293:         word $0235
-00:14D5 01              	   294:         byte 1,$40,$a2
-00:14D6 40
-00:14D7 A2
-00:14D8 3F02            	   295:         word $023f
-00:14DA 01              	   296:         byte 1,$90,$a2
-00:14DB 90
-00:14DC A2
+00:14D5 3502            	   293:         word $0235
+00:14D7 01              	   294:         byte 1,$40,$a2
+00:14D8 40
+00:14D9 A2
+00:14DA 3F02            	   295:         word $023f
+00:14DC 01              	   296:         byte 1,$90,$a2
+00:14DD 90
+00:14DE A2
                         	   297:         ;; Row 15
-00:14DD 5D02            	   298:         word $025d
-00:14DF 01              	   299:         byte 1,$40,$aa
-00:14E0 40
-00:14E1 AA
-00:14E2 6702            	   300:         word $0267
-00:14E4 01              	   301:         byte 1,$90,$aa
-00:14E5 90
-00:14E6 AA
+00:14DF 5D02            	   298:         word $025d
+00:14E1 01              	   299:         byte 1,$40,$aa
+00:14E2 40
+00:14E3 AA
+00:14E4 6702            	   300:         word $0267
+00:14E6 01              	   301:         byte 1,$90,$aa
+00:14E7 90
+00:14E8 AA
                         	   302:         ;; Row 16
-00:14E7 8502            	   303:         word $0285
-00:14E9 01              	   304:         byte 1,$40,$b2
-00:14EA 40
-00:14EB B2
-00:14EC 8F02            	   305:         word $028f
-00:14EE 01              	   306:         byte 1,$90,$b2
-00:14EF 90
-00:14F0 B2
+00:14E9 8502            	   303:         word $0285
+00:14EB 01              	   304:         byte 1,$40,$b2
+00:14EC 40
+00:14ED B2
+00:14EE 8F02            	   305:         word $028f
+00:14F0 01              	   306:         byte 1,$90,$b2
+00:14F1 90
+00:14F2 B2
                         	   307:         ;; Row 17
-00:14F1 A902            	   308:         word $02a9
-00:14F3 01              	   309:         byte 1,$20,$ba
-00:14F4 20
-00:14F5 BA
-00:14F6 AA02            	   310:         word $02aa
-00:14F8 01              	   311:         byte 1,$28,$ba
-00:14F9 28
-00:14FA BA
-00:14FB AB02            	   312:         word $02ab
-00:14FD 01              	   313:         byte 1,$30,$ba
-00:14FE 30
-00:14FF BA
-00:1500 AC02            	   314:         word $02ac
-00:1502 01              	   315:         byte 1,$38,$ba
-00:1503 38
-00:1504 BA
-00:1505 AD02            	   316:         word $02ad
-00:1507 01              	   317:         byte 1,$40,$ba
-00:1508 40
-00:1509 BA
-00:150A AE02            	   318:         word $02ae
-00:150C 01              	   319:         byte 1,$48,$ba
-00:150D 48
-00:150E BA
-00:150F AF02            	   320:         word $02af
-00:1511 01              	   321:         byte 1,$50,$ba
-00:1512 50
-00:1513 BA
-00:1514 B002            	   322:         word $02b0
-00:1516 01              	   323:         byte 1,$58,$ba
-00:1517 58
-00:1518 BA
-00:1519 B102            	   324:         word $02b1
-00:151B 01              	   325:         byte 1,$60,$ba
-00:151C 60
-00:151D BA
-00:151E B302            	   326:         word $02b3
-00:1520 01              	   327:         byte 1,$70,$ba
-00:1521 70
-00:1522 BA
-00:1523 B402            	   328:         word $02b4
-00:1525 01              	   329:         byte 1,$78,$ba
-00:1526 78
-00:1527 BA
-00:1528 B502            	   330:         word $02b5
-00:152A 01              	   331:         byte 1,$80,$ba
-00:152B 80
-00:152C BA
-00:152D B602            	   332:         word $02b6
-00:152F 01              	   333:         byte 1,$88,$ba
-00:1530 88
-00:1531 BA
-00:1532 B702            	   334:         word $02b7
-00:1534 01              	   335:         byte 1,$90,$ba
-00:1535 90
-00:1536 BA
-00:1537 B802            	   336:         word $02b8
-00:1539 01              	   337:         byte 1,$98,$ba
-00:153A 98
-00:153B BA
-00:153C B902            	   338:         word $02b9
-00:153E 01              	   339:         byte 1,$a0,$ba
-00:153F A0
-00:1540 BA
-00:1541 BA02            	   340:         word $02ba
-00:1543 01              	   341:         byte 1,$a8,$ba
-00:1544 A8
-00:1545 BA
-00:1546 BB02            	   342:         word $02bb
-00:1548 01              	   343:         byte 1,$b0,$ba
-00:1549 B0
-00:154A BA
+00:14F3 A902            	   308:         word $02a9
+00:14F5 01              	   309:         byte 1,$20,$ba
+00:14F6 20
+00:14F7 BA
+00:14F8 AA02            	   310:         word $02aa
+00:14FA 01              	   311:         byte 1,$28,$ba
+00:14FB 28
+00:14FC BA
+00:14FD AB02            	   312:         word $02ab
+00:14FF 01              	   313:         byte 1,$30,$ba
+00:1500 30
+00:1501 BA
+00:1502 AC02            	   314:         word $02ac
+00:1504 01              	   315:         byte 1,$38,$ba
+00:1505 38
+00:1506 BA
+00:1507 AD02            	   316:         word $02ad
+00:1509 01              	   317:         byte 1,$40,$ba
+00:150A 40
+00:150B BA
+00:150C AE02            	   318:         word $02ae
+00:150E 01              	   319:         byte 1,$48,$ba
+00:150F 48
+00:1510 BA
+00:1511 AF02            	   320:         word $02af
+00:1513 01              	   321:         byte 1,$50,$ba
+00:1514 50
+00:1515 BA
+00:1516 B002            	   322:         word $02b0
+00:1518 01              	   323:         byte 1,$58,$ba
+00:1519 58
+00:151A BA
+00:151B B102            	   324:         word $02b1
+00:151D 01              	   325:         byte 1,$60,$ba
+00:151E 60
+00:151F BA
+00:1520 B302            	   326:         word $02b3
+00:1522 01              	   327:         byte 1,$70,$ba
+00:1523 70
+00:1524 BA
+00:1525 B402            	   328:         word $02b4
+00:1527 01              	   329:         byte 1,$78,$ba
+00:1528 78
+00:1529 BA
+00:152A B502            	   330:         word $02b5
+00:152C 01              	   331:         byte 1,$80,$ba
+00:152D 80
+00:152E BA
+00:152F B602            	   332:         word $02b6
+00:1531 01              	   333:         byte 1,$88,$ba
+00:1532 88
+00:1533 BA
+00:1534 B702            	   334:         word $02b7
+00:1536 01              	   335:         byte 1,$90,$ba
+00:1537 90
+00:1538 BA
+00:1539 B802            	   336:         word $02b8
+00:153B 01              	   337:         byte 1,$98,$ba
+00:153C 98
+00:153D BA
+00:153E B902            	   338:         word $02b9
+00:1540 01              	   339:         byte 1,$a0,$ba
+00:1541 A0
+00:1542 BA
+00:1543 BA02            	   340:         word $02ba
+00:1545 01              	   341:         byte 1,$a8,$ba
+00:1546 A8
+00:1547 BA
+00:1548 BB02            	   342:         word $02bb
+00:154A 01              	   343:         byte 1,$b0,$ba
+00:154B B0
+00:154C BA
                         	   344:         ;; Row 18
-00:154B D102            	   345:         word $02d1
-00:154D 01              	   346:         byte 1,$20,$c2
-00:154E 20
-00:154F C2
-00:1550 D502            	   347:         word $02d5
-00:1552 01              	   348:         byte 1,$40,$c2
-00:1553 40
-00:1554 C2
-00:1555 D902            	   349:         word $02d9
-00:1557 01              	   350:         byte 1,$60,$c2
-00:1558 60
-00:1559 C2
-00:155A DB02            	   351:         word $02db
-00:155C 01              	   352:         byte 1,$70,$c2
-00:155D 70
-00:155E C2
-00:155F DF02            	   353:         word $02df
-00:1561 01              	   354:         byte 1,$90,$c2
-00:1562 90
-00:1563 C2
-00:1564 E302            	   355:         word $02e3
-00:1566 01              	   356:         byte 1,$b0,$c2
-00:1567 B0
-00:1568 C2
+00:154D D102            	   345:         word $02d1
+00:154F 01              	   346:         byte 1,$20,$c2
+00:1550 20
+00:1551 C2
+00:1552 D502            	   347:         word $02d5
+00:1554 01              	   348:         byte 1,$40,$c2
+00:1555 40
+00:1556 C2
+00:1557 D902            	   349:         word $02d9
+00:1559 01              	   350:         byte 1,$60,$c2
+00:155A 60
+00:155B C2
+00:155C DB02            	   351:         word $02db
+00:155E 01              	   352:         byte 1,$70,$c2
+00:155F 70
+00:1560 C2
+00:1561 DF02            	   353:         word $02df
+00:1563 01              	   354:         byte 1,$90,$c2
+00:1564 90
+00:1565 C2
+00:1566 E302            	   355:         word $02e3
+00:1568 01              	   356:         byte 1,$b0,$c2
+00:1569 B0
+00:156A C2
                         	   357:         ;; Row 19
-00:1569 F902            	   358:         word $02f9
-00:156B 01              	   359:         byte 1,$20,$ca          ;energizer
-00:156C 20
-00:156D CA
-00:156E FA02            	   360:         word $02fa
-00:1570 01              	   361:         byte 1,$28,$ca
-00:1571 28
-00:1572 CA
-00:1573 FB02            	   362:         word $02fb
-00:1575 01              	   363:         byte 1,$30,$ca
-00:1576 30
-00:1577 CA
-00:1578 FD02            	   364:         word $02fd
-00:157A 01              	   365:         byte 1,$40,$ca
-00:157B 40
-00:157C CA
-00:157D FE02            	   366:         word $02fe
-00:157F 01              	   367:         byte 1,$48,$ca
-00:1580 48
-00:1581 CA
-00:1582 FF02            	   368:         word $02ff
-00:1584 01              	   369:         byte 1,$50,$ca
-00:1585 50
-00:1586 CA
-00:1587 0003            	   370:         word $0300
-00:1589 01              	   371:         byte 1,$58,$ca
-00:158A 58
-00:158B CA
-00:158C 0103            	   372:         word $0301
-00:158E 01              	   373:         byte 1,$60,$ca
-00:158F 60
-00:1590 CA
-00:1591 0303            	   374:         word $0303
-00:1593 01              	   375:         byte 1,$70,$ca
-00:1594 70
-00:1595 CA
-00:1596 0403            	   376:         word $0304
-00:1598 01              	   377:         byte 1,$78,$ca
-00:1599 78
-00:159A CA
-00:159B 0503            	   378:         word $0305
-00:159D 01              	   379:         byte 1,$80,$ca
-00:159E 80
-00:159F CA
-00:15A0 0603            	   380:         word $0306
-00:15A2 01              	   381:         byte 1,$88,$ca
-00:15A3 88
-00:15A4 CA
-00:15A5 0703            	   382:         word $0307
-00:15A7 01              	   383:         byte 1,$90,$ca
-00:15A8 90
-00:15A9 CA
-00:15AA 0903            	   384:         word $0309
-00:15AC 01              	   385:         byte 1,$a0,$ca
-00:15AD A0
-00:15AE CA
-00:15AF 0A03            	   386:         word $030a
-00:15B1 01              	   387:         byte 1,$a8,$ca
-00:15B2 A8
-00:15B3 CA
-00:15B4 0B03            	   388:         word $030b
-00:15B6 01              	   389:         byte 1,$b0,$ca          ;energizer
-00:15B7 B0
-00:15B8 CA
+00:156B F902            	   358:         word $02f9
+00:156D 01              	   359:         byte 1,$20,$ca          ;energizer
+00:156E 20
+00:156F CA
+00:1570 FA02            	   360:         word $02fa
+00:1572 01              	   361:         byte 1,$28,$ca
+00:1573 28
+00:1574 CA
+00:1575 FB02            	   362:         word $02fb
+00:1577 01              	   363:         byte 1,$30,$ca
+00:1578 30
+00:1579 CA
+00:157A FD02            	   364:         word $02fd
+00:157C 01              	   365:         byte 1,$40,$ca
+00:157D 40
+00:157E CA
+00:157F FE02            	   366:         word $02fe
+00:1581 01              	   367:         byte 1,$48,$ca
+00:1582 48
+00:1583 CA
+00:1584 FF02            	   368:         word $02ff
+00:1586 01              	   369:         byte 1,$50,$ca
+00:1587 50
+00:1588 CA
+00:1589 0003            	   370:         word $0300
+00:158B 01              	   371:         byte 1,$58,$ca
+00:158C 58
+00:158D CA
+00:158E 0103            	   372:         word $0301
+00:1590 01              	   373:         byte 1,$60,$ca
+00:1591 60
+00:1592 CA
+00:1593 0303            	   374:         word $0303
+00:1595 01              	   375:         byte 1,$70,$ca
+00:1596 70
+00:1597 CA
+00:1598 0403            	   376:         word $0304
+00:159A 01              	   377:         byte 1,$78,$ca
+00:159B 78
+00:159C CA
+00:159D 0503            	   378:         word $0305
+00:159F 01              	   379:         byte 1,$80,$ca
+00:15A0 80
+00:15A1 CA
+00:15A2 0603            	   380:         word $0306
+00:15A4 01              	   381:         byte 1,$88,$ca
+00:15A5 88
+00:15A6 CA
+00:15A7 0703            	   382:         word $0307
+00:15A9 01              	   383:         byte 1,$90,$ca
+00:15AA 90
+00:15AB CA
+00:15AC 0903            	   384:         word $0309
+00:15AE 01              	   385:         byte 1,$a0,$ca
+00:15AF A0
+00:15B0 CA
+00:15B1 0A03            	   386:         word $030a
+00:15B3 01              	   387:         byte 1,$a8,$ca
+00:15B4 A8
+00:15B5 CA
+00:15B6 0B03            	   388:         word $030b
+00:15B8 01              	   389:         byte 1,$b0,$ca          ;energizer
+00:15B9 B0
+00:15BA CA
                         	   390:         ;; Row 20
-00:15B9 2303            	   391:         word $0323
-00:15BB 01              	   392:         byte 1,$30,$d2
-00:15BC 30
-00:15BD D2
-00:15BE 2503            	   393:         word $0325
-00:15C0 01              	   394:         byte 1,$40,$d2
-00:15C1 40
-00:15C2 D2
-00:15C3 2703            	   395:         word $0327
-00:15C5 01              	   396:         byte 1,$50,$d2
-00:15C6 50
-00:15C7 D2
-00:15C8 2D03            	   397:         word $032d
-00:15CA 01              	   398:         byte 1,$80,$d2
-00:15CB 80
-00:15CC D2
-00:15CD 2F03            	   399:         word $032f
-00:15CF 01              	   400:         byte 1,$90,$d2
-00:15D0 90
-00:15D1 D2
-00:15D2 3103            	   401:         word $0331
-00:15D4 01              	   402:         byte 1,$a0,$d2
-00:15D5 A0
-00:15D6 D2
+00:15BB 2303            	   391:         word $0323
+00:15BD 01              	   392:         byte 1,$30,$d2
+00:15BE 30
+00:15BF D2
+00:15C0 2503            	   393:         word $0325
+00:15C2 01              	   394:         byte 1,$40,$d2
+00:15C3 40
+00:15C4 D2
+00:15C5 2703            	   395:         word $0327
+00:15C7 01              	   396:         byte 1,$50,$d2
+00:15C8 50
+00:15C9 D2
+00:15CA 2D03            	   397:         word $032d
+00:15CC 01              	   398:         byte 1,$80,$d2
+00:15CD 80
+00:15CE D2
+00:15CF 2F03            	   399:         word $032f
+00:15D1 01              	   400:         byte 1,$90,$d2
+00:15D2 90
+00:15D3 D2
+00:15D4 3103            	   401:         word $0331
+00:15D6 01              	   402:         byte 1,$a0,$d2
+00:15D7 A0
+00:15D8 D2
                         	   403:         ;; Row 21
-00:15D7 4903            	   404:         word $0349
-00:15D9 01              	   405:         byte 1,$20,$da
-00:15DA 20
-00:15DB DA
-00:15DC 4A03            	   406:         word $034a
-00:15DE 01              	   407:         byte 1,$28,$da
-00:15DF 28
-00:15E0 DA
-00:15E1 4B03            	   408:         word $034b
-00:15E3 01              	   409:         byte 1,$30,$da
-00:15E4 30
-00:15E5 DA
-00:15E6 4C03            	   410:         word $034c
-00:15E8 01              	   411:         byte 1,$38,$da
-00:15E9 38
-00:15EA DA
-00:15EB 4D03            	   412:         word $034d
-00:15ED 01              	   413:         byte 1,$40,$da
-00:15EE 40
-00:15EF DA
-00:15F0 4F03            	   414:         word $034f
-00:15F2 01              	   415:         byte 1,$50,$da
-00:15F3 50
-00:15F4 DA
-00:15F5 5003            	   416:         word $0350
-00:15F7 01              	   417:         byte 1,$58,$da
-00:15F8 58
-00:15F9 DA
-00:15FA 5103            	   418:         word $0351
-00:15FC 01              	   419:         byte 1,$60,$da
-00:15FD 60
-00:15FE DA
-00:15FF 5303            	   420:         word $0353
-00:1601 01              	   421:         byte 1,$70,$da
-00:1602 70
-00:1603 DA
-00:1604 5403            	   422:         word $0354
-00:1606 01              	   423:         byte 1,$78,$da
-00:1607 78
-00:1608 DA
-00:1609 5503            	   424:         word $0355
-00:160B 01              	   425:         byte 1,$80,$da
-00:160C 80
-00:160D DA
-00:160E 5703            	   426:         word $0357
-00:1610 01              	   427:         byte 1,$90,$da
-00:1611 90
-00:1612 DA
-00:1613 5803            	   428:         word $0358
-00:1615 01              	   429:         byte 1,$98,$da
-00:1616 98
-00:1617 DA
-00:1618 5903            	   430:         word $0359
-00:161A 01              	   431:         byte 1,$a0,$da
-00:161B A0
-00:161C DA
-00:161D 5A03            	   432:         word $035a
-00:161F 01              	   433:         byte 1,$a8,$da
-00:1620 A8
-00:1621 DA
-00:1622 5B03            	   434:         word $035b
-00:1624 01              	   435:         byte 1,$b0,$da
-00:1625 B0
-00:1626 DA
+00:15D9 4903            	   404:         word $0349
+00:15DB 01              	   405:         byte 1,$20,$da
+00:15DC 20
+00:15DD DA
+00:15DE 4A03            	   406:         word $034a
+00:15E0 01              	   407:         byte 1,$28,$da
+00:15E1 28
+00:15E2 DA
+00:15E3 4B03            	   408:         word $034b
+00:15E5 01              	   409:         byte 1,$30,$da
+00:15E6 30
+00:15E7 DA
+00:15E8 4C03            	   410:         word $034c
+00:15EA 01              	   411:         byte 1,$38,$da
+00:15EB 38
+00:15EC DA
+00:15ED 4D03            	   412:         word $034d
+00:15EF 01              	   413:         byte 1,$40,$da
+00:15F0 40
+00:15F1 DA
+00:15F2 4F03            	   414:         word $034f
+00:15F4 01              	   415:         byte 1,$50,$da
+00:15F5 50
+00:15F6 DA
+00:15F7 5003            	   416:         word $0350
+00:15F9 01              	   417:         byte 1,$58,$da
+00:15FA 58
+00:15FB DA
+00:15FC 5103            	   418:         word $0351
+00:15FE 01              	   419:         byte 1,$60,$da
+00:15FF 60
+00:1600 DA
+00:1601 5303            	   420:         word $0353
+00:1603 01              	   421:         byte 1,$70,$da
+00:1604 70
+00:1605 DA
+00:1606 5403            	   422:         word $0354
+00:1608 01              	   423:         byte 1,$78,$da
+00:1609 78
+00:160A DA
+00:160B 5503            	   424:         word $0355
+00:160D 01              	   425:         byte 1,$80,$da
+00:160E 80
+00:160F DA
+00:1610 5703            	   426:         word $0357
+00:1612 01              	   427:         byte 1,$90,$da
+00:1613 90
+00:1614 DA
+00:1615 5803            	   428:         word $0358
+00:1617 01              	   429:         byte 1,$98,$da
+00:1618 98
+00:1619 DA
+00:161A 5903            	   430:         word $0359
+00:161C 01              	   431:         byte 1,$a0,$da
+00:161D A0
+00:161E DA
+00:161F 5A03            	   432:         word $035a
+00:1621 01              	   433:         byte 1,$a8,$da
+00:1622 A8
+00:1623 DA
+00:1624 5B03            	   434:         word $035b
+00:1626 01              	   435:         byte 1,$b0,$da
+00:1627 B0
+00:1628 DA
                         	   436:         ;; Row 22
-00:1627 7103            	   437:         word $0371
-00:1629 01              	   438:         byte 1,$20,$e2
-00:162A 20
-00:162B E2
-00:162C 7903            	   439:         word $0379
-00:162E 01              	   440:         byte 1,$60,$e2
-00:162F 60
-00:1630 E2
-00:1631 7B03            	   441:         word $037b
-00:1633 01              	   442:         byte 1,$70,$e2
-00:1634 70
-00:1635 E2
-00:1636 8303            	   443:         word $0383
-00:1638 01              	   444:         byte 1,$b0,$e2
-00:1639 B0
-00:163A E2
+00:1629 7103            	   437:         word $0371
+00:162B 01              	   438:         byte 1,$20,$e2
+00:162C 20
+00:162D E2
+00:162E 7903            	   439:         word $0379
+00:1630 01              	   440:         byte 1,$60,$e2
+00:1631 60
+00:1632 E2
+00:1633 7B03            	   441:         word $037b
+00:1635 01              	   442:         byte 1,$70,$e2
+00:1636 70
+00:1637 E2
+00:1638 8303            	   443:         word $0383
+00:163A 01              	   444:         byte 1,$b0,$e2
+00:163B B0
+00:163C E2
                         	   445:         ;; Row 23
-00:163B 9903            	   446:         word $0399
-00:163D 01              	   447:         byte 1,$20,$ea
-00:163E 20
-00:163F EA
-00:1640 9A03            	   448:         word $039a
-00:1642 01              	   449:         byte 1,$28,$ea
-00:1643 28
-00:1644 EA
-00:1645 9B03            	   450:         word $039b
-00:1647 01              	   451:         byte 1,$30,$ea
-00:1648 30
-00:1649 EA
-00:164A 9C03            	   452:         word $039c
-00:164C 01              	   453:         byte 1,$38,$ea
-00:164D 38
-00:164E EA
-00:164F 9D03            	   454:         word $039d
-00:1651 01              	   455:         byte 1,$40,$ea
-00:1652 40
-00:1653 EA
-00:1654 9E03            	   456:         word $039e
-00:1656 01              	   457:         byte 1,$48,$ea
-00:1657 48
-00:1658 EA
-00:1659 9F03            	   458:         word $039f
-00:165B 01              	   459:         byte 1,$50,$ea
-00:165C 50
-00:165D EA
-00:165E A003            	   460:         word $03a0
-00:1660 01              	   461:         byte 1,$58,$ea
-00:1661 58
-00:1662 EA
-00:1663 A103            	   462:         word $03a1
-00:1665 01              	   463:         byte 1,$60,$ea
-00:1666 60
-00:1667 EA
-00:1668 A203            	   464:         word $03a2
-00:166A 01              	   465:         byte 1,$68,$ea
-00:166B 68
-00:166C EA
-00:166D A303            	   466:         word $03a3
-00:166F 01              	   467:         byte 1,$70,$ea
-00:1670 70
-00:1671 EA
-00:1672 A403            	   468:         word $03a4
-00:1674 01              	   469:         byte 1,$78,$ea
-00:1675 78
-00:1676 EA
-00:1677 A503            	   470:         word $03a5
-00:1679 01              	   471:         byte 1,$80,$ea
-00:167A 80
-00:167B EA
-00:167C A603            	   472:         word $03a6
-00:167E 01              	   473:         byte 1,$88,$ea
-00:167F 88
-00:1680 EA
-00:1681 A703            	   474:         word $03a7
-00:1683 01              	   475:         byte 1,$90,$ea
-00:1684 90
-00:1685 EA
-00:1686 A803            	   476:         word $03a8
-00:1688 01              	   477:         byte 1,$98,$ea
-00:1689 98
-00:168A EA
-00:168B A903            	   478:         word $03a9
-00:168D 01              	   479:         byte 1,$a0,$ea
-00:168E A0
-00:168F EA
-00:1690 AA03            	   480:         word $03aa
-00:1692 01              	   481:         byte 1,$a8,$ea
-00:1693 A8
-00:1694 EA
-00:1695 AB03            	   482:         word $03ab
-00:1697 01              	   483:         byte 1,$b0,$ea
-00:1698 B0
-00:1699 EA
+00:163D 9903            	   446:         word $0399
+00:163F 01              	   447:         byte 1,$20,$ea
+00:1640 20
+00:1641 EA
+00:1642 9A03            	   448:         word $039a
+00:1644 01              	   449:         byte 1,$28,$ea
+00:1645 28
+00:1646 EA
+00:1647 9B03            	   450:         word $039b
+00:1649 01              	   451:         byte 1,$30,$ea
+00:164A 30
+00:164B EA
+00:164C 9C03            	   452:         word $039c
+00:164E 01              	   453:         byte 1,$38,$ea
+00:164F 38
+00:1650 EA
+00:1651 9D03            	   454:         word $039d
+00:1653 01              	   455:         byte 1,$40,$ea
+00:1654 40
+00:1655 EA
+00:1656 9E03            	   456:         word $039e
+00:1658 01              	   457:         byte 1,$48,$ea
+00:1659 48
+00:165A EA
+00:165B 9F03            	   458:         word $039f
+00:165D 01              	   459:         byte 1,$50,$ea
+00:165E 50
+00:165F EA
+00:1660 A003            	   460:         word $03a0
+00:1662 01              	   461:         byte 1,$58,$ea
+00:1663 58
+00:1664 EA
+00:1665 A103            	   462:         word $03a1
+00:1667 01              	   463:         byte 1,$60,$ea
+00:1668 60
+00:1669 EA
+00:166A A203            	   464:         word $03a2
+00:166C 01              	   465:         byte 1,$68,$ea
+00:166D 68
+00:166E EA
+00:166F A303            	   466:         word $03a3
+00:1671 01              	   467:         byte 1,$70,$ea
+00:1672 70
+00:1673 EA
+00:1674 A403            	   468:         word $03a4
+00:1676 01              	   469:         byte 1,$78,$ea
+00:1677 78
+00:1678 EA
+00:1679 A503            	   470:         word $03a5
+00:167B 01              	   471:         byte 1,$80,$ea
+00:167C 80
+00:167D EA
+00:167E A603            	   472:         word $03a6
+00:1680 01              	   473:         byte 1,$88,$ea
+00:1681 88
+00:1682 EA
+00:1683 A703            	   474:         word $03a7
+00:1685 01              	   475:         byte 1,$90,$ea
+00:1686 90
+00:1687 EA
+00:1688 A803            	   476:         word $03a8
+00:168A 01              	   477:         byte 1,$98,$ea
+00:168B 98
+00:168C EA
+00:168D A903            	   478:         word $03a9
+00:168F 01              	   479:         byte 1,$a0,$ea
+00:1690 A0
+00:1691 EA
+00:1692 AA03            	   480:         word $03aa
+00:1694 01              	   481:         byte 1,$a8,$ea
+00:1695 A8
+00:1696 EA
+00:1697 AB03            	   482:         word $03ab
+00:1699 01              	   483:         byte 1,$b0,$ea
+00:169A B0
+00:169B EA
                         	   484:         ;; End marker
-00:169A FFFF            	   485:         word $ffff
-00:169C FF              	   486:         byte $ff,$ff,$ff
-00:169D FF
-00:169E FF
+00:169C FFFF            	   485:         word $ffff
+00:169E FF              	   486:         byte $ff,$ff,$ff
+00:169F FF
+00:16A0 FF
                         	   487:         
                         	   488:         ;; Energizer list
                         	   489:         ;; Index into pelltbl
                         	   490: enzrlst:
-00:169F 12              	   491:         byte $12
-00:16A0 17              	   492:         byte $17
-00:16A1 79              	   493:         byte $79
-00:16A2 88              	   494:         byte $88
+00:16A1 12              	   491:         byte $12
+00:16A2 17              	   492:         byte $17
+00:16A3 79              	   493:         byte $79
+00:16A4 88              	   494:         byte $88
                         	   495: 
                         	   496:         ;; Pac-Man animation frames
                         	   497:         ;; Format:
                         	   498:         ;;  - byte sprite offset values
                         	   499: pacalstn:                       ;north-facing animation frames
-00:16A3 00              	   500:         byte $00,$07,$08,$09,$08,$07
-00:16A4 07
-00:16A5 08
-00:16A6 09
+00:16A5 00              	   500:         byte $00,$07,$08,$09,$08,$07
+00:16A6 07
 00:16A7 08
-00:16A8 07
+00:16A8 09
+00:16A9 08
+00:16AA 07
                         	   501: pacalsts:                       ;south-facing animation frames
-00:16A9 00              	   502:         byte $00,$0a,$0b,$0c,$0b,$0a
-00:16AA 0A
-00:16AB 0B
-00:16AC 0C
+00:16AB 00              	   502:         byte $00,$0a,$0b,$0c,$0b,$0a
+00:16AC 0A
 00:16AD 0B
-00:16AE 0A
+00:16AE 0C
+00:16AF 0B
+00:16B0 0A
                         	   503: pacalstw:                       ;west-facing animation frames
-00:16AF 00              	   504:         byte $00,$01,$02,$03,$02,$01
-00:16B0 01
-00:16B1 02
-00:16B2 03
+00:16B1 00              	   504:         byte $00,$01,$02,$03,$02,$01
+00:16B2 01
 00:16B3 02
-00:16B4 01
+00:16B4 03
+00:16B5 02
+00:16B6 01
                         	   505: pacalste:                       ;east-facing animation frames
-00:16B5 00              	   506:         byte $00,$04,$05,$06,$05,$04
-00:16B6 04
-00:16B7 05
-00:16B8 06
+00:16B7 00              	   506:         byte $00,$04,$05,$06,$05,$04
+00:16B8 04
 00:16B9 05
-00:16BA 04
+00:16BA 06
+00:16BB 05
+00:16BC 04
                         	   507: 
                         	   508:         ;; Index in pelltbl of leftmost+rightmost pellet in row by sprite y loc
                         	   509:         ;; Format:
@@ -3460,75 +3461,75 @@ Source: "tables.asm"
                         	   511:         ;;  - byte ixl (pelltbl index of leftmost pellet in row)
                         	   512:         ;;  - byte ixr (pelltbl index of rightmost pellet in row)
                         	   513: plrowix:
-00:16BB 3A              	   514:         byte $3a,$00,$11        ;row 1
-00:16BC 00
-00:16BD 11
-00:16BE 42              	   515:         byte $42,$12,$17        ;row 2
-00:16BF 12
-00:16C0 17
-00:16C1 4A              	   516:         byte $4a,$18,$1d        ;row 3
-00:16C2 18
-00:16C3 1D
-00:16C4 52              	   517:         byte $52,$1e,$30        ;row 4
-00:16C5 1E
-00:16C6 30
-00:16C7 5A              	   518:         byte $5a,$31,$36        ;row 5
-00:16C8 31
-00:16C9 36
-00:16CA 62              	   519:         byte $62,$37,$3c        ;row 6
-00:16CB 37
-00:16CC 3C
-00:16CD 6A              	   520:         byte $6a,$3d,$4c        ;row 7
-00:16CE 3D
-00:16CF 4C
-00:16D0 72              	   521:         byte $72,$4d,$50        ;row 8
-00:16D1 4D
-00:16D2 50
-00:16D3 7A              	   522:         byte $7a,$51,$52        ;row 9
-00:16D4 51
-00:16D5 52
-00:16D6 82              	   523:         byte $82,$53,$54        ;row 10
-00:16D7 53
-00:16D8 54
-00:16D9 8A              	   524:         byte $8a,$55,$56        ;row 11
-00:16DA 55
-00:16DB 56
-00:16DC 92              	   525:         byte $92,$57,$58        ;row 12
-00:16DD 57
-00:16DE 58
-00:16DF 9A              	   526:         byte $9a,$59,$5a        ;row 13
-00:16E0 59
-00:16E1 5A
-00:16E2 A2              	   527:         byte $a2,$5b,$5c        ;row 14
-00:16E3 5B
-00:16E4 5C
-00:16E5 AA              	   528:         byte $aa,$5d,$5e        ;row 15
-00:16E6 5D
-00:16E7 5E
-00:16E8 B2              	   529:         byte $b2,$5f,$60        ;row 16
-00:16E9 5F
-00:16EA 60
-00:16EB BA              	   530:         byte $ba,$61,$72        ;row 17
-00:16EC 61
-00:16ED 72
-00:16EE C2              	   531:         byte $c2,$73,$78        ;row 18
-00:16EF 73
-00:16F0 78
-00:16F1 CA              	   532:         byte $ca,$79,$88        ;row 19
-00:16F2 79
-00:16F3 88
-00:16F4 D2              	   533:         byte $d2,$89,$8e        ;row 20
-00:16F5 89
-00:16F6 8E
-00:16F7 DA              	   534:         byte $da,$8f,$9e        ;row 21
-00:16F8 8F
-00:16F9 9E
-00:16FA E2              	   535:         byte $e2,$9f,$a2        ;row 22
-00:16FB 9F
-00:16FC A2
-00:16FD EA              	   536:         byte $ea,$a3,$b5        ;row 23
-00:16FE A3
-00:16FF B5
+00:16BD 3A              	   514:         byte $3a,$00,$11        ;row 1
+00:16BE 00
+00:16BF 11
+00:16C0 42              	   515:         byte $42,$12,$17        ;row 2
+00:16C1 12
+00:16C2 17
+00:16C3 4A              	   516:         byte $4a,$18,$1d        ;row 3
+00:16C4 18
+00:16C5 1D
+00:16C6 52              	   517:         byte $52,$1e,$30        ;row 4
+00:16C7 1E
+00:16C8 30
+00:16C9 5A              	   518:         byte $5a,$31,$36        ;row 5
+00:16CA 31
+00:16CB 36
+00:16CC 62              	   519:         byte $62,$37,$3c        ;row 6
+00:16CD 37
+00:16CE 3C
+00:16CF 6A              	   520:         byte $6a,$3d,$4c        ;row 7
+00:16D0 3D
+00:16D1 4C
+00:16D2 72              	   521:         byte $72,$4d,$50        ;row 8
+00:16D3 4D
+00:16D4 50
+00:16D5 7A              	   522:         byte $7a,$51,$52        ;row 9
+00:16D6 51
+00:16D7 52
+00:16D8 82              	   523:         byte $82,$53,$54        ;row 10
+00:16D9 53
+00:16DA 54
+00:16DB 8A              	   524:         byte $8a,$55,$56        ;row 11
+00:16DC 55
+00:16DD 56
+00:16DE 92              	   525:         byte $92,$57,$58        ;row 12
+00:16DF 57
+00:16E0 58
+00:16E1 9A              	   526:         byte $9a,$59,$5a        ;row 13
+00:16E2 59
+00:16E3 5A
+00:16E4 A2              	   527:         byte $a2,$5b,$5c        ;row 14
+00:16E5 5B
+00:16E6 5C
+00:16E7 AA              	   528:         byte $aa,$5d,$5e        ;row 15
+00:16E8 5D
+00:16E9 5E
+00:16EA B2              	   529:         byte $b2,$5f,$60        ;row 16
+00:16EB 5F
+00:16EC 60
+00:16ED BA              	   530:         byte $ba,$61,$72        ;row 17
+00:16EE 61
+00:16EF 72
+00:16F0 C2              	   531:         byte $c2,$73,$78        ;row 18
+00:16F1 73
+00:16F2 78
+00:16F3 CA              	   532:         byte $ca,$79,$88        ;row 19
+00:16F4 79
+00:16F5 88
+00:16F6 D2              	   533:         byte $d2,$89,$8e        ;row 20
+00:16F7 89
+00:16F8 8E
+00:16F9 DA              	   534:         byte $da,$8f,$9e        ;row 21
+00:16FA 8F
+00:16FB 9E
+00:16FC E2              	   535:         byte $e2,$9f,$a2        ;row 22
+00:16FD 9F
+00:16FE A2
+00:16FF EA              	   536:         byte $ea,$a3,$b5        ;row 23
+00:1700 A3
+00:1701 B5
                         	   537: 
                         	   538:         ;; Fruit sprite table
                         	   539:         ;; Format:
@@ -3538,67 +3539,67 @@ Source: "tables.asm"
                         	   543:         ;;  - word pts (bonus points: 4 BCD digits)
                         	   544: frtsptbl:
                         	   545:         ;; 1st level: Cherries
-00:1700 00              	   546:         byte $00,$0d
-00:1701 0D
-00:1702 4003            	   547:         word $0d*$40,$0100
-00:1704 0001
+00:1702 00              	   546:         byte $00,$0d
+00:1703 0D
+00:1704 4003            	   547:         word $0d*$40,$0100
+00:1706 0001
                         	   548:         ;; 2nd level: Strawberry
-00:1706 01              	   549:         byte $01,$0f
-00:1707 0F
-00:1708 C003            	   550:         word $0f*$40,$0300
-00:170A 0003
+00:1708 01              	   549:         byte $01,$0f
+00:1709 0F
+00:170A C003            	   550:         word $0f*$40,$0300
+00:170C 0003
                         	   551:         ;; 3rd & 4th level: Peach
-00:170C 02              	   552:         byte $02,$11
-00:170D 11
-00:170E 4004            	   553:         word $11*$40,$0500
-00:1710 0005
-00:1712 03              	   554:         byte $03,$13
-00:1713 13
-00:1714 C004            	   555:         word $13*$40,$0500
-00:1716 0005
+00:170E 02              	   552:         byte $02,$11
+00:170F 11
+00:1710 4004            	   553:         word $11*$40,$0500
+00:1712 0005
+00:1714 03              	   554:         byte $03,$13
+00:1715 13
+00:1716 C004            	   555:         word $13*$40,$0500
+00:1718 0005
                         	   556:         ;; 5th & 6th level: Apple
-00:1718 04              	   557:         byte $04,$15
-00:1719 15
-00:171A 4005            	   558:         word $15*$40,$0700
-00:171C 0007
-00:171E 05              	   559:         byte $05,$17
-00:171F 17
-00:1720 C005            	   560:         word $17*$40,$0700
-00:1722 0007
+00:171A 04              	   557:         byte $04,$15
+00:171B 15
+00:171C 4005            	   558:         word $15*$40,$0700
+00:171E 0007
+00:1720 05              	   559:         byte $05,$17
+00:1721 17
+00:1722 C005            	   560:         word $17*$40,$0700
+00:1724 0007
                         	   561:         ;; 7th & 8th level: Grapes
-00:1724 06              	   562:         byte $06,$19
-00:1725 19
-00:1726 4006            	   563:         word $19*$40,$1000
-00:1728 0010
-00:172A 07              	   564:         byte $07,$1b
-00:172B 1B
-00:172C C006            	   565:         word $1b*$40,$1000
-00:172E 0010
+00:1726 06              	   562:         byte $06,$19
+00:1727 19
+00:1728 4006            	   563:         word $19*$40,$1000
+00:172A 0010
+00:172C 07              	   564:         byte $07,$1b
+00:172D 1B
+00:172E C006            	   565:         word $1b*$40,$1000
+00:1730 0010
                         	   566:         ;; 9th & 10th levels: Galaxian
-00:1730 08              	   567:         byte $08,$1d
-00:1731 1D
-00:1732 4007            	   568:         word $1d*$40,$2000
-00:1734 0020
-00:1736 09              	   569:         byte $09,$1f
-00:1737 1F
-00:1738 C007            	   570:         word $1f*$40,$2000
-00:173A 0020
+00:1732 08              	   567:         byte $08,$1d
+00:1733 1D
+00:1734 4007            	   568:         word $1d*$40,$2000
+00:1736 0020
+00:1738 09              	   569:         byte $09,$1f
+00:1739 1F
+00:173A C007            	   570:         word $1f*$40,$2000
+00:173C 0020
                         	   571:         ;; 11th & 12th level: Bell
-00:173C 0A              	   572:         byte $0a,$21
-00:173D 21
-00:173E 4008            	   573:         word $21*$40,$3000
-00:1740 0030
-00:1742 0B              	   574:         byte $0b,$23
-00:1743 23
-00:1744 C008            	   575:         word $23*$40,$3000
-00:1746 0030
+00:173E 0A              	   572:         byte $0a,$21
+00:173F 21
+00:1740 4008            	   573:         word $21*$40,$3000
+00:1742 0030
+00:1744 0B              	   574:         byte $0b,$23
+00:1745 23
+00:1746 C008            	   575:         word $23*$40,$3000
+00:1748 0030
                         	   576:         ;; level 13 onwards: Key
-00:1748 0C              	   577:         byte $0c,$25
-00:1749 25
-00:174A 4009            	   578:         word $25*$40,$5000
-00:174C 0050
+00:174A 0C              	   577:         byte $0c,$25
+00:174B 25
+00:174C 4009            	   578:         word $25*$40,$5000
+00:174E 0050
                         	   579:         ;; End Marker
-00:174E FF              	   580:         byte $ff
+00:1750 FF              	   580:         byte $ff
                         	   581: 
 
 Source: "./src/startup.asm"
@@ -4160,6 +4161,22 @@ Source: "./src/startup.asm"
 03:5428 0000000000000000
 03:5430 0000000000000000
 03:5438 0000000000000085
+03:5440 0B00000E00000800
+03:5448 0008000000000000
+03:5450 0000000000000000
+03:5458 0000000000000000
+03:5460 0000000000000000
+03:5468 0000000000000000
+03:5470 0000000000000000
+03:5478 0000000000000085
+03:5480 0000000000000000
+03:5488 003E00007F00007F
+03:5490 00007F00007F0000
+03:5498 3E00000000000000
+03:54A0 0000000000000000
+03:54A8 0000000000000000
+03:54B0 0000000000000000
+03:54B8 0000000000000088
                         	    48: 
 
 
@@ -4205,7 +4222,7 @@ dkgrey                           E:000B
 e                                E:0005
 enzraix                          E:00FC
 enzrchr                          E:0054
-enzrlst                          A:169F
+enzrlst                          A:16A1
 enzrpts                          E:0050
 extcol                           E:D020
 fillcolmem                       A:095D
@@ -4228,13 +4245,13 @@ fprixn                           A:0B0D
 fprixs                           A:0AFB
 frtcol                           A:0CAE
 frtena                           E:00FD
-frtsptbl                         A:1700
+frtsptbl                         A:1702
 frttim                           E:0026
 frxpos                           E:0067
 frypos                           E:00A2
 gameloop                         A:0F9F
 gsthmnd                          E:001E
-hidefrt                          A:1161
+hidefrt                          A:1163
 initsprt                         A:0C0A
 initvic                          A:0930
 irqblki                          E:0005
@@ -4269,14 +4286,14 @@ nminv                            E:0318
 nmiwrd1                          E:0020
 nmiwrd2                          E:0022
 nodeadr                          A:0B4B
-nodetbl                          A:116E
+nodetbl                          A:1170
 npelrem                          E:00A7
 nxl                              A:080B
 pacaix                           E:00FB
-pacalste                         A:16B5
-pacalstn                         A:16A3
-pacalsts                         A:16A9
-pacalstw                         A:16AF
+pacalste                         A:16B7
+pacalstn                         A:16A5
+pacalsts                         A:16AB
+pacalstw                         A:16B1
 pacdir                           E:00A3
 pacdis                           E:00A5
 pacnxd                           E:00A4
@@ -4290,9 +4307,9 @@ pelfound                         A:0AEB
 pelladr                          A:09C6
 pellchr                          E:0053
 pellpts                          E:0010
-pelltbl                          A:130C
+pelltbl                          A:130E
 pelnotfd                         A:0AF2
-plrowix                          A:16BB
+plrowix                          A:16BD
 printchr                         A:091D
 printcol                         A:090A
 printscr                         A:0881
@@ -4530,16 +4547,16 @@ Symbols by value:
 10B8 lvlfrtspix
 10D3 lvlfrtspof
 10F4 showfrt
-1161 hidefrt
-116E nodetbl
-130C pelltbl
-169F enzrlst
-16A3 pacalstn
-16A9 pacalsts
-16AF pacalstw
-16B5 pacalste
-16BB plrowix
-1700 frtsptbl
+1163 hidefrt
+1170 nodetbl
+130E pelltbl
+16A1 enzrlst
+16A5 pacalstn
+16AB pacalsts
+16B1 pacalstw
+16B7 pacalste
+16BD plrowix
+1702 frtsptbl
 4000 charset
 4800 coltab
 4BF0 mazegfx
