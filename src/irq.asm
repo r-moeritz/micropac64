@@ -13,12 +13,13 @@ setupirq:
         cli
         rts
 
-        ;; IRQ handler. Here we implement logic for events such as:
-        ;;  - Pac-Man's movement (player controlled but we need to 
-        ;;    update sprite coordinates, distance remaining to target
-        ;;     node, set new target on reaching target node, etc.)
-        ;;  - Pac-Man's dying & updating remaining lives
-        ;;  - Ghosts going into/out of fright mode, or being eaten
+        ;; IRQ handler. Here we handle:
+        ;;  - Collisions
+        ;;    * between Pac-Man and pellets
+        ;;    * between Pac-Man and fruit
+        ;;    * between Pac-Man and ghosts
+        ;;  - Movement
+        ;;    * Updating Pac-Man and ghost sprite coordinates
 procirq:
         ;; Read sprite collision registers & save to irqwrd1
         cpbyt spbgcl, irqwrd1
@@ -64,7 +65,7 @@ rmpel:  ldwptr irqwrd1, 0, irqwrd2
         ldy #spcechr
         jsr printchr            ;erase pellet
         jsr printscr            ;print score
-        ldbimm 6, irqtmp        ;set number of flashes in irqtmp
+        ldbimm 6, lvlend        ;set number of level end flashes
         dec npelrem             ;decrement pellets remaining
         jsr showfrt             ;conditionally enable bonus fruit
         lda npelrem
@@ -79,10 +80,9 @@ fincol: lda vicirq
         jmp sysirq              ;return from interrupt
 
         ;; Handle raster IRQ
-rasirq: lda npelrem
-        jeq finras              ;don't process IRQ if all pellets eaten
-        lda pacrem
-        beq setnsrc
+        ;; Update sprite 0 (Pac-Man) x & y coordinates
+rasirq: lda pacrem
+        beq finras
         lda pacdir
         cmp #w
         bne chkpde
@@ -93,38 +93,10 @@ chkpde: cmp #e
         inc sp0x
         jmp decrem
 chkpdn: cmp #n
-        bne pdsouth
+        bne pds
         dec sp0y
         jmp decrem
-pdsouth:
-        inc sp0y
+pds:    inc sp0y
 decrem: dec pacrem
-        lda pacrem
-        beq setnsrc
-        jmp finras
-setnsrc:
-        cpbyt pactar, pacsrc    ;set target node as new source node
-        ldx #irqblki
-        jsr nodeadr             ;load node address into irqwrd1
-        ldbptr irqwrd1, 0, sp0x ;store node x loc into sp0x
-        ldbptr irqwrd1, 1, sp0y ;store node y loc into sp0y
-        ldy pacnxd              ;new direction?
-        beq chkcon              ;if not, check for node in current direction
-        lda (irqwrd1),y         ;yes, load node
-        cmp #$ff
-        beq chkcon
-        cmp #gsthmnd
-        beq chkcon
-        sta pactar
-        sty pacdir
-        jsr setnodis
-        jmp finras
-chkcon: ldy pacdir
-        lda (irqwrd1),y
-        cmp #$ff
-        beq finras
-        sta pactar              ;set new target...
-        jsr setnodis            ;... and calculate distance
-finras: ldbimm 0, pacnxd        ;clear out next direction
-        asl vicirq              ;acknowledge IRQ
+finras: asl vicirq              ;acknowledge IRQ
         jmp sysirq              ;return from interrupt

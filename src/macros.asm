@@ -187,6 +187,17 @@ cpwrd:  macro src, dst
         sta \dst+1
         endm
 
+        ;; Fill memory range with a byte
+filmem: macro adr, len, val
+        lda #\val
+        ldx #\len        
+:       beq :+
+        sta \adr,x
+        dex
+        jmp :-
+:       sta \adr,x
+        endm
+
         ;; Increment pointer using X-based, indirect adressing to ensure
         ;; HB is updated along with LB.
 incptrx: macro ptr

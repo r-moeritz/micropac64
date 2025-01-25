@@ -119,7 +119,7 @@ ticloop:
         dey
         jmp ticloop
 flshmaz:
-        lda irqtmp                      ;HACK: read number of flashes remaining from irqtmp
+        lda lvlend                      ;read number of flashes remaining
         jeq finnmi
         ror
         jcc flshwht                     ;flash white on even, blue on odd
@@ -214,7 +214,7 @@ setwht4:
         cpx #250
         bne setwht4
 flshfin:
-        dec irqtmp                      ;decrement flashes remaining
+        dec lvlend                      ;decrement flashes remaining
         
         ;; Restore machine state & return from NMI
 finnmi: ply

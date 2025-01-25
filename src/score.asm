@@ -2,15 +2,6 @@
         ;; Score related routines
         ;; ============================================================
 
-        ;; Reset the score to 0
-rstscr: lda #0
-        ldx #3
-:       bmi :+
-        sta score,x
-        dex
-        jmp :-
-:       rts
-
         ;; Score fruit (pts vary by level)
         ;; May only be called from IRQ handler!
         ;; Reads:

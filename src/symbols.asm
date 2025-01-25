@@ -28,28 +28,28 @@ nmitmp:         equ buf+$0e
         ;; Joystick data
 joybtn:         equ $92         ;button value
 joyx:           equ $96         ;x axis value
-joyy:           equ $9b         ;y axis value
+joyy:           equ $97         ;y axis value
 
         ;; Pac-Man data
 pacsrc:         equ $9e         ;source node
 pactar:         equ $9f         ;target node
 pacdir:         equ $a3         ;facing direction
-pacnxd:         equ $a4         ;next direction
-pacdis:         equ $a5         ;distance to target
-pacrem:         equ $a6         ;distance remaining to target
+pacdis:         equ $a4         ;distance to target
+pacrem:         equ $a5         ;distance remaining to target
 
         ;; Scoring, gameplay
-npelrem:        equ $a7          ;number of pellets remaining
-nmenrem:        equ $a8          ;number of remaining "men"
-lvlnum:         equ $a9          ;level number
-score:          equ $f7          ;player's score in BCD (4 bytes: $f7-$fa)
-frtena:         equ $fb          ;whether or not fruit is enabled
+npelrem:        equ $a6          ;number of pellets remaining
+nmenrem:        equ $a7          ;number of remaining "men"
+lvlnum:         equ $a8          ;level number
+frtena:         equ $a9          ;whether or not fruit is enabled        
+score:          equ $fc          ;player's score in BCD (4 bytes: $fc-$ff)
 
         ;; Animation
-pacaix:         equ $fc          ;Pac-Man animation frame index
-enzraix:        equ $fd          ;energizer animation frame index
+pacaix:         equ $aa          ;Pac-Man animation frame index
+enzraix:        equ $ab          ;energizer animation frame index
+lvlend:         equ $9b          ;level end flashes
 
-        ;; Still available: $fe
+        ;; Still available: $f7-$fb (5 bytes)
         
         ;; Memory-mapped hardware registers
         ;; ------------------------------------------------------------

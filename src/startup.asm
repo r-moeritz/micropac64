@@ -13,11 +13,9 @@ nxl:    word 0
         ;; Program initialization
         jsr initvic
         jsr fillcolmem
-        jsr initsprt
-        jsr newgame
         jsr setupirq
         jsr setupnmi
-        jmp gameloop
+        jsr newgame
 
         ;; Include program modules
         include macros.asm
@@ -25,8 +23,6 @@ nxl:    word 0
         include maths.asm
         include io.asm
         include maze.asm
-        include nodes.asm
-        include sprites.asm
         include irq.asm
         include nmi.asm
         include game.asm
@@ -37,11 +33,11 @@ nxl:    word 0
         include tables.asm
         
         ;; Include assets
-        *=charset
+        org charset
         incbin assets/charset,2
 
-        *=mazegfx
+        org mazegfx
         incbin assets/mazegfx,2
 
-        *=sp0mem
+        org sp0mem
         incbin assets/sprites,2

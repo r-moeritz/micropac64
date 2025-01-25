@@ -61,7 +61,7 @@ lvlfrtspix:
         lda frtsptbl,x          ;...load sprite index
 :       rts
 
-        ;; Get fruit sp0mem offset
+        ;; Get fruit sprite shape memory offset
         ;; Reads:
         ;;  - lvlnum
         ;;  - frtsptbl
