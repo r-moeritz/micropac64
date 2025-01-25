@@ -20,20 +20,25 @@ setupirq:
         ;;  - Pac-Man's dying & updating remaining lives
         ;;  - Ghosts going into/out of fright mode, or being eaten
 procirq:
+        ;; Read sprite collision registers & save to irqwrd1
+        cpbyt spbgcl, irqwrd1
+        cpbyt spspcl, irqwrd1+1
         lda npelrem
         bne chkirq              ;don't handle IRQ when no pellets left
         asl vicirq              ;acknowledge IRQ
         jmp sysirq              ;return from interrupt
         
-chkirq: lda spbgcl
-        lda spspcl              ;clear collision registers by reading them
-        lda vicirq
+chkirq: lda vicirq
         and #%00000010          ;check for sprite-background collision
-        jne pelcol
+        jne bgcol
         lda vicirq
         and #%00000100          ;check for sprite-sprite collision
-        jeq rasirq              ;no, must be raster IRQ
-        ;; Handle Pac-Man collision with fruit
+        jeq fincol
+
+        ;; Handle sprite-sprite collision
+spcol:  lda irqwrd1+1           ;read saved sprite-sprite collision register
+        and #%00000001          ;only interested if Pac-Man sprite was involved
+        jeq fincol
         jsr hidefrt             ;hide the fruit
         jsr scrfrt              ;score the fruit
         jsr printscr            ;print the score
@@ -41,8 +46,9 @@ chkirq: lda spbgcl
         ;; (NMI timer to hide after ~1.5s)
         jmp fincol
 
-        ;; Handle Pac-Man collision with pellet
-pelcol: jsr findpel             ;find pellet collided with & mark as eaten
+        ;; Handle sprite-background collision:
+        ;; Assume Pac-Man collision with pellet
+bgcol:  jsr findpel             ;find pellet collided with & mark as eaten
         lda irqwrd1+1           ;load pellet address hi-byte
         cmp #$ff                ;pellet found?
         jeq fincol              ;no, do nothing
