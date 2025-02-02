@@ -8,46 +8,46 @@
 
         ;; 15-byte buffer for use in sub-routines,
         ;; divided into 3x blocks of 5 bytes each.
-buf:            equ $16         ;$16-$24
+buf:            .ezp $16         ;$16-$24
         
         ;; Block for game loop
-wrd1:           equ buf
-wrd2:           equ buf+$02
-tmp:            equ buf+$04
+wrd1:           .ezp buf
+wrd2:           .ezp buf+$02
+tmp:            .ezp buf+$04
         
         ;; Block for IRQ handler
-irqwrd1:        equ buf+$05
-irqwrd2:        equ buf+$07
-irqtmp:         equ buf+$09
+irqwrd1:        .ezp buf+$05
+irqwrd2:        .ezp buf+$07
+irqtmp:         .ezp buf+$09
         
         ;; Block for NMI handler
-nmiwrd1:        equ buf+$0a
-nmiwrd2:        equ buf+$0c
-nmitmp:         equ buf+$0e
+nmiwrd1:        .ezp buf+$0a
+nmiwrd2:        .ezp buf+$0c
+nmitmp:         .ezp buf+$0e
 
         ;; Joystick data
-joybtn:         equ $92         ;button value
-joyx:           equ $96         ;x axis value
-joyy:           equ $97         ;y axis value
+joybtn:         .ezp $92         ;button value
+joyx:           .ezp $96         ;x axis value
+joyy:           .ezp $97         ;y axis value
 
         ;; Pac-Man data
-pacsrc:         equ $9e         ;source node
-pactar:         equ $9f         ;target node
-pacdir:         equ $a3         ;facing direction
-pacdis:         equ $a4         ;distance to target
-pacrem:         equ $a5         ;distance remaining to target
+pacsrc:         .ezp $9e         ;source node
+pactar:         .ezp $9f         ;target node
+pacdir:         .ezp $a3         ;facing direction
+pacdis:         .ezp $a4         ;distance to target
+pacrem:         .ezp $a5         ;distance remaining to target
 
         ;; Scoring, gameplay
-npelrem:        equ $a6          ;number of pellets remaining
-nmenrem:        equ $a7          ;number of remaining "men"
-lvlnum:         equ $a8          ;level number
-frtena:         equ $a9          ;whether or not fruit is enabled        
-score:          equ $fc          ;player's score in BCD (4 bytes: $fc-$ff)
+npelrem:        .ezp $a6          ;number of pellets remaining
+nmenrem:        .ezp $a7          ;number of remaining "men"
+lvlnum:         .ezp $a8          ;level number
+frtena:         .ezp $a9          ;whether or not fruit is enabled        
+score:          .ezp $fc          ;player's score in BCD (4 bytes: $fc-$ff)
 
         ;; Animation
-pacaix:         equ $aa          ;Pac-Man animation frame index
-enzraix:        equ $ab          ;energizer animation frame index
-lvlend:         equ $9b          ;level end flashes
+pacaix:         .ezp $aa          ;Pac-Man animation frame index
+enzraix:        .ezp $ab          ;energizer animation frame index
+lvlend:         .ezp $9b          ;level end flashes
 
         ;; Still available: $f7-$fb (5 bytes)
         
@@ -55,132 +55,132 @@ lvlend:         equ $9b          ;level end flashes
         ;; ------------------------------------------------------------
         
         ;; VIC II registers
-vic:            equ $d000
-sp0x:           equ vic
-sp0y:           equ vic + $01
-sp1x:           equ vic + $02
-sp1y:           equ vic + $03
-sp2x:           equ vic + $04
-sp2y:           equ vic + $05
-sp3x:           equ vic + $06
-sp3y:           equ vic + $07
-sp4x:           equ vic + $08
-sp4y:           equ vic + $09
-sp5x:           equ vic + $0a
-sp5y:           equ vic + $0b
-sp6x:           equ vic + $0c
-sp6y:           equ vic + $0d
-sp7x:           equ vic + $0e
-sp7y:           equ vic + $0f
-scroly:         equ vic + $11
-raster:         equ vic + $12
-spena:          equ vic + $15
-vmcsb:          equ vic + $18
-vicirq:         equ vic + $19
-irqmsk:         equ vic + $1a
-spspcl:         equ vic + $1e
-spbgcl:         equ vic + $1f
-extcol:         equ vic + $20
-bgcol0:         equ vic + $21
-sp0col:         equ vic + $27
+vic:            .equ $d000
+sp0x:           .equ vic
+sp0y:           .equ vic + $01
+sp1x:           .equ vic + $02
+sp1y:           .equ vic + $03
+sp2x:           .equ vic + $04
+sp2y:           .equ vic + $05
+sp3x:           .equ vic + $06
+sp3y:           .equ vic + $07
+sp4x:           .equ vic + $08
+sp4y:           .equ vic + $09
+sp5x:           .equ vic + $0a
+sp5y:           .equ vic + $0b
+sp6x:           .equ vic + $0c
+sp6y:           .equ vic + $0d
+sp7x:           .equ vic + $0e
+sp7y:           .equ vic + $0f
+scroly:         .equ vic + $11
+raster:         .equ vic + $12
+spena:          .equ vic + $15
+vmcsb:          .equ vic + $18
+vicirq:         .equ vic + $19
+irqmsk:         .equ vic + $1a
+spspcl:         .equ vic + $1e
+spbgcl:         .equ vic + $1f
+extcol:         .equ vic + $20
+bgcol0:         .equ vic + $21
+sp0col:         .equ vic + $27
 
         ;; CIA1 registers
-cia1:           equ $dc00
-ci1pra:         equ cia1
-ci1icr:         equ cia1 + $0d
+cia1:           .equ $dc00
+ci1pra:         .equ cia1
+ci1icr:         .equ cia1 + $0d
 
         ;; CIA2 registers
-cia2:           equ $dd00
-ci2pra:         equ cia2
-c2ddra:         equ cia2 + $02
-ti2a:           equ cia2 + $04
-ti2b:           equ cia2 + $06
-ci2icr:         equ cia2 + $0d
-ci2cra:         equ cia2 + $0e
-ci2crb:         equ cia2 + $0f
+cia2:           .equ $dd00
+ci2pra:         .equ cia2
+c2ddra:         .equ cia2 + $02
+ti2a:           .equ cia2 + $04
+ti2b:           .equ cia2 + $06
+ci2icr:         .equ cia2 + $0d
+ci2cra:         .equ cia2 + $0e
+ci2crb:         .equ cia2 + $0f
 
 
         ;; Operating system memory locations
         ;; ------------------------------------------------------------
         
         ;; Interrupt vectors
-cinv:           equ $0314       ;IRQ vector
-nminv:          equ $0318       ;NMI vector
+cinv:           .equ $0314       ;IRQ vector
+nminv:          .equ $0318       ;NMI vector
 
         ;; Interrupt routines
-sysirq:         equ $ea7e       ;kernal IRQ handler
-sysnmi:         equ $fe56       ;kernal NMI handler
+sysirq:         .equ $ea7e       ;kernal IRQ handler
+sysnmi:         .equ $fe56       ;kernal NMI handler
 
 
         ;; Program memory locations
         ;; ------------------------------------------------------------
         
-charset:        equ $4000       ;character set definition
-coltab:         equ $4800       ;colour table
-mazegfx:        equ $4bf0       ;Pac-Man maze
-scnmem:         equ $4c00       ;screen memory
-colmem:         equ $d800       ;colour memory
-sp0mem:         equ $5000       ;sprite 0 address
-sp0ptr:         equ $4ff8       ;sprite 0 pointer
-sp0loc:         equ $1000/$40   ;sp0mem
+charset:        .equ $4000       ;character set definition
+coltab:         .equ $4800       ;colour table
+mazegfx:        .equ $4bf0       ;Pac-Man maze
+scnmem:         .equ $4c00       ;screen memory
+colmem:         .equ $d800       ;colour memory
+sp0mem:         .equ $5000       ;sprite 0 address
+sp0ptr:         .equ $4ff8       ;sprite 0 pointer
+sp0loc:         .equ $1000/$40   ;sp0mem
 
 
         ;; Constants
         ;; ------------------------------------------------------------
 
         ;; Misc.
-raslin:         equ 250         ;line for raster interrupt
-spxscog:        equ 24          ;sprite x screen origin
-spyscog:        equ 50          ;sprite y screen origin
-maxpell:        equ 182         ;maximum number of pellets (incl. energizers)
-maxmen:         equ 3           ;maximum number of "men"
+raslin:         .equ 250         ;line for raster interrupt
+spxscog:        .equ 24          ;sprite x screen origin
+spyscog:        .equ 50          ;sprite y screen origin
+maxpell:        .equ 182         ;maximum number of pellets (incl. energizers)
+maxmen:         .equ 3           ;maximum number of "men"
 
         ;; Fruit
-frxpos:        equ $67          ;fruit x loc
-frypos:        equ $a2          ;fruit y loc
-frttim:        equ 38           ;fruit timer: 39 x 240ms = 9.1s
+frxpos:         .equ $67          ;fruit x loc
+frypos:         .equ $a2          ;fruit y loc
+frttim:         .equ 38           ;fruit timer: 39 x 240ms = 9.1s
 
         ;; Screen memory indexes
-scrmsdi:        equ $185        ;most significant digit of score
+scrmsdi:        .equ $185        ;most significant digit of score
         
         ;; Node indexes
-wrpnixw:        equ $1b         ;western warp tunnel node index
-wrpnixe:        equ $21         ;eastern warp tunnel node index
-pacstnd:        equ $31         ;Pac-Man's starting node index        
-gsthmnd:        equ $1e         ;ghost home node        
+wrpnixw:        .equ $1b         ;western warp tunnel node index
+wrpnixe:        .equ $21         ;eastern warp tunnel node index
+pacstnd:        .equ $31         ;Pac-Man's starting node index        
+gsthmnd:        .equ $1e         ;ghost home node        
 
         ;; Character constants
-spcechr:        equ $20         ;space char
-pellchr:        equ $53         ;pellet char
-enzrchr:        equ $54         ;energizer char
+spcechr:        .equ $20         ;space char
+pellchr:        .equ $53         ;pellet char
+enzrchr:        .equ $54         ;energizer char
 
         ;; Colour constants
-dkgrey:         equ $0b         ;dark grey
-ltgrey:         equ $0f         ;light grey
+dkgrey:         .equ $0b         ;dark grey
+ltgrey:         .equ $0f         ;light grey
         
         ;; Compass directions
-n:              equ 2
-s:              equ 3
-w:              equ 4
-e:              equ 5
+n:              .equ 2
+s:              .equ 3
+w:              .equ 4
+e:              .equ 5
 
         ;; Scores, expressed as BCD pairs
-pellpts:        equ $10        ;10 pts for pellets
-enzrpts:        equ $50        ;50 pts for energizers
+pellpts:        .equ $10        ;10 pts for pellets
+enzrpts:        .equ $50        ;50 pts for energizers
 
         ;; Index into buf to access memory block
         ;; reservedf for gameloop
-blki:           equ $00
+blki:           .equ $00
         
         ;; Index into buf to access memory block
         ;; reserved for IRQ handler
-irqblki:        equ $05
+irqblki:        .equ $05
 
         ;; Index into buf to access memory block
         ;; reserved for NMI handler
-nmiblki:        equ $0a
+nmiblki:        .equ $0a
 
         ;; The number of pellets that need to be eaten for bonus items
         ;; to appear the 1st and 2nd time
-nbonpel1:     equ 52
-nbonpel2:     equ 127
+nbonpel1:       .equ 52
+nbonpel2:       .equ 127

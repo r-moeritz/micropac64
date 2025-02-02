@@ -5,20 +5,20 @@ Sections:
 03: "org0004:5000" (5000-54C0)
 
 
-Source: "./src/startup.asm"
+Source: "src/startup.asm"
                         	     1:         ;; ============================================================
                         	     2:         ;; Program startup
                         	     3:         ;; ============================================================
                         	     4: 
-                        	     5:         org $0801
+                        	     5:         .org $0801
                         	     6: 
                         	     7:         ;; BASIC header
-00:0801 0B08            	     8:         word nxl,10
+00:0801 0B08            	     8:         .word nxl,10
 00:0803 0A00
-00:0805 9E              	     9:         byte $9e
-00:0806 32303631        	    10:         string "2061"
+00:0805 9E              	     9:         .byte $9e
+00:0806 32303631        	    10:         .string "2061"
 00:080A 00
-00:080B 0000            	    11: nxl:    word 0
+00:080B 0000            	    11: nxl:    .word 0
                         	    12: 
                         	    13:         ;; Program initialization
 00:080D 202A09          	    14:         jsr initvic
@@ -32,7 +32,7 @@ Source: "./src/startup.asm"
 
 Source: "macros.asm"
                         	     1:         ;; ============================================================
-                        	     2:         ;; General purpose macros
+                        	     2:         ;; General purpose .macros
                         	     3:         ;; ============================================================
                         	     4: 
                         	     5: 
@@ -42,41 +42,41 @@ Source: "macros.asm"
                         	     9:         ;; Multiply value in .A by 8, ignore C flag
                         	    10:         ;; Reads:       .A
                         	    11:         ;; Writes:      .A
-                        	    12: mula8:  macro
+                        	    12: mula8:  .macro
                         	    13:         clc
                         	    14:         asl
                         	    15:         asl
                         	    16:         asl
-                        	    17:         endm
+                        	    17:         .endm
                         	    18:         
                         	    19:         ;; Divide value in .A by 8, ignore C flag
                         	    20:         ;; Reads:       .A
                         	    21:         ;; Writes:      .A      
-                        	    22: diva8:  macro
+                        	    22: diva8:  .macro
                         	    23:         sec
                         	    24:         lsr
                         	    25:         lsr
                         	    26:         lsr
-                        	    27:         endm
+                        	    27:         .endm
                         	    28: 
                         	    29:         ;; Add immediate value to byte and store
-                        	    30: adcbimm: macro val, byt
+                        	    30: adcbimm: .macro val, byt
                         	    31:         clc
                         	    32:         lda \byt
                         	    33:         adc #\val
                         	    34:         sta \byt
-                        	    35:         endm
+                        	    35:         .endm
                         	    36: 
                         	    37:         ;; Subtract immediate value from byte and store
-                        	    38: sbcbimm: macro val, byt
+                        	    38: sbcbimm: .macro val, byt
                         	    39:         sec
                         	    40:         lda \byt
                         	    41:         sbc #\val
                         	    42:         sta \byt
-                        	    43:         endm
+                        	    43:         .endm
                         	    44: 
                         	    45:         ;; Add immediate word value to word and store
-                        	    46: adcwimm: macro val, wrd
+                        	    46: adcwimm: .macro val, wrd
                         	    47:         clc
                         	    48:         lda \wrd
                         	    49:         adc #<\val
@@ -84,10 +84,10 @@ Source: "macros.asm"
                         	    51:         lda \wrd+1
                         	    52:         adc #>\val
                         	    53:         sta \wrd+1
-                        	    54:         endm
+                        	    54:         .endm
                         	    55: 
                         	    56:         ;; Subtract immediate word value from word and store
-                        	    57: sbcwimm: macro val, wrd
+                        	    57: sbcwimm: .macro val, wrd
                         	    58:         sec
                         	    59:         lda \wrd
                         	    60:         sbc #<\val
@@ -95,133 +95,133 @@ Source: "macros.asm"
                         	    62:         lda \wrd+1
                         	    63:         sbc #>\val
                         	    64:         sta \wrd+1
-                        	    65:         endm
+                        	    65:         .endm
                         	    66:         
                         	    67:         ;; Conditional jumps
                         	    68:         ;; ------------------------------------------------------------
                         	    69: 
                         	    70:         ;; BNE to distant address
-                        	    71: jne:    macro adr
+                        	    71: jne:    .macro adr
                         	    72:         beq :+
                         	    73:         jmp \adr
                         	    74: :
-                        	    75:         endm
+                        	    75:         .endm
                         	    76: 
                         	    77:         ;; BEQ to distant address
-                        	    78: jeq:    macro adr
+                        	    78: jeq:    .macro adr
                         	    79:         bne :+
                         	    80:         jmp \adr
                         	    81: :
-                        	    82:         endm
+                        	    82:         .endm
                         	    83: 
                         	    84:         ;; BCS to distant address
-                        	    85: jcs:    macro adr
+                        	    85: jcs:    .macro adr
                         	    86:         bcc :+
                         	    87:         jmp \adr
                         	    88: :
-                        	    89:         endm
+                        	    89:         .endm
                         	    90: 
                         	    91:         ;; BCC to distant address
-                        	    92: jcc:    macro adr
+                        	    92: jcc:    .macro adr
                         	    93:         bcs :+
                         	    94:         jmp \adr
                         	    95: :
-                        	    96:         endm
+                        	    96:         .endm
                         	    97: 
                         	    98:         ;; BMI to distant address
-                        	    99: jmi:    macro adr
+                        	    99: jmi:    .macro adr
                         	   100:         bpl :+
                         	   101:         jmp \adr
                         	   102: :
-                        	   103:         endm
+                        	   103:         .endm
                         	   104:         
                         	   105:         ;; Stack operations
                         	   106:         ;; ------------------------------------------------------------
                         	   107: 
                         	   108:         ;; Push .X onto the stack
-                        	   109: phx:    macro
+                        	   109: phx:    .macro
                         	   110:         txa
                         	   111:         pha
-                        	   112:         endm
+                        	   112:         .endm
                         	   113: 
                         	   114:         ;; Pop the top byte off the stack onto .X
-                        	   115: plx:    macro
+                        	   115: plx:    .macro
                         	   116:         pla
                         	   117:         tax
-                        	   118:         endm
+                        	   118:         .endm
                         	   119: 
                         	   120:         ;; Push .Y onto the stack
-                        	   121: phy:    macro
+                        	   121: phy:    .macro
                         	   122:         tya
                         	   123:         pha
-                        	   124:         endm
+                        	   124:         .endm
                         	   125: 
                         	   126:         ;; Pop the top byte off the stack onto .Y
-                        	   127: ply:    macro
+                        	   127: ply:    .macro
                         	   128:         pla
                         	   129:         tay
-                        	   130:         endm
+                        	   130:         .endm
                         	   131: 
                         	   132:         ;; Memory operations
                         	   133:         ;; ------------------------------------------------------------
                         	   134: 
                         	   135:         ;; Swap bytes via the stack
-                        	   136: swpbyt: macro byt1, byt2
+                        	   136: swpbyt: .macro byt1, byt2
                         	   137:         lda \byt1
                         	   138:         pha                     ;load byt1 & push onto the stack
                         	   139:         lda \byt2
                         	   140:         sta \byt1               ;load byt2 & save to byt1
                         	   141:         pla
                         	   142:         sta \byt2               ;pop byt1 off the stack & save to byt2
-                        	   143:         endm
+                        	   143:         .endm
                         	   144:         
                         	   145:         ;; Load immediate value into byte
-                        	   146: ldbimm: macro val, byt
+                        	   146: ldbimm: .macro val, byt
                         	   147:         lda #\val
                         	   148:         sta \byt
-                        	   149:         endm
+                        	   149:         .endm
                         	   150:         
                         	   151:         ;; Load immediate value into word
-                        	   152: ldwimm: macro val, wrd
+                        	   152: ldwimm: .macro val, wrd
                         	   153:         lda #<\val
                         	   154:         sta \wrd
                         	   155:         lda #>\val
                         	   156:         sta \wrd+1
-                        	   157:         endm
+                        	   157:         .endm
                         	   158: 
                         	   159:         ;; Load value into byte via pointer at index
-                        	   160: ldbptr: macro ptr, idx, byt
+                        	   160: ldbptr: .macro ptr, idx, byt
                         	   161:         ldy #\idx
                         	   162:         lda (\ptr),y
                         	   163:         sta \byt
-                        	   164:         endm
+                        	   164:         .endm
                         	   165:         
                         	   166:         ;; Load value into word via pointer at index
-                        	   167: ldwptr: macro ptr, idx, wrd
+                        	   167: ldwptr: .macro ptr, idx, wrd
                         	   168:         ldy #\idx
                         	   169:         lda (\ptr),y
                         	   170:         sta \wrd
                         	   171:         iny
                         	   172:         lda (\ptr),y
                         	   173:         sta \wrd+1
-                        	   174:         endm
+                        	   174:         .endm
                         	   175: 
                         	   176:         ;; Copy value from one byte to another
-                        	   177: cpbyt:  macro src, dst
+                        	   177: cpbyt:  .macro src, dst
                         	   178:         lda \src
                         	   179:         sta \dst
-                        	   180:         endm
+                        	   180:         .endm
                         	   181: 
                         	   182:         ;; Copy value from one word to another
-                        	   183: cpwrd:  macro src, dst
+                        	   183: cpwrd:  .macro src, dst
                         	   184:         lda \src
                         	   185:         sta \dst
                         	   186:         lda \src+1
                         	   187:         sta \dst+1
-                        	   188:         endm
+                        	   188:         .endm
                         	   189: 
                         	   190:         ;; Fill memory range with a byte
-                        	   191: filmem: macro adr, len, val
+                        	   191: filmem: .macro adr, len, val
                         	   192:         lda #\val
                         	   193:         ldx #\len        
                         	   194: :       beq :+
@@ -229,11 +229,11 @@ Source: "macros.asm"
                         	   196:         dex
                         	   197:         jmp :-
                         	   198: :       sta \adr,x
-                        	   199:         endm
+                        	   199:         .endm
                         	   200: 
                         	   201:         ;; Increment pointer using X-based, indirect adressing to ensure
                         	   202:         ;; HB is updated along with LB.
-                        	   203: incptrx: macro ptr
+                        	   203: incptrx: .macro ptr
                         	   204:         clc
                         	   205:         lda \ptr,x
                         	   206:         adc #1
@@ -243,10 +243,10 @@ Source: "macros.asm"
                         	   210:         adc #0
                         	   211:         sta \ptr,x
                         	   212:         dex
-                        	   213:         endm
+                        	   213:         .endm
                         	   214: 
                         	   215:         ;; Increment word to ensure HB is updated along with LB.
-                        	   216: incwrd: macro wrd
+                        	   216: incwrd: .macro wrd
                         	   217:         clc
                         	   218:         lda \wrd
                         	   219:         adc #1
@@ -254,24 +254,24 @@ Source: "macros.asm"
                         	   221:         lda \wrd+1
                         	   222:         adc #0
                         	   223:         sta \wrd+1
-                        	   224:         endm
+                        	   224:         .endm
                         	   225: 
                         	   226:         ;; Increment accumulator
-                        	   227: ina:    macro
+                        	   227: ina:    .macro
                         	   228:         tay
                         	   229:         iny
                         	   230:         tya
-                        	   231:         endm
+                        	   231:         .endm
                         	   232: 
                         	   233:         ;; Decrement accumulator
-                        	   234: dea:    macro
+                        	   234: dea:    .macro
                         	   235:         tay
                         	   236:         dey
                         	   237:         tya
-                        	   238:         endm
+                        	   238:         .endm
                         	   239: 
 
-Source: "./src/startup.asm"
+Source: "src/startup.asm"
                         	    22:         include symbols.asm
 
 Source: "symbols.asm"
@@ -285,46 +285,46 @@ Source: "symbols.asm"
                         	     8: 
                         	     9:         ;; 15-byte buffer for use in sub-routines,
                         	    10:         ;; divided into 3x blocks of 5 bytes each.
-                        	    11: buf:            equ $16         ;$16-$24
+                        	    11: buf:            .ezp $16         ;$16-$24
                         	    12:         
                         	    13:         ;; Block for game loop
-                        	    14: wrd1:           equ buf
-                        	    15: wrd2:           equ buf+$02
-                        	    16: tmp:            equ buf+$04
+                        	    14: wrd1:           .ezp buf
+                        	    15: wrd2:           .ezp buf+$02
+                        	    16: tmp:            .ezp buf+$04
                         	    17:         
                         	    18:         ;; Block for IRQ handler
-                        	    19: irqwrd1:        equ buf+$05
-                        	    20: irqwrd2:        equ buf+$07
-                        	    21: irqtmp:         equ buf+$09
+                        	    19: irqwrd1:        .ezp buf+$05
+                        	    20: irqwrd2:        .ezp buf+$07
+                        	    21: irqtmp:         .ezp buf+$09
                         	    22:         
                         	    23:         ;; Block for NMI handler
-                        	    24: nmiwrd1:        equ buf+$0a
-                        	    25: nmiwrd2:        equ buf+$0c
-                        	    26: nmitmp:         equ buf+$0e
+                        	    24: nmiwrd1:        .ezp buf+$0a
+                        	    25: nmiwrd2:        .ezp buf+$0c
+                        	    26: nmitmp:         .ezp buf+$0e
                         	    27: 
                         	    28:         ;; Joystick data
-                        	    29: joybtn:         equ $92         ;button value
-                        	    30: joyx:           equ $96         ;x axis value
-                        	    31: joyy:           equ $97         ;y axis value
+                        	    29: joybtn:         .ezp $92         ;button value
+                        	    30: joyx:           .ezp $96         ;x axis value
+                        	    31: joyy:           .ezp $97         ;y axis value
                         	    32: 
                         	    33:         ;; Pac-Man data
-                        	    34: pacsrc:         equ $9e         ;source node
-                        	    35: pactar:         equ $9f         ;target node
-                        	    36: pacdir:         equ $a3         ;facing direction
-                        	    37: pacdis:         equ $a4         ;distance to target
-                        	    38: pacrem:         equ $a5         ;distance remaining to target
+                        	    34: pacsrc:         .ezp $9e         ;source node
+                        	    35: pactar:         .ezp $9f         ;target node
+                        	    36: pacdir:         .ezp $a3         ;facing direction
+                        	    37: pacdis:         .ezp $a4         ;distance to target
+                        	    38: pacrem:         .ezp $a5         ;distance remaining to target
                         	    39: 
                         	    40:         ;; Scoring, gameplay
-                        	    41: npelrem:        equ $a6          ;number of pellets remaining
-                        	    42: nmenrem:        equ $a7          ;number of remaining "men"
-                        	    43: lvlnum:         equ $a8          ;level number
-                        	    44: frtena:         equ $a9          ;whether or not fruit is enabled        
-                        	    45: score:          equ $fc          ;player's score in BCD (4 bytes: $fc-$ff)
+                        	    41: npelrem:        .ezp $a6          ;number of pellets remaining
+                        	    42: nmenrem:        .ezp $a7          ;number of remaining "men"
+                        	    43: lvlnum:         .ezp $a8          ;level number
+                        	    44: frtena:         .ezp $a9          ;whether or not fruit is enabled        
+                        	    45: score:          .ezp $fc          ;player's score in BCD (4 bytes: $fc-$ff)
                         	    46: 
                         	    47:         ;; Animation
-                        	    48: pacaix:         equ $aa          ;Pac-Man animation frame index
-                        	    49: enzraix:        equ $ab          ;energizer animation frame index
-                        	    50: lvlend:         equ $9b          ;level end flashes
+                        	    48: pacaix:         .ezp $aa          ;Pac-Man animation frame index
+                        	    49: enzraix:        .ezp $ab          ;energizer animation frame index
+                        	    50: lvlend:         .ezp $9b          ;level end flashes
                         	    51: 
                         	    52:         ;; Still available: $f7-$fb (5 bytes)
                         	    53:         
@@ -332,138 +332,138 @@ Source: "symbols.asm"
                         	    55:         ;; ------------------------------------------------------------
                         	    56:         
                         	    57:         ;; VIC II registers
-                        	    58: vic:            equ $d000
-                        	    59: sp0x:           equ vic
-                        	    60: sp0y:           equ vic + $01
-                        	    61: sp1x:           equ vic + $02
-                        	    62: sp1y:           equ vic + $03
-                        	    63: sp2x:           equ vic + $04
-                        	    64: sp2y:           equ vic + $05
-                        	    65: sp3x:           equ vic + $06
-                        	    66: sp3y:           equ vic + $07
-                        	    67: sp4x:           equ vic + $08
-                        	    68: sp4y:           equ vic + $09
-                        	    69: sp5x:           equ vic + $0a
-                        	    70: sp5y:           equ vic + $0b
-                        	    71: sp6x:           equ vic + $0c
-                        	    72: sp6y:           equ vic + $0d
-                        	    73: sp7x:           equ vic + $0e
-                        	    74: sp7y:           equ vic + $0f
-                        	    75: scroly:         equ vic + $11
-                        	    76: raster:         equ vic + $12
-                        	    77: spena:          equ vic + $15
-                        	    78: vmcsb:          equ vic + $18
-                        	    79: vicirq:         equ vic + $19
-                        	    80: irqmsk:         equ vic + $1a
-                        	    81: spspcl:         equ vic + $1e
-                        	    82: spbgcl:         equ vic + $1f
-                        	    83: extcol:         equ vic + $20
-                        	    84: bgcol0:         equ vic + $21
-                        	    85: sp0col:         equ vic + $27
+                        	    58: vic:            .equ $d000
+                        	    59: sp0x:           .equ vic
+                        	    60: sp0y:           .equ vic + $01
+                        	    61: sp1x:           .equ vic + $02
+                        	    62: sp1y:           .equ vic + $03
+                        	    63: sp2x:           .equ vic + $04
+                        	    64: sp2y:           .equ vic + $05
+                        	    65: sp3x:           .equ vic + $06
+                        	    66: sp3y:           .equ vic + $07
+                        	    67: sp4x:           .equ vic + $08
+                        	    68: sp4y:           .equ vic + $09
+                        	    69: sp5x:           .equ vic + $0a
+                        	    70: sp5y:           .equ vic + $0b
+                        	    71: sp6x:           .equ vic + $0c
+                        	    72: sp6y:           .equ vic + $0d
+                        	    73: sp7x:           .equ vic + $0e
+                        	    74: sp7y:           .equ vic + $0f
+                        	    75: scroly:         .equ vic + $11
+                        	    76: raster:         .equ vic + $12
+                        	    77: spena:          .equ vic + $15
+                        	    78: vmcsb:          .equ vic + $18
+                        	    79: vicirq:         .equ vic + $19
+                        	    80: irqmsk:         .equ vic + $1a
+                        	    81: spspcl:         .equ vic + $1e
+                        	    82: spbgcl:         .equ vic + $1f
+                        	    83: extcol:         .equ vic + $20
+                        	    84: bgcol0:         .equ vic + $21
+                        	    85: sp0col:         .equ vic + $27
                         	    86: 
                         	    87:         ;; CIA1 registers
-                        	    88: cia1:           equ $dc00
-                        	    89: ci1pra:         equ cia1
-                        	    90: ci1icr:         equ cia1 + $0d
+                        	    88: cia1:           .equ $dc00
+                        	    89: ci1pra:         .equ cia1
+                        	    90: ci1icr:         .equ cia1 + $0d
                         	    91: 
                         	    92:         ;; CIA2 registers
-                        	    93: cia2:           equ $dd00
-                        	    94: ci2pra:         equ cia2
-                        	    95: c2ddra:         equ cia2 + $02
-                        	    96: ti2a:           equ cia2 + $04
-                        	    97: ti2b:           equ cia2 + $06
-                        	    98: ci2icr:         equ cia2 + $0d
-                        	    99: ci2cra:         equ cia2 + $0e
-                        	   100: ci2crb:         equ cia2 + $0f
+                        	    93: cia2:           .equ $dd00
+                        	    94: ci2pra:         .equ cia2
+                        	    95: c2ddra:         .equ cia2 + $02
+                        	    96: ti2a:           .equ cia2 + $04
+                        	    97: ti2b:           .equ cia2 + $06
+                        	    98: ci2icr:         .equ cia2 + $0d
+                        	    99: ci2cra:         .equ cia2 + $0e
+                        	   100: ci2crb:         .equ cia2 + $0f
                         	   101: 
                         	   102: 
                         	   103:         ;; Operating system memory locations
                         	   104:         ;; ------------------------------------------------------------
                         	   105:         
                         	   106:         ;; Interrupt vectors
-                        	   107: cinv:           equ $0314       ;IRQ vector
-                        	   108: nminv:          equ $0318       ;NMI vector
+                        	   107: cinv:           .equ $0314       ;IRQ vector
+                        	   108: nminv:          .equ $0318       ;NMI vector
                         	   109: 
                         	   110:         ;; Interrupt routines
-                        	   111: sysirq:         equ $ea7e       ;kernal IRQ handler
-                        	   112: sysnmi:         equ $fe56       ;kernal NMI handler
+                        	   111: sysirq:         .equ $ea7e       ;kernal IRQ handler
+                        	   112: sysnmi:         .equ $fe56       ;kernal NMI handler
                         	   113: 
                         	   114: 
                         	   115:         ;; Program memory locations
                         	   116:         ;; ------------------------------------------------------------
                         	   117:         
-                        	   118: charset:        equ $4000       ;character set definition
-                        	   119: coltab:         equ $4800       ;colour table
-                        	   120: mazegfx:        equ $4bf0       ;Pac-Man maze
-                        	   121: scnmem:         equ $4c00       ;screen memory
-                        	   122: colmem:         equ $d800       ;colour memory
-                        	   123: sp0mem:         equ $5000       ;sprite 0 address
-                        	   124: sp0ptr:         equ $4ff8       ;sprite 0 pointer
-                        	   125: sp0loc:         equ $1000/$40   ;sp0mem
+                        	   118: charset:        .equ $4000       ;character set definition
+                        	   119: coltab:         .equ $4800       ;colour table
+                        	   120: mazegfx:        .equ $4bf0       ;Pac-Man maze
+                        	   121: scnmem:         .equ $4c00       ;screen memory
+                        	   122: colmem:         .equ $d800       ;colour memory
+                        	   123: sp0mem:         .equ $5000       ;sprite 0 address
+                        	   124: sp0ptr:         .equ $4ff8       ;sprite 0 pointer
+                        	   125: sp0loc:         .equ $1000/$40   ;sp0mem
                         	   126: 
                         	   127: 
                         	   128:         ;; Constants
                         	   129:         ;; ------------------------------------------------------------
                         	   130: 
                         	   131:         ;; Misc.
-                        	   132: raslin:         equ 250         ;line for raster interrupt
-                        	   133: spxscog:        equ 24          ;sprite x screen origin
-                        	   134: spyscog:        equ 50          ;sprite y screen origin
-                        	   135: maxpell:        equ 182         ;maximum number of pellets (incl. energizers)
-                        	   136: maxmen:         equ 3           ;maximum number of "men"
+                        	   132: raslin:         .equ 250         ;line for raster interrupt
+                        	   133: spxscog:        .equ 24          ;sprite x screen origin
+                        	   134: spyscog:        .equ 50          ;sprite y screen origin
+                        	   135: maxpell:        .equ 182         ;maximum number of pellets (incl. energizers)
+                        	   136: maxmen:         .equ 3           ;maximum number of "men"
                         	   137: 
                         	   138:         ;; Fruit
-                        	   139: frxpos:        equ $67          ;fruit x loc
-                        	   140: frypos:        equ $a2          ;fruit y loc
-                        	   141: frttim:        equ 38           ;fruit timer: 39 x 240ms = 9.1s
+                        	   139: frxpos:         .equ $67          ;fruit x loc
+                        	   140: frypos:         .equ $a2          ;fruit y loc
+                        	   141: frttim:         .equ 38           ;fruit timer: 39 x 240ms = 9.1s
                         	   142: 
                         	   143:         ;; Screen memory indexes
-                        	   144: scrmsdi:        equ $185        ;most significant digit of score
+                        	   144: scrmsdi:        .equ $185        ;most significant digit of score
                         	   145:         
                         	   146:         ;; Node indexes
-                        	   147: wrpnixw:        equ $1b         ;western warp tunnel node index
-                        	   148: wrpnixe:        equ $21         ;eastern warp tunnel node index
-                        	   149: pacstnd:        equ $31         ;Pac-Man's starting node index        
-                        	   150: gsthmnd:        equ $1e         ;ghost home node        
+                        	   147: wrpnixw:        .equ $1b         ;western warp tunnel node index
+                        	   148: wrpnixe:        .equ $21         ;eastern warp tunnel node index
+                        	   149: pacstnd:        .equ $31         ;Pac-Man's starting node index        
+                        	   150: gsthmnd:        .equ $1e         ;ghost home node        
                         	   151: 
                         	   152:         ;; Character constants
-                        	   153: spcechr:        equ $20         ;space char
-                        	   154: pellchr:        equ $53         ;pellet char
-                        	   155: enzrchr:        equ $54         ;energizer char
+                        	   153: spcechr:        .equ $20         ;space char
+                        	   154: pellchr:        .equ $53         ;pellet char
+                        	   155: enzrchr:        .equ $54         ;energizer char
                         	   156: 
                         	   157:         ;; Colour constants
-                        	   158: dkgrey:         equ $0b         ;dark grey
-                        	   159: ltgrey:         equ $0f         ;light grey
+                        	   158: dkgrey:         .equ $0b         ;dark grey
+                        	   159: ltgrey:         .equ $0f         ;light grey
                         	   160:         
                         	   161:         ;; Compass directions
-                        	   162: n:              equ 2
-                        	   163: s:              equ 3
-                        	   164: w:              equ 4
-                        	   165: e:              equ 5
+                        	   162: n:              .equ 2
+                        	   163: s:              .equ 3
+                        	   164: w:              .equ 4
+                        	   165: e:              .equ 5
                         	   166: 
                         	   167:         ;; Scores, expressed as BCD pairs
-                        	   168: pellpts:        equ $10        ;10 pts for pellets
-                        	   169: enzrpts:        equ $50        ;50 pts for energizers
+                        	   168: pellpts:        .equ $10        ;10 pts for pellets
+                        	   169: enzrpts:        .equ $50        ;50 pts for energizers
                         	   170: 
                         	   171:         ;; Index into buf to access memory block
                         	   172:         ;; reservedf for gameloop
-                        	   173: blki:           equ $00
+                        	   173: blki:           .equ $00
                         	   174:         
                         	   175:         ;; Index into buf to access memory block
                         	   176:         ;; reserved for IRQ handler
-                        	   177: irqblki:        equ $05
+                        	   177: irqblki:        .equ $05
                         	   178: 
                         	   179:         ;; Index into buf to access memory block
                         	   180:         ;; reserved for NMI handler
-                        	   181: nmiblki:        equ $0a
+                        	   181: nmiblki:        .equ $0a
                         	   182: 
                         	   183:         ;; The number of pellets that need to be eaten for bonus items
                         	   184:         ;; to appear the 1st and 2nd time
-                        	   185: nbonpel1:     equ 52
-                        	   186: nbonpel2:     equ 127
+                        	   185: nbonpel1:       .equ 52
+                        	   186: nbonpel2:       .equ 127
                         	   187: 
 
-Source: "./src/startup.asm"
+Source: "src/startup.asm"
                         	    23:         include maths.asm
 
 Source: "maths.asm"
@@ -559,7 +559,7 @@ Source: "maths.asm"
 00:087A 60              	    90:         rts
                         	    91: 
 
-Source: "./src/startup.asm"
+Source: "src/startup.asm"
                         	    24:         include io.asm
 
 Source: "io.asm"
@@ -823,7 +823,7 @@ Source: "io.asm"
 00:09BF 60              	   218:         rts
                         	   219: 
 
-Source: "./src/startup.asm"
+Source: "src/startup.asm"
                         	    25:         include maze.asm
 
 Source: "maze.asm"
@@ -1220,7 +1220,7 @@ Source: "maze.asm"
 00:0BFC 60              	   313:         rts
                         	   314: 
 
-Source: "./src/startup.asm"
+Source: "src/startup.asm"
                         	    26:         include irq.asm
 
 Source: "irq.asm"
@@ -1367,7 +1367,7 @@ Source: "irq.asm"
 00:0CDF 4C7EEA          	   102:         jmp sysirq              ;return from interrupt
                         	   103: 
 
-Source: "./src/startup.asm"
+Source: "src/startup.asm"
                         	    27:         include nmi.asm
 
 Source: "nmi.asm"
@@ -1693,7 +1693,7 @@ Source: "nmi.asm"
 00:0ECE 40              	   223:         rti
                         	   224: 
 
-Source: "./src/startup.asm"
+Source: "src/startup.asm"
                         	    28:         include game.asm
 
 Source: "game.asm"
@@ -1934,7 +1934,7 @@ Source: "game.asm"
 00:1043 4C5E0F          	   143:         jmp gameloop
                         	   144: 
 
-Source: "./src/startup.asm"
+Source: "src/startup.asm"
                         	    29:         include score.asm
 
 Source: "score.asm"
@@ -2009,7 +2009,7 @@ Source: "score.asm"
 00:1089 60              	    69:         rts
                         	    70: 
 
-Source: "./src/startup.asm"
+Source: "src/startup.asm"
                         	    30:         include fruit.asm
 
 Source: "fruit.asm"
@@ -2191,10 +2191,10 @@ Source: "fruit.asm"
 00:1161 60              	   147:         rts
                         	   148: 
 
-Source: "./src/startup.asm"
+Source: "src/startup.asm"
                         	    31: 
                         	    32:         ;; Include tables
-                        	    33:         include tables.asm
+                        	    33:         .include tables.asm
 
 Source: "tables.asm"
                         	     1:         ;; ============================================================
@@ -2203,428 +2203,428 @@ Source: "tables.asm"
                         	     4:         
                         	     5:         ;; Node table
                         	     6:         ;; Format:        
-                        	     7:         ;;  - byte x,y (node loc in sprite coords)
-                        	     8:         ;;  - byte n,s,w,e (indices of neighboring nodes)
+                        	     7:         ;;  .byte x,y (node loc in sprite coords)
+                        	     8:         ;;  .byte n,s,w,e (indices of neighboring nodes)
                         	     9: nodetbl:
                         	    10:         ;; Row 1
-00:1162 20              	    11:         byte $20,$3a,$ff,$06,$ff,$01
+00:1162 20              	    11:         .byte $20,$3a,$ff,$06,$ff,$01
 00:1163 3A
 00:1164 FF
 00:1165 06
 00:1166 FF
 00:1167 01
-00:1168 40              	    12:         byte $40,$3a,$ff,$07,$00,$02
+00:1168 40              	    12:         .byte $40,$3a,$ff,$07,$00,$02
 00:1169 3A
 00:116A FF
 00:116B 07
 00:116C 00
 00:116D 02
-00:116E 60              	    13:         byte $60,$3a,$ff,$09,$01,$ff
+00:116E 60              	    13:         .byte $60,$3a,$ff,$09,$01,$ff
 00:116F 3A
 00:1170 FF
 00:1171 09
 00:1172 01
 00:1173 FF
-00:1174 70              	    14:         byte $70,$3a,$ff,$0a,$ff,$04
+00:1174 70              	    14:         .byte $70,$3a,$ff,$0a,$ff,$04
 00:1175 3A
 00:1176 FF
 00:1177 0A
 00:1178 FF
 00:1179 04
-00:117A 90              	    15:         byte $90,$3a,$ff,$0c,$03,$05
+00:117A 90              	    15:         .byte $90,$3a,$ff,$0c,$03,$05
 00:117B 3A
 00:117C FF
 00:117D 0C
 00:117E 03
 00:117F 05
-00:1180 B0              	    16:         byte $b0,$3a,$ff,$0d,$04,$ff
+00:1180 B0              	    16:         .byte $b0,$3a,$ff,$0d,$04,$ff
 00:1181 3A
 00:1182 FF
 00:1183 0D
 00:1184 04
 00:1185 FF
                         	    17:         ;; Row 2
-00:1186 20              	    18:         byte $20,$52,$00,$0e,$ff,$07
+00:1186 20              	    18:         .byte $20,$52,$00,$0e,$ff,$07
 00:1187 52
 00:1188 00
 00:1189 0E
 00:118A FF
 00:118B 07
-00:118C 40              	    19:         byte $40,$52,$01,$0f,$06,$08
+00:118C 40              	    19:         .byte $40,$52,$01,$0f,$06,$08
 00:118D 52
 00:118E 01
 00:118F 0F
 00:1190 06
 00:1191 08
-00:1192 50              	    20:         byte $50,$52,$ff,$10,$07,$09
+00:1192 50              	    20:         .byte $50,$52,$ff,$10,$07,$09
 00:1193 52
 00:1194 FF
 00:1195 10
 00:1196 07
 00:1197 09
-00:1198 60              	    21:         byte $60,$52,$02,$ff,$08,$0a
+00:1198 60              	    21:         .byte $60,$52,$02,$ff,$08,$0a
 00:1199 52
 00:119A 02
 00:119B FF
 00:119C 08
 00:119D 0A
-00:119E 70              	    22:         byte $70,$52,$03,$ff,$09,$0b
+00:119E 70              	    22:         .byte $70,$52,$03,$ff,$09,$0b
 00:119F 52
 00:11A0 03
 00:11A1 FF
 00:11A2 09
 00:11A3 0B
-00:11A4 80              	    23:         byte $80,$52,$ff,$13,$0a,$0c
+00:11A4 80              	    23:         .byte $80,$52,$ff,$13,$0a,$0c
 00:11A5 52
 00:11A6 FF
 00:11A7 13
 00:11A8 0A
 00:11A9 0C
-00:11AA 90              	    24:         byte $90,$52,$04,$14,$0b,$0d
+00:11AA 90              	    24:         .byte $90,$52,$04,$14,$0b,$0d
 00:11AB 52
 00:11AC 04
 00:11AD 14
 00:11AE 0B
 00:11AF 0D
-00:11B0 B0              	    25:         byte $b0,$52,$05,$15,$0c,$ff
+00:11B0 B0              	    25:         .byte $b0,$52,$05,$15,$0c,$ff
 00:11B1 52
 00:11B2 05
 00:11B3 15
 00:11B4 0C
 00:11B5 FF
                         	    26:         ;; Row 3
-00:11B6 20              	    27:         byte $20,$6a,$06,$ff,$ff,$0f
+00:11B6 20              	    27:         .byte $20,$6a,$06,$ff,$ff,$0f
 00:11B7 6A
 00:11B8 06
 00:11B9 FF
 00:11BA FF
 00:11BB 0F
-00:11BC 40              	    28:         byte $40,$6a,$07,$1c,$0e,$ff
+00:11BC 40              	    28:         .byte $40,$6a,$07,$1c,$0e,$ff
 00:11BD 6A
 00:11BE 07
 00:11BF 1C
 00:11C0 0E
 00:11C1 FF
-00:11C2 50              	    29:         byte $50,$6a,$08,$ff,$ff,$11
+00:11C2 50              	    29:         .byte $50,$6a,$08,$ff,$ff,$11
 00:11C3 6A
 00:11C4 08
 00:11C5 FF
 00:11C6 FF
 00:11C7 11
-00:11C8 60              	    30:         byte $60,$6a,$ff,$17,$10,$ff
+00:11C8 60              	    30:         .byte $60,$6a,$ff,$17,$10,$ff
 00:11C9 6A
 00:11CA FF
 00:11CB 17
 00:11CC 10
 00:11CD FF
-00:11CE 70              	    31:         byte $70,$6a,$ff,$19,$ff,$13
+00:11CE 70              	    31:         .byte $70,$6a,$ff,$19,$ff,$13
 00:11CF 6A
 00:11D0 FF
 00:11D1 19
 00:11D2 FF
 00:11D3 13
-00:11D4 80              	    32:         byte $80,$6a,$0b,$ff,$12,$ff
+00:11D4 80              	    32:         .byte $80,$6a,$0b,$ff,$12,$ff
 00:11D5 6A
 00:11D6 0B
 00:11D7 FF
 00:11D8 12
 00:11D9 FF
-00:11DA 90              	    33:         byte $90,$6a,$0c,$20,$ff,$15
+00:11DA 90              	    33:         .byte $90,$6a,$0c,$20,$ff,$15
 00:11DB 6A
 00:11DC 0C
 00:11DD 20
 00:11DE FF
 00:11DF 15
-00:11E0 B0              	    34:         byte $b0,$6a,$0d,$ff,$14,$ff
+00:11E0 B0              	    34:         .byte $b0,$6a,$0d,$ff,$14,$ff
 00:11E1 6A
 00:11E2 0D
 00:11E3 FF
 00:11E4 14
 00:11E5 FF
                         	    35:         ;; Row 4
-00:11E6 50              	    36:         byte $50,$7a,$ff,$1d,$ff,$17
+00:11E6 50              	    36:         .byte $50,$7a,$ff,$1d,$ff,$17
 00:11E7 7A
 00:11E8 FF
 00:11E9 1D
 00:11EA FF
 00:11EB 17
-00:11EC 60              	    37:         byte $60,$7a,$11,$ff,$16,$18
+00:11EC 60              	    37:         .byte $60,$7a,$11,$ff,$16,$18
 00:11ED 7A
 00:11EE 11
 00:11EF FF
 00:11F0 16
 00:11F1 18
-00:11F2 68              	    38:         byte $68,$7a,$ff,$1e,$17,$19
+00:11F2 68              	    38:         .byte $68,$7a,$ff,$1e,$17,$19
 00:11F3 7A
 00:11F4 FF
 00:11F5 1E
 00:11F6 17
 00:11F7 19
-00:11F8 70              	    39:         byte $70,$7a,$12,$ff,$18,$1a
+00:11F8 70              	    39:         .byte $70,$7a,$12,$ff,$18,$1a
 00:11F9 7A
 00:11FA 12
 00:11FB FF
 00:11FC 18
 00:11FD 1A
-00:11FE 80              	    40:         byte $80,$7a,$ff,$1f,$19,$ff
+00:11FE 80              	    40:         .byte $80,$7a,$ff,$1f,$19,$ff
 00:11FF 7A
 00:1200 FF
 00:1201 1F
 00:1202 19
 00:1203 FF
                         	    41:         ;; Row 5
-00:1204 18              	    42:         byte $18,$92,$ff,$ff,$21,$1c
+00:1204 18              	    42:         .byte $18,$92,$ff,$ff,$21,$1c
 00:1205 92
 00:1206 FF
 00:1207 FF
 00:1208 21
 00:1209 1C
-00:120A 40              	    43:         byte $40,$92,$0f,$25,$1b,$1d
+00:120A 40              	    43:         .byte $40,$92,$0f,$25,$1b,$1d
 00:120B 92
 00:120C 0F
 00:120D 25
 00:120E 1B
 00:120F 1D
-00:1210 50              	    44:         byte $50,$92,$16,$22,$1c,$ff
+00:1210 50              	    44:         .byte $50,$92,$16,$22,$1c,$ff
 00:1211 92
 00:1212 16
 00:1213 22
 00:1214 1C
 00:1215 FF
-00:1216 68              	    45:         byte $68,$92,$18,$ff,$ff,$ff
+00:1216 68              	    45:         .byte $68,$92,$18,$ff,$ff,$ff
 00:1217 92
 00:1218 18
 00:1219 FF
 00:121A FF
 00:121B FF
-00:121C 80              	    46:         byte $80,$92,$1a,$23,$ff,$20
+00:121C 80              	    46:         .byte $80,$92,$1a,$23,$ff,$20
 00:121D 92
 00:121E 1A
 00:121F 23
 00:1220 FF
 00:1221 20
-00:1222 90              	    47:         byte $90,$92,$14,$2a,$1f,$21
+00:1222 90              	    47:         .byte $90,$92,$14,$2a,$1f,$21
 00:1223 92
 00:1224 14
 00:1225 2A
 00:1226 1F
 00:1227 21
-00:1228 B8              	    48:         byte $b8,$92,$ff,$ff,$20,$1b
+00:1228 B8              	    48:         .byte $b8,$92,$ff,$ff,$20,$1b
 00:1229 92
 00:122A FF
 00:122B FF
 00:122C 20
 00:122D 1B
                         	    49:         ;; Row 6
-00:122E 50              	    50:         byte $50,$a2,$1d,$26,$ff,$23
+00:122E 50              	    50:         .byte $50,$a2,$1d,$26,$ff,$23
 00:122F A2
 00:1230 1D
 00:1231 26
 00:1232 FF
 00:1233 23
-00:1234 80              	    51:         byte $80,$a2,$1f,$29,$22,$ff
+00:1234 80              	    51:         .byte $80,$a2,$1f,$29,$22,$ff
 00:1235 A2
 00:1236 1F
 00:1237 29
 00:1238 22
 00:1239 FF
                         	    52:         ;; Row 7
-00:123A 20              	    53:         byte $20,$ba,$ff,$2c,$ff,$25
+00:123A 20              	    53:         .byte $20,$ba,$ff,$2c,$ff,$25
 00:123B BA
 00:123C FF
 00:123D 2C
 00:123E FF
 00:123F 25
-00:1240 40              	    54:         byte $40,$ba,$1c,$2e,$24,$26
+00:1240 40              	    54:         .byte $40,$ba,$1c,$2e,$24,$26
 00:1241 BA
 00:1242 1C
 00:1243 2E
 00:1244 24
 00:1245 26
-00:1246 50              	    55:         byte $50,$ba,$22,$ff,$25,$27
+00:1246 50              	    55:         .byte $50,$ba,$22,$ff,$25,$27
 00:1247 BA
 00:1248 22
 00:1249 FF
 00:124A 25
 00:124B 27
-00:124C 60              	    56:         byte $60,$ba,$ff,$30,$26,$ff
+00:124C 60              	    56:         .byte $60,$ba,$ff,$30,$26,$ff
 00:124D BA
 00:124E FF
 00:124F 30
 00:1250 26
 00:1251 FF
-00:1252 70              	    57:         byte $70,$ba,$ff,$32,$ff,$29
+00:1252 70              	    57:         .byte $70,$ba,$ff,$32,$ff,$29
 00:1253 BA
 00:1254 FF
 00:1255 32
 00:1256 FF
 00:1257 29
-00:1258 80              	    58:         byte $80,$ba,$23,$ff,$28,$2a
+00:1258 80              	    58:         .byte $80,$ba,$23,$ff,$28,$2a
 00:1259 BA
 00:125A 23
 00:125B FF
 00:125C 28
 00:125D 2A
-00:125E 90              	    59:         byte $90,$ba,$20,$34,$29,$2b
+00:125E 90              	    59:         .byte $90,$ba,$20,$34,$29,$2b
 00:125F BA
 00:1260 20
 00:1261 34
 00:1262 29
 00:1263 2B
-00:1264 B0              	    60:         byte $b0,$ba,$ff,$36,$2a,$ff
+00:1264 B0              	    60:         .byte $b0,$ba,$ff,$36,$2a,$ff
 00:1265 BA
 00:1266 FF
 00:1267 36
 00:1268 2A
 00:1269 FF
                         	    61:         ;; Row 8
-00:126A 20              	    62:         byte $20,$ca,$24,$ff,$ff,$2d
+00:126A 20              	    62:         .byte $20,$ca,$24,$ff,$ff,$2d
 00:126B CA
 00:126C 24
 00:126D FF
 00:126E FF
 00:126F 2D
-00:1270 30              	    63:         byte $30,$ca,$ff,$38,$2c,$ff
+00:1270 30              	    63:         .byte $30,$ca,$ff,$38,$2c,$ff
 00:1271 CA
 00:1272 FF
 00:1273 38
 00:1274 2C
 00:1275 FF
-00:1276 40              	    64:         byte $40,$ca,$25,$39,$ff,$2f
+00:1276 40              	    64:         .byte $40,$ca,$25,$39,$ff,$2f
 00:1277 CA
 00:1278 25
 00:1279 39
 00:127A FF
 00:127B 2F
-00:127C 50              	    65:         byte $50,$ca,$ff,$3a,$2e,$30
+00:127C 50              	    65:         .byte $50,$ca,$ff,$3a,$2e,$30
 00:127D CA
 00:127E FF
 00:127F 3A
 00:1280 2E
 00:1281 30
-00:1282 60              	    66:         byte $60,$ca,$27,$ff,$2f,$31
+00:1282 60              	    66:         .byte $60,$ca,$27,$ff,$2f,$31
 00:1283 CA
 00:1284 27
 00:1285 FF
 00:1286 2F
 00:1287 31
-00:1288 68              	    67:         byte $68,$ca,$ff,$ff,$30,$32
+00:1288 68              	    67:         .byte $68,$ca,$ff,$ff,$30,$32
 00:1289 CA
 00:128A FF
 00:128B FF
 00:128C 30
 00:128D 32
-00:128E 70              	    68:         byte $70,$ca,$28,$ff,$31,$33
+00:128E 70              	    68:         .byte $70,$ca,$28,$ff,$31,$33
 00:128F CA
 00:1290 28
 00:1291 FF
 00:1292 31
 00:1293 33
-00:1294 80              	    69:         byte $80,$ca,$ff,$3d,$32,$34
+00:1294 80              	    69:         .byte $80,$ca,$ff,$3d,$32,$34
 00:1295 CA
 00:1296 FF
 00:1297 3D
 00:1298 32
 00:1299 34
-00:129A 90              	    70:         byte $90,$ca,$2a,$3e,$33,$ff
+00:129A 90              	    70:         .byte $90,$ca,$2a,$3e,$33,$ff
 00:129B CA
 00:129C 2A
 00:129D 3E
 00:129E 33
 00:129F FF
-00:12A0 A0              	    71:         byte $a0,$ca,$ff,$3f,$ff,$36
+00:12A0 A0              	    71:         .byte $a0,$ca,$ff,$3f,$ff,$36
 00:12A1 CA
 00:12A2 FF
 00:12A3 3F
 00:12A4 FF
 00:12A5 36
-00:12A6 B0              	    72:         byte $b0,$ca,$2b,$ff,$35,$ff
+00:12A6 B0              	    72:         .byte $b0,$ca,$2b,$ff,$35,$ff
 00:12A7 CA
 00:12A8 2B
 00:12A9 FF
 00:12AA 35
 00:12AB FF
                         	    73:         ;; Row 9
-00:12AC 20              	    74:         byte $20,$da,$ff,$41,$ff,$38
+00:12AC 20              	    74:         .byte $20,$da,$ff,$41,$ff,$38
 00:12AD DA
 00:12AE FF
 00:12AF 41
 00:12B0 FF
 00:12B1 38
-00:12B2 30              	    75:         byte $30,$da,$2d,$ff,$37,$39
+00:12B2 30              	    75:         .byte $30,$da,$2d,$ff,$37,$39
 00:12B3 DA
 00:12B4 2D
 00:12B5 FF
 00:12B6 37
 00:12B7 39
-00:12B8 40              	    76:         byte $40,$da,$2e,$ff,$38,$ff
+00:12B8 40              	    76:         .byte $40,$da,$2e,$ff,$38,$ff
 00:12B9 DA
 00:12BA 2E
 00:12BB FF
 00:12BC 38
 00:12BD FF
-00:12BE 50              	    77:         byte $50,$da,$2f,$ff,$ff,$3b
+00:12BE 50              	    77:         .byte $50,$da,$2f,$ff,$ff,$3b
 00:12BF DA
 00:12C0 2F
 00:12C1 FF
 00:12C2 FF
 00:12C3 3B
-00:12C4 60              	    78:         byte $60,$da,$ff,$42,$3a,$ff
+00:12C4 60              	    78:         .byte $60,$da,$ff,$42,$3a,$ff
 00:12C5 DA
 00:12C6 FF
 00:12C7 42
 00:12C8 3A
 00:12C9 FF
-00:12CA 70              	    79:         byte $70,$da,$ff,$43,$ff,$3d
+00:12CA 70              	    79:         .byte $70,$da,$ff,$43,$ff,$3d
 00:12CB DA
 00:12CC FF
 00:12CD 43
 00:12CE FF
 00:12CF 3D
-00:12D0 80              	    80:         byte $80,$da,$33,$ff,$3c,$ff
+00:12D0 80              	    80:         .byte $80,$da,$33,$ff,$3c,$ff
 00:12D1 DA
 00:12D2 33
 00:12D3 FF
 00:12D4 3C
 00:12D5 FF
-00:12D6 90              	    81:         byte $90,$da,$34,$ff,$ff,$3f
+00:12D6 90              	    81:         .byte $90,$da,$34,$ff,$ff,$3f
 00:12D7 DA
 00:12D8 34
 00:12D9 FF
 00:12DA FF
 00:12DB 3F
-00:12DC A0              	    82:         byte $a0,$da,$35,$ff,$3e,$40
+00:12DC A0              	    82:         .byte $a0,$da,$35,$ff,$3e,$40
 00:12DD DA
 00:12DE 35
 00:12DF FF
 00:12E0 3E
 00:12E1 40
-00:12E2 B0              	    83:         byte $b0,$da,$ff,$44,$3f,$ff
+00:12E2 B0              	    83:         .byte $b0,$da,$ff,$44,$3f,$ff
 00:12E3 DA
 00:12E4 FF
 00:12E5 44
 00:12E6 3F
 00:12E7 FF
                         	    84:         ;; Row 10
-00:12E8 20              	    85:         byte $20,$ea,$37,$ff,$ff,$42
+00:12E8 20              	    85:         .byte $20,$ea,$37,$ff,$ff,$42
 00:12E9 EA
 00:12EA 37
 00:12EB FF
 00:12EC FF
 00:12ED 42
-00:12EE 60              	    86:         byte $60,$ea,$3b,$ff,$41,$43
+00:12EE 60              	    86:         .byte $60,$ea,$3b,$ff,$41,$43
 00:12EF EA
 00:12F0 3B
 00:12F1 FF
 00:12F2 41
 00:12F3 43
-00:12F4 70              	    87:         byte $70,$ea,$3c,$ff,$42,$44
+00:12F4 70              	    87:         .byte $70,$ea,$3c,$ff,$42,$44
 00:12F5 EA
 00:12F6 3C
 00:12F7 FF
 00:12F8 42
 00:12F9 44
-00:12FA B0              	    88:         byte $b0,$ea,$40,$ff,$43,$ff
+00:12FA B0              	    88:         .byte $b0,$ea,$40,$ff,$43,$ff
 00:12FB EA
 00:12FC 40
 00:12FD FF
@@ -2634,801 +2634,801 @@ Source: "tables.asm"
                         	    90: 
                         	    91:         ;; Pellet table
                         	    92:         ;; Format:        
-                        	    93:         ;;  - word address (screen memory address)
-                        	    94:         ;;  - byte status (0=eaten, 1=not eaten)
-                        	    95:         ;;  - byte x,y (sprite coordinates of char)
+                        	    93:         ;;  .word address (screen memory address)
+                        	    94:         ;;  .byte status (0=eaten, 1=not eaten)
+                        	    95:         ;;  .byte x,y (sprite coordinates of char)
                         	    96: pelltbl:
                         	    97:         ;; Row 1
-00:1300 2900            	    98:         word $0029
-00:1302 01              	    99:         byte 1,$20,$3a
+00:1300 2900            	    98:         .word $0029
+00:1302 01              	    99:         .byte 1,$20,$3a
 00:1303 20
 00:1304 3A
-00:1305 2A00            	   100:         word $002a
-00:1307 01              	   101:         byte 1,$28,$3a
+00:1305 2A00            	   100:         .word $002a
+00:1307 01              	   101:         .byte 1,$28,$3a
 00:1308 28
 00:1309 3A
-00:130A 2B00            	   102:         word $002b
-00:130C 01              	   103:         byte 1,$30,$3a
+00:130A 2B00            	   102:         .word $002b
+00:130C 01              	   103:         .byte 1,$30,$3a
 00:130D 30
 00:130E 3A
-00:130F 2C00            	   104:         word $002c
-00:1311 01              	   105:         byte 1,$38,$3a
+00:130F 2C00            	   104:         .word $002c
+00:1311 01              	   105:         .byte 1,$38,$3a
 00:1312 38
 00:1313 3A
-00:1314 2D00            	   106:         word $002d
-00:1316 01              	   107:         byte 1,$40,$3a
+00:1314 2D00            	   106:         .word $002d
+00:1316 01              	   107:         .byte 1,$40,$3a
 00:1317 40
 00:1318 3A
-00:1319 2E00            	   108:         word $002e
-00:131B 01              	   109:         byte 1,$48,$3a
+00:1319 2E00            	   108:         .word $002e
+00:131B 01              	   109:         .byte 1,$48,$3a
 00:131C 48
 00:131D 3A
-00:131E 2F00            	   110:         word $002f
-00:1320 01              	   111:         byte 1,$50,$3a
+00:131E 2F00            	   110:         .word $002f
+00:1320 01              	   111:         .byte 1,$50,$3a
 00:1321 50
 00:1322 3A
-00:1323 3000            	   112:         word $0030
-00:1325 01              	   113:         byte 1,$58,$3a
+00:1323 3000            	   112:         .word $0030
+00:1325 01              	   113:         .byte 1,$58,$3a
 00:1326 58
 00:1327 3A
-00:1328 3100            	   114:         word $0031
-00:132A 01              	   115:         byte 1,$60,$3a
+00:1328 3100            	   114:         .word $0031
+00:132A 01              	   115:         .byte 1,$60,$3a
 00:132B 60
 00:132C 3A
-00:132D 3300            	   116:         word $0033
-00:132F 01              	   117:         byte 1,$70,$3a
+00:132D 3300            	   116:         .word $0033
+00:132F 01              	   117:         .byte 1,$70,$3a
 00:1330 70
 00:1331 3A
-00:1332 3400            	   118:         word $0034
-00:1334 01              	   119:         byte 1,$78,$3a
+00:1332 3400            	   118:         .word $0034
+00:1334 01              	   119:         .byte 1,$78,$3a
 00:1335 78
 00:1336 3A
-00:1337 3500            	   120:         word $0035
-00:1339 01              	   121:         byte 1,$80,$3a
+00:1337 3500            	   120:         .word $0035
+00:1339 01              	   121:         .byte 1,$80,$3a
 00:133A 80
 00:133B 3A
-00:133C 3600            	   122:         word $0036
-00:133E 01              	   123:         byte 1,$88,$3a
+00:133C 3600            	   122:         .word $0036
+00:133E 01              	   123:         .byte 1,$88,$3a
 00:133F 88
 00:1340 3A
-00:1341 3700            	   124:         word $0037
-00:1343 01              	   125:         byte 1,$90,$3a
+00:1341 3700            	   124:         .word $0037
+00:1343 01              	   125:         .byte 1,$90,$3a
 00:1344 90
 00:1345 3A
-00:1346 3800            	   126:         word $0038
-00:1348 01              	   127:         byte 1,$98,$3a
+00:1346 3800            	   126:         .word $0038
+00:1348 01              	   127:         .byte 1,$98,$3a
 00:1349 98
 00:134A 3A
-00:134B 3900            	   128:         word $0039
-00:134D 01              	   129:         byte 1,$a0,$3a
+00:134B 3900            	   128:         .word $0039
+00:134D 01              	   129:         .byte 1,$a0,$3a
 00:134E A0
 00:134F 3A
-00:1350 3A00            	   130:         word $003a
-00:1352 01              	   131:         byte 1,$a8,$3a
+00:1350 3A00            	   130:         .word $003a
+00:1352 01              	   131:         .byte 1,$a8,$3a
 00:1353 A8
 00:1354 3A
-00:1355 3B00            	   132:         word $003b
-00:1357 01              	   133:         byte 1,$b0,$3a
+00:1355 3B00            	   132:         .word $003b
+00:1357 01              	   133:         .byte 1,$b0,$3a
 00:1358 B0
 00:1359 3A
                         	   134:         ;; Row 2
-00:135A 5100            	   135:         word $0051
-00:135C 01              	   136:         byte 1,$20,$42          ;energizer
+00:135A 5100            	   135:         .word $0051
+00:135C 01              	   136:         .byte 1,$20,$42          ;energizer
 00:135D 20
 00:135E 42
-00:135F 5500            	   137:         word $0055
-00:1361 01              	   138:         byte 1,$40,$42
+00:135F 5500            	   137:         .word $0055
+00:1361 01              	   138:         .byte 1,$40,$42
 00:1362 40
 00:1363 42
-00:1364 5900            	   139:         word $0059
-00:1366 01              	   140:         byte 1,$60,$42
+00:1364 5900            	   139:         .word $0059
+00:1366 01              	   140:         .byte 1,$60,$42
 00:1367 60
 00:1368 42
-00:1369 5B00            	   141:         word $005b
-00:136B 01              	   142:         byte 1,$70,$42
+00:1369 5B00            	   141:         .word $005b
+00:136B 01              	   142:         .byte 1,$70,$42
 00:136C 70
 00:136D 42
-00:136E 5F00            	   143:         word $005f
-00:1370 01              	   144:         byte 1,$90,$42
+00:136E 5F00            	   143:         .word $005f
+00:1370 01              	   144:         .byte 1,$90,$42
 00:1371 90
 00:1372 42
-00:1373 6300            	   145:         word $0063
-00:1375 01              	   146:         byte 1,$b0,$42          ;energizer
+00:1373 6300            	   145:         .word $0063
+00:1375 01              	   146:         .byte 1,$b0,$42          ;energizer
 00:1376 B0
 00:1377 42
                         	   147:         ;; Row 3
-00:1378 7900            	   148:         word $0079
-00:137A 01              	   149:         byte 1,$20,$4a
+00:1378 7900            	   148:         .word $0079
+00:137A 01              	   149:         .byte 1,$20,$4a
 00:137B 20
 00:137C 4A
-00:137D 7D00            	   150:         word $007d
-00:137F 01              	   151:         byte 1,$40,$4a
+00:137D 7D00            	   150:         .word $007d
+00:137F 01              	   151:         .byte 1,$40,$4a
 00:1380 40
 00:1381 4A
-00:1382 8100            	   152:         word $0081
-00:1384 01              	   153:         byte 1,$60,$4a
+00:1382 8100            	   152:         .word $0081
+00:1384 01              	   153:         .byte 1,$60,$4a
 00:1385 60
 00:1386 4A
-00:1387 8300            	   154:         word $0083
-00:1389 01              	   155:         byte 1,$70,$4a
+00:1387 8300            	   154:         .word $0083
+00:1389 01              	   155:         .byte 1,$70,$4a
 00:138A 70
 00:138B 4A
-00:138C 8700            	   156:         word $0087
-00:138E 01              	   157:         byte 1,$90,$4a
+00:138C 8700            	   156:         .word $0087
+00:138E 01              	   157:         .byte 1,$90,$4a
 00:138F 90
 00:1390 4A
-00:1391 8B00            	   158:         word $008b
-00:1393 01              	   159:         byte 1,$b0,$4a
+00:1391 8B00            	   158:         .word $008b
+00:1393 01              	   159:         .byte 1,$b0,$4a
 00:1394 B0
 00:1395 4A
                         	   160:         ;; Row 4
-00:1396 A100            	   161:         word $00a1
-00:1398 01              	   162:         byte 1,$20,$52
+00:1396 A100            	   161:         .word $00a1
+00:1398 01              	   162:         .byte 1,$20,$52
 00:1399 20
 00:139A 52
-00:139B A200            	   163:         word $00a2
-00:139D 01              	   164:         byte 1,$28,$52
+00:139B A200            	   163:         .word $00a2
+00:139D 01              	   164:         .byte 1,$28,$52
 00:139E 28
 00:139F 52
-00:13A0 A300            	   165:         word $00a3
-00:13A2 01              	   166:         byte 1,$30,$52
+00:13A0 A300            	   165:         .word $00a3
+00:13A2 01              	   166:         .byte 1,$30,$52
 00:13A3 30
 00:13A4 52
-00:13A5 A400            	   167:         word $00a4
-00:13A7 01              	   168:         byte 1,$38,$52
+00:13A5 A400            	   167:         .word $00a4
+00:13A7 01              	   168:         .byte 1,$38,$52
 00:13A8 38
 00:13A9 52
-00:13AA A500            	   169:         word $00a5
-00:13AC 01              	   170:         byte 1,$40,$52
+00:13AA A500            	   169:         .word $00a5
+00:13AC 01              	   170:         .byte 1,$40,$52
 00:13AD 40
 00:13AE 52
-00:13AF A600            	   171:         word $00a6
-00:13B1 01              	   172:         byte 1,$48,$52
+00:13AF A600            	   171:         .word $00a6
+00:13B1 01              	   172:         .byte 1,$48,$52
 00:13B2 48
 00:13B3 52
-00:13B4 A700            	   173:         word $00a7
-00:13B6 01              	   174:         byte 1,$50,$52
+00:13B4 A700            	   173:         .word $00a7
+00:13B6 01              	   174:         .byte 1,$50,$52
 00:13B7 50
 00:13B8 52
-00:13B9 A800            	   175:         word $00a8
-00:13BB 01              	   176:         byte 1,$58,$52
+00:13B9 A800            	   175:         .word $00a8
+00:13BB 01              	   176:         .byte 1,$58,$52
 00:13BC 58
 00:13BD 52
-00:13BE A900            	   177:         word $00a9
-00:13C0 01              	   178:         byte 1,$60,$52
+00:13BE A900            	   177:         .word $00a9
+00:13C0 01              	   178:         .byte 1,$60,$52
 00:13C1 60
 00:13C2 52
-00:13C3 AA00            	   179:         word $00aa
-00:13C5 01              	   180:         byte 1,$68,$52
+00:13C3 AA00            	   179:         .word $00aa
+00:13C5 01              	   180:         .byte 1,$68,$52
 00:13C6 68
 00:13C7 52
-00:13C8 AB00            	   181:         word $00ab
-00:13CA 01              	   182:         byte 1,$70,$52
+00:13C8 AB00            	   181:         .word $00ab
+00:13CA 01              	   182:         .byte 1,$70,$52
 00:13CB 70
 00:13CC 52
-00:13CD AC00            	   183:         word $00ac
-00:13CF 01              	   184:         byte 1,$78,$52
+00:13CD AC00            	   183:         .word $00ac
+00:13CF 01              	   184:         .byte 1,$78,$52
 00:13D0 78
 00:13D1 52
-00:13D2 AD00            	   185:         word $00ad
-00:13D4 01              	   186:         byte 1,$80,$52
+00:13D2 AD00            	   185:         .word $00ad
+00:13D4 01              	   186:         .byte 1,$80,$52
 00:13D5 80
 00:13D6 52
-00:13D7 AE00            	   187:         word $00ae
-00:13D9 01              	   188:         byte 1,$88,$52
+00:13D7 AE00            	   187:         .word $00ae
+00:13D9 01              	   188:         .byte 1,$88,$52
 00:13DA 88
 00:13DB 52
-00:13DC AF00            	   189:         word $00af
-00:13DE 01              	   190:         byte 1,$90,$52
+00:13DC AF00            	   189:         .word $00af
+00:13DE 01              	   190:         .byte 1,$90,$52
 00:13DF 90
 00:13E0 52
-00:13E1 B000            	   191:         word $00b0
-00:13E3 01              	   192:         byte 1,$98,$52
+00:13E1 B000            	   191:         .word $00b0
+00:13E3 01              	   192:         .byte 1,$98,$52
 00:13E4 98
 00:13E5 52
-00:13E6 B100            	   193:         word $00b1
-00:13E8 01              	   194:         byte 1,$a0,$52
+00:13E6 B100            	   193:         .word $00b1
+00:13E8 01              	   194:         .byte 1,$a0,$52
 00:13E9 A0
 00:13EA 52
-00:13EB B200            	   195:         word $00b2
-00:13ED 01              	   196:         byte 1,$a8,$52
+00:13EB B200            	   195:         .word $00b2
+00:13ED 01              	   196:         .byte 1,$a8,$52
 00:13EE A8
 00:13EF 52
-00:13F0 B300            	   197:         word $00b3
-00:13F2 01              	   198:         byte 1,$b0,$52
+00:13F0 B300            	   197:         .word $00b3
+00:13F2 01              	   198:         .byte 1,$b0,$52
 00:13F3 B0
 00:13F4 52
                         	   199:         ;; Row 5
-00:13F5 C900            	   200:         word $00c9
-00:13F7 01              	   201:         byte 1,$20,$5a
+00:13F5 C900            	   200:         .word $00c9
+00:13F7 01              	   201:         .byte 1,$20,$5a
 00:13F8 20
 00:13F9 5A
-00:13FA CD00            	   202:         word $00cd
-00:13FC 01              	   203:         byte 1,$40,$5a
+00:13FA CD00            	   202:         .word $00cd
+00:13FC 01              	   203:         .byte 1,$40,$5a
 00:13FD 40
 00:13FE 5A
-00:13FF CF00            	   204:         word $00cf
-00:1401 01              	   205:         byte 1,$50,$5a
+00:13FF CF00            	   204:         .word $00cf
+00:1401 01              	   205:         .byte 1,$50,$5a
 00:1402 50
 00:1403 5A
-00:1404 D500            	   206:         word $00d5
-00:1406 01              	   207:         byte 1,$80,$5a
+00:1404 D500            	   206:         .word $00d5
+00:1406 01              	   207:         .byte 1,$80,$5a
 00:1407 80
 00:1408 5A
-00:1409 D700            	   208:         word $00d7
-00:140B 01              	   209:         byte 1,$90,$5a
+00:1409 D700            	   208:         .word $00d7
+00:140B 01              	   209:         .byte 1,$90,$5a
 00:140C 90
 00:140D 5A
-00:140E DB00            	   210:         word $00db
-00:1410 01              	   211:         byte 1,$b0,$5a
+00:140E DB00            	   210:         .word $00db
+00:1410 01              	   211:         .byte 1,$b0,$5a
 00:1411 B0
 00:1412 5A
                         	   212:         ;; Row 6
-00:1413 F100            	   213:         word $00f1
-00:1415 01              	   214:         byte 1,$20,$62
+00:1413 F100            	   213:         .word $00f1
+00:1415 01              	   214:         .byte 1,$20,$62
 00:1416 20
 00:1417 62
-00:1418 F500            	   215:         word $00f5
-00:141A 01              	   216:         byte 1,$40,$62
+00:1418 F500            	   215:         .word $00f5
+00:141A 01              	   216:         .byte 1,$40,$62
 00:141B 40
 00:141C 62
-00:141D F700            	   217:         word $00f7
-00:141F 01              	   218:         byte 1,$50,$62
+00:141D F700            	   217:         .word $00f7
+00:141F 01              	   218:         .byte 1,$50,$62
 00:1420 50
 00:1421 62
-00:1422 FD00            	   219:         word $00fd
-00:1424 01              	   220:         byte 1,$80,$62
+00:1422 FD00            	   219:         .word $00fd
+00:1424 01              	   220:         .byte 1,$80,$62
 00:1425 80
 00:1426 62
-00:1427 FF00            	   221:         word $00ff
-00:1429 01              	   222:         byte 1,$90,$62
+00:1427 FF00            	   221:         .word $00ff
+00:1429 01              	   222:         .byte 1,$90,$62
 00:142A 90
 00:142B 62
-00:142C 0301            	   223:         word $0103
-00:142E 01              	   224:         byte 1,$b0,$62
+00:142C 0301            	   223:         .word $0103
+00:142E 01              	   224:         .byte 1,$b0,$62
 00:142F B0
 00:1430 62
                         	   225:         ;; Row 7
-00:1431 1901            	   226:         word $0119
-00:1433 01              	   227:         byte 1,$20,$6a
+00:1431 1901            	   226:         .word $0119
+00:1433 01              	   227:         .byte 1,$20,$6a
 00:1434 20
 00:1435 6A
-00:1436 1A01            	   228:         word $011a
-00:1438 01              	   229:         byte 1,$28,$6a
+00:1436 1A01            	   228:         .word $011a
+00:1438 01              	   229:         .byte 1,$28,$6a
 00:1439 28
 00:143A 6A
-00:143B 1B01            	   230:         word $011b
-00:143D 01              	   231:         byte 1,$30,$6a
+00:143B 1B01            	   230:         .word $011b
+00:143D 01              	   231:         .byte 1,$30,$6a
 00:143E 30
 00:143F 6A
-00:1440 1C01            	   232:         word $011c
-00:1442 01              	   233:         byte 1,$38,$6a
+00:1440 1C01            	   232:         .word $011c
+00:1442 01              	   233:         .byte 1,$38,$6a
 00:1443 38
 00:1444 6A
-00:1445 1D01            	   234:         word $011d
-00:1447 01              	   235:         byte 1,$40,$6a
+00:1445 1D01            	   234:         .word $011d
+00:1447 01              	   235:         .byte 1,$40,$6a
 00:1448 40
 00:1449 6A
-00:144A 1F01            	   236:         word $011f
-00:144C 01              	   237:         byte 1,$50,$6a
+00:144A 1F01            	   236:         .word $011f
+00:144C 01              	   237:         .byte 1,$50,$6a
 00:144D 50
 00:144E 6A
-00:144F 2001            	   238:         word $0120
-00:1451 01              	   239:         byte 1,$58,$6a
+00:144F 2001            	   238:         .word $0120
+00:1451 01              	   239:         .byte 1,$58,$6a
 00:1452 58
 00:1453 6A
-00:1454 2101            	   240:         word $0121
-00:1456 01              	   241:         byte 1,$60,$6a
+00:1454 2101            	   240:         .word $0121
+00:1456 01              	   241:         .byte 1,$60,$6a
 00:1457 60
 00:1458 6A
-00:1459 2301            	   242:         word $0123
-00:145B 01              	   243:         byte 1,$70,$6a
+00:1459 2301            	   242:         .word $0123
+00:145B 01              	   243:         .byte 1,$70,$6a
 00:145C 70
 00:145D 6A
-00:145E 2401            	   244:         word $0124
-00:1460 01              	   245:         byte 1,$78,$6a
+00:145E 2401            	   244:         .word $0124
+00:1460 01              	   245:         .byte 1,$78,$6a
 00:1461 78
 00:1462 6A
-00:1463 2501            	   246:         word $0125
-00:1465 01              	   247:         byte 1,$80,$6a
+00:1463 2501            	   246:         .word $0125
+00:1465 01              	   247:         .byte 1,$80,$6a
 00:1466 80
 00:1467 6A
-00:1468 2701            	   248:         word $0127
-00:146A 01              	   249:         byte 1,$90,$6a
+00:1468 2701            	   248:         .word $0127
+00:146A 01              	   249:         .byte 1,$90,$6a
 00:146B 90
 00:146C 6A
-00:146D 2801            	   250:         word $0128
-00:146F 01              	   251:         byte 1,$98,$6a
+00:146D 2801            	   250:         .word $0128
+00:146F 01              	   251:         .byte 1,$98,$6a
 00:1470 98
 00:1471 6A
-00:1472 2901            	   252:         word $0129
-00:1474 01              	   253:         byte 1,$a0,$6a
+00:1472 2901            	   252:         .word $0129
+00:1474 01              	   253:         .byte 1,$a0,$6a
 00:1475 A0
 00:1476 6A
-00:1477 2A01            	   254:         word $012a
-00:1479 01              	   255:         byte 1,$a8,$6a
+00:1477 2A01            	   254:         .word $012a
+00:1479 01              	   255:         .byte 1,$a8,$6a
 00:147A A8
 00:147B 6A
-00:147C 2B01            	   256:         word $012b
-00:147E 01              	   257:         byte 1,$b0,$6a
+00:147C 2B01            	   256:         .word $012b
+00:147E 01              	   257:         .byte 1,$b0,$6a
 00:147F B0
 00:1480 6A
                         	   258:         ;; Row 8
-00:1481 4501            	   259:         word $0145
-00:1483 01              	   260:         byte 1,$40,$72
+00:1481 4501            	   259:         .word $0145
+00:1483 01              	   260:         .byte 1,$40,$72
 00:1484 40
 00:1485 72
-00:1486 4901            	   261:         word $0149
-00:1488 01              	   262:         byte 1,$60,$72
+00:1486 4901            	   261:         .word $0149
+00:1488 01              	   262:         .byte 1,$60,$72
 00:1489 60
 00:148A 72
-00:148B 4B01            	   263:         word $014b
-00:148D 01              	   264:         byte 1,$70,$72
+00:148B 4B01            	   263:         .word $014b
+00:148D 01              	   264:         .byte 1,$70,$72
 00:148E 70
 00:148F 72
-00:1490 4F01            	   265:         word $014f
-00:1492 01              	   266:         byte 1,$90,$72
+00:1490 4F01            	   265:         .word $014f
+00:1492 01              	   266:         .byte 1,$90,$72
 00:1493 90
 00:1494 72
                         	   267:         ;; Row 9
-00:1495 6D01            	   268:         word $016d
-00:1497 01              	   269:         byte 1,$40,$7a
+00:1495 6D01            	   268:         .word $016d
+00:1497 01              	   269:         .byte 1,$40,$7a
 00:1498 40
 00:1499 7A
-00:149A 7701            	   270:         word $0177
-00:149C 01              	   271:         byte 1,$90,$7a
+00:149A 7701            	   270:         .word $0177
+00:149C 01              	   271:         .byte 1,$90,$7a
 00:149D 90
 00:149E 7A
                         	   272:         ;; Row 10
-00:149F 9501            	   273:         word $0195
-00:14A1 01              	   274:         byte 1,$40,$82
+00:149F 9501            	   273:         .word $0195
+00:14A1 01              	   274:         .byte 1,$40,$82
 00:14A2 40
 00:14A3 82
-00:14A4 9F01            	   275:         word $019f
-00:14A6 01              	   276:         byte 1,$90,$82
+00:14A4 9F01            	   275:         .word $019f
+00:14A6 01              	   276:         .byte 1,$90,$82
 00:14A7 90
 00:14A8 82
                         	   277:         ;; Row 11
-00:14A9 BD01            	   278:         word $01bd
-00:14AB 01              	   279:         byte 1,$40,$8a
+00:14A9 BD01            	   278:         .word $01bd
+00:14AB 01              	   279:         .byte 1,$40,$8a
 00:14AC 40
 00:14AD 8A
-00:14AE C701            	   280:         word $01c7
-00:14B0 01              	   281:         byte 1,$90,$8a
+00:14AE C701            	   280:         .word $01c7
+00:14B0 01              	   281:         .byte 1,$90,$8a
 00:14B1 90
 00:14B2 8A
                         	   282:         ;; Row 12
-00:14B3 E501            	   283:         word $01e5
-00:14B5 01              	   284:         byte 1,$40,$92
+00:14B3 E501            	   283:         .word $01e5
+00:14B5 01              	   284:         .byte 1,$40,$92
 00:14B6 40
 00:14B7 92
-00:14B8 EF01            	   285:         word $01ef
-00:14BA 01              	   286:         byte 1,$90,$92
+00:14B8 EF01            	   285:         .word $01ef
+00:14BA 01              	   286:         .byte 1,$90,$92
 00:14BB 90
 00:14BC 92
                         	   287:         ;; Row 13
-00:14BD 0D02            	   288:         word $020d
-00:14BF 01              	   289:         byte 1,$40,$9a
+00:14BD 0D02            	   288:         .word $020d
+00:14BF 01              	   289:         .byte 1,$40,$9a
 00:14C0 40
 00:14C1 9A
-00:14C2 1702            	   290:         word $0217
-00:14C4 01              	   291:         byte 1,$90,$9a
+00:14C2 1702            	   290:         .word $0217
+00:14C4 01              	   291:         .byte 1,$90,$9a
 00:14C5 90
 00:14C6 9A
                         	   292:         ;; Row 14
-00:14C7 3502            	   293:         word $0235
-00:14C9 01              	   294:         byte 1,$40,$a2
+00:14C7 3502            	   293:         .word $0235
+00:14C9 01              	   294:         .byte 1,$40,$a2
 00:14CA 40
 00:14CB A2
-00:14CC 3F02            	   295:         word $023f
-00:14CE 01              	   296:         byte 1,$90,$a2
+00:14CC 3F02            	   295:         .word $023f
+00:14CE 01              	   296:         .byte 1,$90,$a2
 00:14CF 90
 00:14D0 A2
                         	   297:         ;; Row 15
-00:14D1 5D02            	   298:         word $025d
-00:14D3 01              	   299:         byte 1,$40,$aa
+00:14D1 5D02            	   298:         .word $025d
+00:14D3 01              	   299:         .byte 1,$40,$aa
 00:14D4 40
 00:14D5 AA
-00:14D6 6702            	   300:         word $0267
-00:14D8 01              	   301:         byte 1,$90,$aa
+00:14D6 6702            	   300:         .word $0267
+00:14D8 01              	   301:         .byte 1,$90,$aa
 00:14D9 90
 00:14DA AA
                         	   302:         ;; Row 16
-00:14DB 8502            	   303:         word $0285
-00:14DD 01              	   304:         byte 1,$40,$b2
+00:14DB 8502            	   303:         .word $0285
+00:14DD 01              	   304:         .byte 1,$40,$b2
 00:14DE 40
 00:14DF B2
-00:14E0 8F02            	   305:         word $028f
-00:14E2 01              	   306:         byte 1,$90,$b2
+00:14E0 8F02            	   305:         .word $028f
+00:14E2 01              	   306:         .byte 1,$90,$b2
 00:14E3 90
 00:14E4 B2
                         	   307:         ;; Row 17
-00:14E5 A902            	   308:         word $02a9
-00:14E7 01              	   309:         byte 1,$20,$ba
+00:14E5 A902            	   308:         .word $02a9
+00:14E7 01              	   309:         .byte 1,$20,$ba
 00:14E8 20
 00:14E9 BA
-00:14EA AA02            	   310:         word $02aa
-00:14EC 01              	   311:         byte 1,$28,$ba
+00:14EA AA02            	   310:         .word $02aa
+00:14EC 01              	   311:         .byte 1,$28,$ba
 00:14ED 28
 00:14EE BA
-00:14EF AB02            	   312:         word $02ab
-00:14F1 01              	   313:         byte 1,$30,$ba
+00:14EF AB02            	   312:         .word $02ab
+00:14F1 01              	   313:         .byte 1,$30,$ba
 00:14F2 30
 00:14F3 BA
-00:14F4 AC02            	   314:         word $02ac
-00:14F6 01              	   315:         byte 1,$38,$ba
+00:14F4 AC02            	   314:         .word $02ac
+00:14F6 01              	   315:         .byte 1,$38,$ba
 00:14F7 38
 00:14F8 BA
-00:14F9 AD02            	   316:         word $02ad
-00:14FB 01              	   317:         byte 1,$40,$ba
+00:14F9 AD02            	   316:         .word $02ad
+00:14FB 01              	   317:         .byte 1,$40,$ba
 00:14FC 40
 00:14FD BA
-00:14FE AE02            	   318:         word $02ae
-00:1500 01              	   319:         byte 1,$48,$ba
+00:14FE AE02            	   318:         .word $02ae
+00:1500 01              	   319:         .byte 1,$48,$ba
 00:1501 48
 00:1502 BA
-00:1503 AF02            	   320:         word $02af
-00:1505 01              	   321:         byte 1,$50,$ba
+00:1503 AF02            	   320:         .word $02af
+00:1505 01              	   321:         .byte 1,$50,$ba
 00:1506 50
 00:1507 BA
-00:1508 B002            	   322:         word $02b0
-00:150A 01              	   323:         byte 1,$58,$ba
+00:1508 B002            	   322:         .word $02b0
+00:150A 01              	   323:         .byte 1,$58,$ba
 00:150B 58
 00:150C BA
-00:150D B102            	   324:         word $02b1
-00:150F 01              	   325:         byte 1,$60,$ba
+00:150D B102            	   324:         .word $02b1
+00:150F 01              	   325:         .byte 1,$60,$ba
 00:1510 60
 00:1511 BA
-00:1512 B302            	   326:         word $02b3
-00:1514 01              	   327:         byte 1,$70,$ba
+00:1512 B302            	   326:         .word $02b3
+00:1514 01              	   327:         .byte 1,$70,$ba
 00:1515 70
 00:1516 BA
-00:1517 B402            	   328:         word $02b4
-00:1519 01              	   329:         byte 1,$78,$ba
+00:1517 B402            	   328:         .word $02b4
+00:1519 01              	   329:         .byte 1,$78,$ba
 00:151A 78
 00:151B BA
-00:151C B502            	   330:         word $02b5
-00:151E 01              	   331:         byte 1,$80,$ba
+00:151C B502            	   330:         .word $02b5
+00:151E 01              	   331:         .byte 1,$80,$ba
 00:151F 80
 00:1520 BA
-00:1521 B602            	   332:         word $02b6
-00:1523 01              	   333:         byte 1,$88,$ba
+00:1521 B602            	   332:         .word $02b6
+00:1523 01              	   333:         .byte 1,$88,$ba
 00:1524 88
 00:1525 BA
-00:1526 B702            	   334:         word $02b7
-00:1528 01              	   335:         byte 1,$90,$ba
+00:1526 B702            	   334:         .word $02b7
+00:1528 01              	   335:         .byte 1,$90,$ba
 00:1529 90
 00:152A BA
-00:152B B802            	   336:         word $02b8
-00:152D 01              	   337:         byte 1,$98,$ba
+00:152B B802            	   336:         .word $02b8
+00:152D 01              	   337:         .byte 1,$98,$ba
 00:152E 98
 00:152F BA
-00:1530 B902            	   338:         word $02b9
-00:1532 01              	   339:         byte 1,$a0,$ba
+00:1530 B902            	   338:         .word $02b9
+00:1532 01              	   339:         .byte 1,$a0,$ba
 00:1533 A0
 00:1534 BA
-00:1535 BA02            	   340:         word $02ba
-00:1537 01              	   341:         byte 1,$a8,$ba
+00:1535 BA02            	   340:         .word $02ba
+00:1537 01              	   341:         .byte 1,$a8,$ba
 00:1538 A8
 00:1539 BA
-00:153A BB02            	   342:         word $02bb
-00:153C 01              	   343:         byte 1,$b0,$ba
+00:153A BB02            	   342:         .word $02bb
+00:153C 01              	   343:         .byte 1,$b0,$ba
 00:153D B0
 00:153E BA
                         	   344:         ;; Row 18
-00:153F D102            	   345:         word $02d1
-00:1541 01              	   346:         byte 1,$20,$c2
+00:153F D102            	   345:         .word $02d1
+00:1541 01              	   346:         .byte 1,$20,$c2
 00:1542 20
 00:1543 C2
-00:1544 D502            	   347:         word $02d5
-00:1546 01              	   348:         byte 1,$40,$c2
+00:1544 D502            	   347:         .word $02d5
+00:1546 01              	   348:         .byte 1,$40,$c2
 00:1547 40
 00:1548 C2
-00:1549 D902            	   349:         word $02d9
-00:154B 01              	   350:         byte 1,$60,$c2
+00:1549 D902            	   349:         .word $02d9
+00:154B 01              	   350:         .byte 1,$60,$c2
 00:154C 60
 00:154D C2
-00:154E DB02            	   351:         word $02db
-00:1550 01              	   352:         byte 1,$70,$c2
+00:154E DB02            	   351:         .word $02db
+00:1550 01              	   352:         .byte 1,$70,$c2
 00:1551 70
 00:1552 C2
-00:1553 DF02            	   353:         word $02df
-00:1555 01              	   354:         byte 1,$90,$c2
+00:1553 DF02            	   353:         .word $02df
+00:1555 01              	   354:         .byte 1,$90,$c2
 00:1556 90
 00:1557 C2
-00:1558 E302            	   355:         word $02e3
-00:155A 01              	   356:         byte 1,$b0,$c2
+00:1558 E302            	   355:         .word $02e3
+00:155A 01              	   356:         .byte 1,$b0,$c2
 00:155B B0
 00:155C C2
                         	   357:         ;; Row 19
-00:155D F902            	   358:         word $02f9
-00:155F 01              	   359:         byte 1,$20,$ca          ;energizer
+00:155D F902            	   358:         .word $02f9
+00:155F 01              	   359:         .byte 1,$20,$ca          ;energizer
 00:1560 20
 00:1561 CA
-00:1562 FA02            	   360:         word $02fa
-00:1564 01              	   361:         byte 1,$28,$ca
+00:1562 FA02            	   360:         .word $02fa
+00:1564 01              	   361:         .byte 1,$28,$ca
 00:1565 28
 00:1566 CA
-00:1567 FB02            	   362:         word $02fb
-00:1569 01              	   363:         byte 1,$30,$ca
+00:1567 FB02            	   362:         .word $02fb
+00:1569 01              	   363:         .byte 1,$30,$ca
 00:156A 30
 00:156B CA
-00:156C FD02            	   364:         word $02fd
-00:156E 01              	   365:         byte 1,$40,$ca
+00:156C FD02            	   364:         .word $02fd
+00:156E 01              	   365:         .byte 1,$40,$ca
 00:156F 40
 00:1570 CA
-00:1571 FE02            	   366:         word $02fe
-00:1573 01              	   367:         byte 1,$48,$ca
+00:1571 FE02            	   366:         .word $02fe
+00:1573 01              	   367:         .byte 1,$48,$ca
 00:1574 48
 00:1575 CA
-00:1576 FF02            	   368:         word $02ff
-00:1578 01              	   369:         byte 1,$50,$ca
+00:1576 FF02            	   368:         .word $02ff
+00:1578 01              	   369:         .byte 1,$50,$ca
 00:1579 50
 00:157A CA
-00:157B 0003            	   370:         word $0300
-00:157D 01              	   371:         byte 1,$58,$ca
+00:157B 0003            	   370:         .word $0300
+00:157D 01              	   371:         .byte 1,$58,$ca
 00:157E 58
 00:157F CA
-00:1580 0103            	   372:         word $0301
-00:1582 01              	   373:         byte 1,$60,$ca
+00:1580 0103            	   372:         .word $0301
+00:1582 01              	   373:         .byte 1,$60,$ca
 00:1583 60
 00:1584 CA
-00:1585 0303            	   374:         word $0303
-00:1587 01              	   375:         byte 1,$70,$ca
+00:1585 0303            	   374:         .word $0303
+00:1587 01              	   375:         .byte 1,$70,$ca
 00:1588 70
 00:1589 CA
-00:158A 0403            	   376:         word $0304
-00:158C 01              	   377:         byte 1,$78,$ca
+00:158A 0403            	   376:         .word $0304
+00:158C 01              	   377:         .byte 1,$78,$ca
 00:158D 78
 00:158E CA
-00:158F 0503            	   378:         word $0305
-00:1591 01              	   379:         byte 1,$80,$ca
+00:158F 0503            	   378:         .word $0305
+00:1591 01              	   379:         .byte 1,$80,$ca
 00:1592 80
 00:1593 CA
-00:1594 0603            	   380:         word $0306
-00:1596 01              	   381:         byte 1,$88,$ca
+00:1594 0603            	   380:         .word $0306
+00:1596 01              	   381:         .byte 1,$88,$ca
 00:1597 88
 00:1598 CA
-00:1599 0703            	   382:         word $0307
-00:159B 01              	   383:         byte 1,$90,$ca
+00:1599 0703            	   382:         .word $0307
+00:159B 01              	   383:         .byte 1,$90,$ca
 00:159C 90
 00:159D CA
-00:159E 0903            	   384:         word $0309
-00:15A0 01              	   385:         byte 1,$a0,$ca
+00:159E 0903            	   384:         .word $0309
+00:15A0 01              	   385:         .byte 1,$a0,$ca
 00:15A1 A0
 00:15A2 CA
-00:15A3 0A03            	   386:         word $030a
-00:15A5 01              	   387:         byte 1,$a8,$ca
+00:15A3 0A03            	   386:         .word $030a
+00:15A5 01              	   387:         .byte 1,$a8,$ca
 00:15A6 A8
 00:15A7 CA
-00:15A8 0B03            	   388:         word $030b
-00:15AA 01              	   389:         byte 1,$b0,$ca          ;energizer
+00:15A8 0B03            	   388:         .word $030b
+00:15AA 01              	   389:         .byte 1,$b0,$ca          ;energizer
 00:15AB B0
 00:15AC CA
                         	   390:         ;; Row 20
-00:15AD 2303            	   391:         word $0323
-00:15AF 01              	   392:         byte 1,$30,$d2
+00:15AD 2303            	   391:         .word $0323
+00:15AF 01              	   392:         .byte 1,$30,$d2
 00:15B0 30
 00:15B1 D2
-00:15B2 2503            	   393:         word $0325
-00:15B4 01              	   394:         byte 1,$40,$d2
+00:15B2 2503            	   393:         .word $0325
+00:15B4 01              	   394:         .byte 1,$40,$d2
 00:15B5 40
 00:15B6 D2
-00:15B7 2703            	   395:         word $0327
-00:15B9 01              	   396:         byte 1,$50,$d2
+00:15B7 2703            	   395:         .word $0327
+00:15B9 01              	   396:         .byte 1,$50,$d2
 00:15BA 50
 00:15BB D2
-00:15BC 2D03            	   397:         word $032d
-00:15BE 01              	   398:         byte 1,$80,$d2
+00:15BC 2D03            	   397:         .word $032d
+00:15BE 01              	   398:         .byte 1,$80,$d2
 00:15BF 80
 00:15C0 D2
-00:15C1 2F03            	   399:         word $032f
-00:15C3 01              	   400:         byte 1,$90,$d2
+00:15C1 2F03            	   399:         .word $032f
+00:15C3 01              	   400:         .byte 1,$90,$d2
 00:15C4 90
 00:15C5 D2
-00:15C6 3103            	   401:         word $0331
-00:15C8 01              	   402:         byte 1,$a0,$d2
+00:15C6 3103            	   401:         .word $0331
+00:15C8 01              	   402:         .byte 1,$a0,$d2
 00:15C9 A0
 00:15CA D2
                         	   403:         ;; Row 21
-00:15CB 4903            	   404:         word $0349
-00:15CD 01              	   405:         byte 1,$20,$da
+00:15CB 4903            	   404:         .word $0349
+00:15CD 01              	   405:         .byte 1,$20,$da
 00:15CE 20
 00:15CF DA
-00:15D0 4A03            	   406:         word $034a
-00:15D2 01              	   407:         byte 1,$28,$da
+00:15D0 4A03            	   406:         .word $034a
+00:15D2 01              	   407:         .byte 1,$28,$da
 00:15D3 28
 00:15D4 DA
-00:15D5 4B03            	   408:         word $034b
-00:15D7 01              	   409:         byte 1,$30,$da
+00:15D5 4B03            	   408:         .word $034b
+00:15D7 01              	   409:         .byte 1,$30,$da
 00:15D8 30
 00:15D9 DA
-00:15DA 4C03            	   410:         word $034c
-00:15DC 01              	   411:         byte 1,$38,$da
+00:15DA 4C03            	   410:         .word $034c
+00:15DC 01              	   411:         .byte 1,$38,$da
 00:15DD 38
 00:15DE DA
-00:15DF 4D03            	   412:         word $034d
-00:15E1 01              	   413:         byte 1,$40,$da
+00:15DF 4D03            	   412:         .word $034d
+00:15E1 01              	   413:         .byte 1,$40,$da
 00:15E2 40
 00:15E3 DA
-00:15E4 4F03            	   414:         word $034f
-00:15E6 01              	   415:         byte 1,$50,$da
+00:15E4 4F03            	   414:         .word $034f
+00:15E6 01              	   415:         .byte 1,$50,$da
 00:15E7 50
 00:15E8 DA
-00:15E9 5003            	   416:         word $0350
-00:15EB 01              	   417:         byte 1,$58,$da
+00:15E9 5003            	   416:         .word $0350
+00:15EB 01              	   417:         .byte 1,$58,$da
 00:15EC 58
 00:15ED DA
-00:15EE 5103            	   418:         word $0351
-00:15F0 01              	   419:         byte 1,$60,$da
+00:15EE 5103            	   418:         .word $0351
+00:15F0 01              	   419:         .byte 1,$60,$da
 00:15F1 60
 00:15F2 DA
-00:15F3 5303            	   420:         word $0353
-00:15F5 01              	   421:         byte 1,$70,$da
+00:15F3 5303            	   420:         .word $0353
+00:15F5 01              	   421:         .byte 1,$70,$da
 00:15F6 70
 00:15F7 DA
-00:15F8 5403            	   422:         word $0354
-00:15FA 01              	   423:         byte 1,$78,$da
+00:15F8 5403            	   422:         .word $0354
+00:15FA 01              	   423:         .byte 1,$78,$da
 00:15FB 78
 00:15FC DA
-00:15FD 5503            	   424:         word $0355
-00:15FF 01              	   425:         byte 1,$80,$da
+00:15FD 5503            	   424:         .word $0355
+00:15FF 01              	   425:         .byte 1,$80,$da
 00:1600 80
 00:1601 DA
-00:1602 5703            	   426:         word $0357
-00:1604 01              	   427:         byte 1,$90,$da
+00:1602 5703            	   426:         .word $0357
+00:1604 01              	   427:         .byte 1,$90,$da
 00:1605 90
 00:1606 DA
-00:1607 5803            	   428:         word $0358
-00:1609 01              	   429:         byte 1,$98,$da
+00:1607 5803            	   428:         .word $0358
+00:1609 01              	   429:         .byte 1,$98,$da
 00:160A 98
 00:160B DA
-00:160C 5903            	   430:         word $0359
-00:160E 01              	   431:         byte 1,$a0,$da
+00:160C 5903            	   430:         .word $0359
+00:160E 01              	   431:         .byte 1,$a0,$da
 00:160F A0
 00:1610 DA
-00:1611 5A03            	   432:         word $035a
-00:1613 01              	   433:         byte 1,$a8,$da
+00:1611 5A03            	   432:         .word $035a
+00:1613 01              	   433:         .byte 1,$a8,$da
 00:1614 A8
 00:1615 DA
-00:1616 5B03            	   434:         word $035b
-00:1618 01              	   435:         byte 1,$b0,$da
+00:1616 5B03            	   434:         .word $035b
+00:1618 01              	   435:         .byte 1,$b0,$da
 00:1619 B0
 00:161A DA
                         	   436:         ;; Row 22
-00:161B 7103            	   437:         word $0371
-00:161D 01              	   438:         byte 1,$20,$e2
+00:161B 7103            	   437:         .word $0371
+00:161D 01              	   438:         .byte 1,$20,$e2
 00:161E 20
 00:161F E2
-00:1620 7903            	   439:         word $0379
-00:1622 01              	   440:         byte 1,$60,$e2
+00:1620 7903            	   439:         .word $0379
+00:1622 01              	   440:         .byte 1,$60,$e2
 00:1623 60
 00:1624 E2
-00:1625 7B03            	   441:         word $037b
-00:1627 01              	   442:         byte 1,$70,$e2
+00:1625 7B03            	   441:         .word $037b
+00:1627 01              	   442:         .byte 1,$70,$e2
 00:1628 70
 00:1629 E2
-00:162A 8303            	   443:         word $0383
-00:162C 01              	   444:         byte 1,$b0,$e2
+00:162A 8303            	   443:         .word $0383
+00:162C 01              	   444:         .byte 1,$b0,$e2
 00:162D B0
 00:162E E2
                         	   445:         ;; Row 23
-00:162F 9903            	   446:         word $0399
-00:1631 01              	   447:         byte 1,$20,$ea
+00:162F 9903            	   446:         .word $0399
+00:1631 01              	   447:         .byte 1,$20,$ea
 00:1632 20
 00:1633 EA
-00:1634 9A03            	   448:         word $039a
-00:1636 01              	   449:         byte 1,$28,$ea
+00:1634 9A03            	   448:         .word $039a
+00:1636 01              	   449:         .byte 1,$28,$ea
 00:1637 28
 00:1638 EA
-00:1639 9B03            	   450:         word $039b
-00:163B 01              	   451:         byte 1,$30,$ea
+00:1639 9B03            	   450:         .word $039b
+00:163B 01              	   451:         .byte 1,$30,$ea
 00:163C 30
 00:163D EA
-00:163E 9C03            	   452:         word $039c
-00:1640 01              	   453:         byte 1,$38,$ea
+00:163E 9C03            	   452:         .word $039c
+00:1640 01              	   453:         .byte 1,$38,$ea
 00:1641 38
 00:1642 EA
-00:1643 9D03            	   454:         word $039d
-00:1645 01              	   455:         byte 1,$40,$ea
+00:1643 9D03            	   454:         .word $039d
+00:1645 01              	   455:         .byte 1,$40,$ea
 00:1646 40
 00:1647 EA
-00:1648 9E03            	   456:         word $039e
-00:164A 01              	   457:         byte 1,$48,$ea
+00:1648 9E03            	   456:         .word $039e
+00:164A 01              	   457:         .byte 1,$48,$ea
 00:164B 48
 00:164C EA
-00:164D 9F03            	   458:         word $039f
-00:164F 01              	   459:         byte 1,$50,$ea
+00:164D 9F03            	   458:         .word $039f
+00:164F 01              	   459:         .byte 1,$50,$ea
 00:1650 50
 00:1651 EA
-00:1652 A003            	   460:         word $03a0
-00:1654 01              	   461:         byte 1,$58,$ea
+00:1652 A003            	   460:         .word $03a0
+00:1654 01              	   461:         .byte 1,$58,$ea
 00:1655 58
 00:1656 EA
-00:1657 A103            	   462:         word $03a1
-00:1659 01              	   463:         byte 1,$60,$ea
+00:1657 A103            	   462:         .word $03a1
+00:1659 01              	   463:         .byte 1,$60,$ea
 00:165A 60
 00:165B EA
-00:165C A203            	   464:         word $03a2
-00:165E 01              	   465:         byte 1,$68,$ea
+00:165C A203            	   464:         .word $03a2
+00:165E 01              	   465:         .byte 1,$68,$ea
 00:165F 68
 00:1660 EA
-00:1661 A303            	   466:         word $03a3
-00:1663 01              	   467:         byte 1,$70,$ea
+00:1661 A303            	   466:         .word $03a3
+00:1663 01              	   467:         .byte 1,$70,$ea
 00:1664 70
 00:1665 EA
-00:1666 A403            	   468:         word $03a4
-00:1668 01              	   469:         byte 1,$78,$ea
+00:1666 A403            	   468:         .word $03a4
+00:1668 01              	   469:         .byte 1,$78,$ea
 00:1669 78
 00:166A EA
-00:166B A503            	   470:         word $03a5
-00:166D 01              	   471:         byte 1,$80,$ea
+00:166B A503            	   470:         .word $03a5
+00:166D 01              	   471:         .byte 1,$80,$ea
 00:166E 80
 00:166F EA
-00:1670 A603            	   472:         word $03a6
-00:1672 01              	   473:         byte 1,$88,$ea
+00:1670 A603            	   472:         .word $03a6
+00:1672 01              	   473:         .byte 1,$88,$ea
 00:1673 88
 00:1674 EA
-00:1675 A703            	   474:         word $03a7
-00:1677 01              	   475:         byte 1,$90,$ea
+00:1675 A703            	   474:         .word $03a7
+00:1677 01              	   475:         .byte 1,$90,$ea
 00:1678 90
 00:1679 EA
-00:167A A803            	   476:         word $03a8
-00:167C 01              	   477:         byte 1,$98,$ea
+00:167A A803            	   476:         .word $03a8
+00:167C 01              	   477:         .byte 1,$98,$ea
 00:167D 98
 00:167E EA
-00:167F A903            	   478:         word $03a9
-00:1681 01              	   479:         byte 1,$a0,$ea
+00:167F A903            	   478:         .word $03a9
+00:1681 01              	   479:         .byte 1,$a0,$ea
 00:1682 A0
 00:1683 EA
-00:1684 AA03            	   480:         word $03aa
-00:1686 01              	   481:         byte 1,$a8,$ea
+00:1684 AA03            	   480:         .word $03aa
+00:1686 01              	   481:         .byte 1,$a8,$ea
 00:1687 A8
 00:1688 EA
-00:1689 AB03            	   482:         word $03ab
-00:168B 01              	   483:         byte 1,$b0,$ea
+00:1689 AB03            	   482:         .word $03ab
+00:168B 01              	   483:         .byte 1,$b0,$ea
 00:168C B0
 00:168D EA
                         	   484:         ;; End marker
-00:168E FFFF            	   485:         word $ffff
-00:1690 FF              	   486:         byte $ff,$ff,$ff
+00:168E FFFF            	   485:         .word $ffff
+00:1690 FF              	   486:         .byte $ff,$ff,$ff
 00:1691 FF
 00:1692 FF
                         	   487:         
                         	   488:         ;; Energizer list
                         	   489:         ;; Index into pelltbl
                         	   490: enzrlst:
-00:1693 12              	   491:         byte $12
-00:1694 17              	   492:         byte $17
-00:1695 79              	   493:         byte $79
-00:1696 88              	   494:         byte $88
+00:1693 12              	   491:         .byte $12
+00:1694 17              	   492:         .byte $17
+00:1695 79              	   493:         .byte $79
+00:1696 88              	   494:         .byte $88
                         	   495: 
                         	   496:         ;; Pac-Man animation frames
                         	   497:         ;; Format:
-                        	   498:         ;;  - byte sprite offset values
+                        	   498:         ;;  .byte sprite offset values
                         	   499: pacalstn:                       ;north-facing animation frames
-00:1697 00              	   500:         byte $00,$07,$08,$09,$08,$07
+00:1697 00              	   500:         .byte $00,$07,$08,$09,$08,$07
 00:1698 07
 00:1699 08
 00:169A 09
 00:169B 08
 00:169C 07
                         	   501: pacalsts:                       ;south-facing animation frames
-00:169D 00              	   502:         byte $00,$0a,$0b,$0c,$0b,$0a
+00:169D 00              	   502:         .byte $00,$0a,$0b,$0c,$0b,$0a
 00:169E 0A
 00:169F 0B
 00:16A0 0C
 00:16A1 0B
 00:16A2 0A
                         	   503: pacalstw:                       ;west-facing animation frames
-00:16A3 00              	   504:         byte $00,$01,$02,$03,$02,$01
+00:16A3 00              	   504:         .byte $00,$01,$02,$03,$02,$01
 00:16A4 01
 00:16A5 02
 00:16A6 03
 00:16A7 02
 00:16A8 01
                         	   505: pacalste:                       ;east-facing animation frames
-00:16A9 00              	   506:         byte $00,$04,$05,$06,$05,$04
+00:16A9 00              	   506:         .byte $00,$04,$05,$06,$05,$04
 00:16AA 04
 00:16AB 05
 00:16AC 06
@@ -3437,156 +3437,156 @@ Source: "tables.asm"
                         	   507: 
                         	   508:         ;; Index in pelltbl of leftmost+rightmost pellet in row by sprite y loc
                         	   509:         ;; Format:
-                        	   510:         ;;  - byte y (sprite y loc of row)
-                        	   511:         ;;  - byte ixl (pelltbl index of leftmost pellet in row)
-                        	   512:         ;;  - byte ixr (pelltbl index of rightmost pellet in row)
+                        	   510:         ;;  .byte y (sprite y loc of row)
+                        	   511:         ;;  .byte ixl (pelltbl index of leftmost pellet in row)
+                        	   512:         ;;  .byte ixr (pelltbl index of rightmost pellet in row)
                         	   513: plrowix:
-00:16AF 3A              	   514:         byte $3a,$00,$11        ;row 1
+00:16AF 3A              	   514:         .byte $3a,$00,$11        ;row 1
 00:16B0 00
 00:16B1 11
-00:16B2 42              	   515:         byte $42,$12,$17        ;row 2
+00:16B2 42              	   515:         .byte $42,$12,$17        ;row 2
 00:16B3 12
 00:16B4 17
-00:16B5 4A              	   516:         byte $4a,$18,$1d        ;row 3
+00:16B5 4A              	   516:         .byte $4a,$18,$1d        ;row 3
 00:16B6 18
 00:16B7 1D
-00:16B8 52              	   517:         byte $52,$1e,$30        ;row 4
+00:16B8 52              	   517:         .byte $52,$1e,$30        ;row 4
 00:16B9 1E
 00:16BA 30
-00:16BB 5A              	   518:         byte $5a,$31,$36        ;row 5
+00:16BB 5A              	   518:         .byte $5a,$31,$36        ;row 5
 00:16BC 31
 00:16BD 36
-00:16BE 62              	   519:         byte $62,$37,$3c        ;row 6
+00:16BE 62              	   519:         .byte $62,$37,$3c        ;row 6
 00:16BF 37
 00:16C0 3C
-00:16C1 6A              	   520:         byte $6a,$3d,$4c        ;row 7
+00:16C1 6A              	   520:         .byte $6a,$3d,$4c        ;row 7
 00:16C2 3D
 00:16C3 4C
-00:16C4 72              	   521:         byte $72,$4d,$50        ;row 8
+00:16C4 72              	   521:         .byte $72,$4d,$50        ;row 8
 00:16C5 4D
 00:16C6 50
-00:16C7 7A              	   522:         byte $7a,$51,$52        ;row 9
+00:16C7 7A              	   522:         .byte $7a,$51,$52        ;row 9
 00:16C8 51
 00:16C9 52
-00:16CA 82              	   523:         byte $82,$53,$54        ;row 10
+00:16CA 82              	   523:         .byte $82,$53,$54        ;row 10
 00:16CB 53
 00:16CC 54
-00:16CD 8A              	   524:         byte $8a,$55,$56        ;row 11
+00:16CD 8A              	   524:         .byte $8a,$55,$56        ;row 11
 00:16CE 55
 00:16CF 56
-00:16D0 92              	   525:         byte $92,$57,$58        ;row 12
+00:16D0 92              	   525:         .byte $92,$57,$58        ;row 12
 00:16D1 57
 00:16D2 58
-00:16D3 9A              	   526:         byte $9a,$59,$5a        ;row 13
+00:16D3 9A              	   526:         .byte $9a,$59,$5a        ;row 13
 00:16D4 59
 00:16D5 5A
-00:16D6 A2              	   527:         byte $a2,$5b,$5c        ;row 14
+00:16D6 A2              	   527:         .byte $a2,$5b,$5c        ;row 14
 00:16D7 5B
 00:16D8 5C
-00:16D9 AA              	   528:         byte $aa,$5d,$5e        ;row 15
+00:16D9 AA              	   528:         .byte $aa,$5d,$5e        ;row 15
 00:16DA 5D
 00:16DB 5E
-00:16DC B2              	   529:         byte $b2,$5f,$60        ;row 16
+00:16DC B2              	   529:         .byte $b2,$5f,$60        ;row 16
 00:16DD 5F
 00:16DE 60
-00:16DF BA              	   530:         byte $ba,$61,$72        ;row 17
+00:16DF BA              	   530:         .byte $ba,$61,$72        ;row 17
 00:16E0 61
 00:16E1 72
-00:16E2 C2              	   531:         byte $c2,$73,$78        ;row 18
+00:16E2 C2              	   531:         .byte $c2,$73,$78        ;row 18
 00:16E3 73
 00:16E4 78
-00:16E5 CA              	   532:         byte $ca,$79,$88        ;row 19
+00:16E5 CA              	   532:         .byte $ca,$79,$88        ;row 19
 00:16E6 79
 00:16E7 88
-00:16E8 D2              	   533:         byte $d2,$89,$8e        ;row 20
+00:16E8 D2              	   533:         .byte $d2,$89,$8e        ;row 20
 00:16E9 89
 00:16EA 8E
-00:16EB DA              	   534:         byte $da,$8f,$9e        ;row 21
+00:16EB DA              	   534:         .byte $da,$8f,$9e        ;row 21
 00:16EC 8F
 00:16ED 9E
-00:16EE E2              	   535:         byte $e2,$9f,$a2        ;row 22
+00:16EE E2              	   535:         .byte $e2,$9f,$a2        ;row 22
 00:16EF 9F
 00:16F0 A2
-00:16F1 EA              	   536:         byte $ea,$a3,$b5        ;row 23
+00:16F1 EA              	   536:         .byte $ea,$a3,$b5        ;row 23
 00:16F2 A3
 00:16F3 B5
                         	   537: 
                         	   538:         ;; Fruit sprite table
                         	   539:         ;; Format:
-                        	   540:         ;;  - byte lvl (level number)
-                        	   541:         ;;  - byte spx (sprite index)
-                        	   542:         ;;  - word ofs (sp0mem offset)
-                        	   543:         ;;  - word pts (bonus points: 4 BCD digits)
+                        	   540:         ;;  .byte lvl (level number)
+                        	   541:         ;;  .byte spx (sprite index)
+                        	   542:         ;;  .word ofs (sp0mem offset)
+                        	   543:         ;;  .word pts (bonus points: 4 BCD digits)
                         	   544: frtsptbl:
                         	   545:         ;; 1st level: Cherries
-00:16F4 00              	   546:         byte $00,$0d
+00:16F4 00              	   546:         .byte $00,$0d
 00:16F5 0D
-00:16F6 4003            	   547:         word $0d*$40,$0100
+00:16F6 4003            	   547:         .word $0d*$40,$0100
 00:16F8 0001
                         	   548:         ;; 2nd level: Strawberry
-00:16FA 01              	   549:         byte $01,$0f
+00:16FA 01              	   549:         .byte $01,$0f
 00:16FB 0F
-00:16FC C003            	   550:         word $0f*$40,$0300
+00:16FC C003            	   550:         .word $0f*$40,$0300
 00:16FE 0003
                         	   551:         ;; 3rd & 4th level: Peach
-00:1700 02              	   552:         byte $02,$11
+00:1700 02              	   552:         .byte $02,$11
 00:1701 11
-00:1702 4004            	   553:         word $11*$40,$0500
+00:1702 4004            	   553:         .word $11*$40,$0500
 00:1704 0005
-00:1706 03              	   554:         byte $03,$11
+00:1706 03              	   554:         .byte $03,$11
 00:1707 11
-00:1708 4004            	   555:         word $11*$40,$0500
+00:1708 4004            	   555:         .word $11*$40,$0500
 00:170A 0005
                         	   556:         ;; 5th & 6th level: Apple
-00:170C 04              	   557:         byte $04,$13
+00:170C 04              	   557:         .byte $04,$13
 00:170D 13
-00:170E C004            	   558:         word $13*$40,$0700
+00:170E C004            	   558:         .word $13*$40,$0700
 00:1710 0007
-00:1712 05              	   559:         byte $05,$13
+00:1712 05              	   559:         .byte $05,$13
 00:1713 13
-00:1714 C004            	   560:         word $13*$40,$0700
+00:1714 C004            	   560:         .word $13*$40,$0700
 00:1716 0007
                         	   561:         ;; 7th & 8th level: Grapes
-00:1718 06              	   562:         byte $06,$15
+00:1718 06              	   562:         .byte $06,$15
 00:1719 15
-00:171A 4005            	   563:         word $15*$40,$1000
+00:171A 4005            	   563:         .word $15*$40,$1000
 00:171C 0010
-00:171E 07              	   564:         byte $07,$15
+00:171E 07              	   564:         .byte $07,$15
 00:171F 15
-00:1720 4005            	   565:         word $15*$40,$1000
+00:1720 4005            	   565:         .word $15*$40,$1000
 00:1722 0010
                         	   566:         ;; 9th & 10th levels: Galaxian
-00:1724 08              	   567:         byte $08,$17
+00:1724 08              	   567:         .byte $08,$17
 00:1725 17
-00:1726 C005            	   568:         word $17*$40,$2000
+00:1726 C005            	   568:         .word $17*$40,$2000
 00:1728 0020
-00:172A 09              	   569:         byte $09,$17
+00:172A 09              	   569:         .byte $09,$17
 00:172B 17
-00:172C C005            	   570:         word $17*$40,$2000
+00:172C C005            	   570:         .word $17*$40,$2000
 00:172E 0020
                         	   571:         ;; 11th & 12th level: Bell
-00:1730 0A              	   572:         byte $0a,$19
+00:1730 0A              	   572:         .byte $0a,$19
 00:1731 19
-00:1732 4006            	   573:         word $19*$40,$3000
+00:1732 4006            	   573:         .word $19*$40,$3000
 00:1734 0030
-00:1736 0B              	   574:         byte $0b,$19
+00:1736 0B              	   574:         .byte $0b,$19
 00:1737 19
-00:1738 4006            	   575:         word $19*$40,$3000
+00:1738 4006            	   575:         .word $19*$40,$3000
 00:173A 0030
                         	   576:         ;; level 13 onwards: Key
-00:173C 0C              	   577:         byte $0c,$1b
+00:173C 0C              	   577:         .byte $0c,$1b
 00:173D 1B
-00:173E C006            	   578:         word $1b*$40,$5000
+00:173E C006            	   578:         .word $1b*$40,$5000
 00:1740 0050
                         	   579:         ;; End Marker
-00:1742 FF              	   580:         byte $ff
+00:1742 FF              	   580:         .byte $ff
                         	   581: 
 
-Source: "./src/startup.asm"
+Source: "src/startup.asm"
                         	    34:         
                         	    35:         ;; Include assets
-                        	    36:         org charset
-01:4000 3C666E6E60623C00	    37:         incbin assets/charset,2
+                        	    36:         .org charset
+01:4000 3C666E6E60623C00	    37:         .incbin assets/charset,2
 01:4008 183C667E66666600
 01:4010 7C66667C66667C00
 01:4018 3C66606060663C00
@@ -3875,8 +3875,8 @@ Source: "./src/startup.asm"
 01:48F0 0101010101010101
 01:48F8 0101010101010101
                         	    38: 
-                        	    39:         org mazegfx
-02:4BF0 E803E84327001800	    40:         incbin assets/mazegfx,2
+                        	    39:         .org mazegfx
+02:4BF0 E803E84327001800	    40:         .incbin assets/mazegfx,2
 02:4BF8 000F0B0628001900
 02:4C00 4044444444444444
 02:4C08 44444A4444444444
@@ -4004,8 +4004,8 @@ Source: "./src/startup.asm"
 02:4FD8 2020202020202020
 02:4FE0 2020202020202020
                         	    41: 
-                        	    42:         org sp0mem
-03:5000 3E00007F0000FF80	    43:         incbin assets/sprites,2
+                        	    42:         .org sp0mem
+03:5000 3E00007F0000FF80	    43:         .incbin assets/sprites,2
 03:5008 00FF8000FF8000FF
 03:5010 8000FF80007F0000
 03:5018 3E00000000000000

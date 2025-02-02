@@ -2,13 +2,13 @@
         ;; Program startup
         ;; ============================================================
 
-        org $0801
+        .org $0801
 
         ;; BASIC header
-        word nxl,10
-        byte $9e
-        string "2061"
-nxl:    word 0
+        .word nxl,10
+        .byte $9e
+        .string "2061"
+nxl:    .word 0
 
         ;; Program initialization
         jsr initvic
@@ -30,14 +30,14 @@ nxl:    word 0
         include fruit.asm
 
         ;; Include tables
-        include tables.asm
+        .include tables.asm
         
         ;; Include assets
-        org charset
-        incbin assets/charset,2
+        .org charset
+        .incbin assets/charset,2
 
-        org mazegfx
-        incbin assets/mazegfx,2
+        .org mazegfx
+        .incbin assets/mazegfx,2
 
-        org sp0mem
-        incbin assets/sprites,2
+        .org sp0mem
+        .incbin assets/sprites,2
