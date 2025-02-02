@@ -1,5 +1,5 @@
 Sections:
-00: "org0001:801" (801-1743)
+00: "org0001:801" (801-1742)
 01: "org0002:4000" (4000-4900)
 02: "org0003:4bf0" (4BF0-4FE8)
 03: "org0004:5000" (5000-5740)
@@ -416,52 +416,53 @@ Source: "symbols.asm"
                         	   139: frxpos:         .equ $67          ;fruit x loc
                         	   140: frypos:         .equ $a2          ;fruit y loc
                         	   141: frttim:         .equ 38           ;fruit timer: 39 x 240ms = 9.1s
-                        	   142: 
-                        	   143:         ;; Screen memory indexes
-                        	   144: scrmsdi:        .equ $185        ;most significant digit of score
-                        	   145:         
-                        	   146:         ;; Node indexes
-                        	   147: wrpnixw:        .equ $1b         ;western warp tunnel node index
-                        	   148: wrpnixe:        .equ $21         ;eastern warp tunnel node index
-                        	   149: pacstnd:        .equ $31         ;Pac-Man's starting node index        
-                        	   150: gsthmnd:        .equ $1e         ;ghost home node        
-                        	   151: 
-                        	   152:         ;; Character constants
-                        	   153: spcechr:        .equ $20         ;space char
-                        	   154: pellchr:        .equ $53         ;pellet char
-                        	   155: enzrchr:        .equ $54         ;energizer char
-                        	   156: 
-                        	   157:         ;; Colour constants
-                        	   158: dkgrey:         .equ $0b         ;dark grey
-                        	   159: ltgrey:         .equ $0f         ;light grey
-                        	   160:         
-                        	   161:         ;; Compass directions
-                        	   162: n:              .equ 2
-                        	   163: s:              .equ 3
-                        	   164: w:              .equ 4
-                        	   165: e:              .equ 5
-                        	   166: 
-                        	   167:         ;; Scores, expressed as BCD pairs
-                        	   168: pellpts:        .equ $10        ;10 pts for pellets
-                        	   169: enzrpts:        .equ $50        ;50 pts for energizers
-                        	   170: 
-                        	   171:         ;; Index into buf to access memory block
-                        	   172:         ;; reservedf for gameloop
-                        	   173: blki:           .equ $00
-                        	   174:         
-                        	   175:         ;; Index into buf to access memory block
-                        	   176:         ;; reserved for IRQ handler
-                        	   177: irqblki:        .equ $05
-                        	   178: 
-                        	   179:         ;; Index into buf to access memory block
-                        	   180:         ;; reserved for NMI handler
-                        	   181: nmiblki:        .equ $0a
-                        	   182: 
-                        	   183:         ;; The number of pellets that need to be eaten for bonus items
-                        	   184:         ;; to appear the 1st and 2nd time
-                        	   185: nbonpel1:       .equ 52
-                        	   186: nbonpel2:       .equ 127
-                        	   187: 
+                        	   142: maxftx:         .equ $48          ;maximum fruit table index
+                        	   143: 
+                        	   144:         ;; Screen memory indexes
+                        	   145: scrmsdi:        .equ $185        ;most significant digit of score
+                        	   146:         
+                        	   147:         ;; Node indexes
+                        	   148: wrpnixw:        .equ $1b         ;western warp tunnel node index
+                        	   149: wrpnixe:        .equ $21         ;eastern warp tunnel node index
+                        	   150: pacstnd:        .equ $31         ;Pac-Man's starting node index        
+                        	   151: gsthmnd:        .equ $1e         ;ghost home node        
+                        	   152: 
+                        	   153:         ;; Character constants
+                        	   154: spcechr:        .equ $20         ;space char
+                        	   155: pellchr:        .equ $53         ;pellet char
+                        	   156: enzrchr:        .equ $54         ;energizer char
+                        	   157: 
+                        	   158:         ;; Colour constants
+                        	   159: dkgrey:         .equ $0b         ;dark grey
+                        	   160: ltgrey:         .equ $0f         ;light grey
+                        	   161:         
+                        	   162:         ;; Compass directions
+                        	   163: n:              .equ 2
+                        	   164: s:              .equ 3
+                        	   165: w:              .equ 4
+                        	   166: e:              .equ 5
+                        	   167: 
+                        	   168:         ;; Scores, expressed as BCD pairs
+                        	   169: pellpts:        .equ $10        ;10 pts for pellets
+                        	   170: enzrpts:        .equ $50        ;50 pts for energizers
+                        	   171: 
+                        	   172:         ;; Index into buf to access memory block
+                        	   173:         ;; reservedf for gameloop
+                        	   174: blki:           .equ $00
+                        	   175:         
+                        	   176:         ;; Index into buf to access memory block
+                        	   177:         ;; reserved for IRQ handler
+                        	   178: irqblki:        .equ $05
+                        	   179: 
+                        	   180:         ;; Index into buf to access memory block
+                        	   181:         ;; reserved for NMI handler
+                        	   182: nmiblki:        .equ $0a
+                        	   183: 
+                        	   184:         ;; The number of pellets that need to be eaten for bonus items
+                        	   185:         ;; to appear the 1st and 2nd time
+                        	   186: nbonpel1:       .equ 52
+                        	   187: nbonpel2:       .equ 127
+                        	   188: 
 
 Source: "src/startup.asm"
                         	    23:         include maths.asm
@@ -2030,17 +2031,17 @@ Source: "fruit.asm"
                         	    14: lvlfrtpts:
 00:108A A200            	    15:         ldx #0
 00:108C BDF416          	    16: :       lda frtsptbl,x
-00:108F C9FF            	    17:         cmp #$ff
-00:1091 F019            	    18:         beq :++
-00:1093 C5A8            	    19:         cmp lvlnum
-00:1095 F009            	    20:         beq :+
-00:1097 E8              	    21:         inx
-00:1098 E8              	    22:         inx
-00:1099 E8              	    23:         inx
-00:109A E8              	    24:         inx
-00:109B E8              	    25:         inx
-00:109C E8              	    26:         inx
-00:109D 4C8C10          	    27:         jmp :-
+00:108F C5A8            	    17:         cmp lvlnum
+00:1091 F00D            	    18:         beq :++
+00:1093 B009            	    19:         bcs :+
+00:1095 E8              	    20:         inx
+00:1096 E8              	    21:         inx
+00:1097 E8              	    22:         inx
+00:1098 E8              	    23:         inx
+00:1099 E8              	    24:         inx
+00:109A E8              	    25:         inx
+00:109B 4C8C10          	    26:         jmp :-
+00:109E A248            	    27: :       ldx #maxftx
 00:10A0 E8              	    28: :       inx
 00:10A1 E8              	    29:         inx
 00:10A2 E8              	    30:         inx
@@ -2049,7 +2050,7 @@ Source: "fruit.asm"
 00:10A7 A8              	    33:         tay
 00:10A8 E8              	    34:         inx
 00:10A9 BDF416          	    35:         lda frtsptbl,x          ;load points (hi)
-00:10AC 60              	    36: :       rts
+00:10AC 60              	    36:         rts
                         	    37: 
                         	    38:         ;; Get fruit sprite index by level number
                         	    39:         ;; Reads:
@@ -2062,20 +2063,20 @@ Source: "fruit.asm"
                         	    46: lvlfrtspix:
 00:10AD A200            	    47:         ldx #0
 00:10AF BDF416          	    48: :       lda frtsptbl,x
-00:10B2 C9FF            	    49:         cmp #$ff        
-00:10B4 F011            	    50:         beq :++                 ;end marker?
-00:10B6 C5A8            	    51:         cmp lvlnum
-00:10B8 F009            	    52:         beq :+                  ;found row for level?
-00:10BA E8              	    53:         inx
-00:10BB E8              	    54:         inx
-00:10BC E8              	    55:         inx
-00:10BD E8              	    56:         inx
-00:10BE E8              	    57:         inx
-00:10BF E8              	    58:         inx
-00:10C0 4CAF10          	    59:         jmp :-                  ;no, keep looking
+00:10B2 C5A8            	    49:         cmp lvlnum
+00:10B4 F00D            	    50:         beq :++
+00:10B6 B009            	    51:         bcs :+                  ;found row for level?
+00:10B8 E8              	    52:         inx
+00:10B9 E8              	    53:         inx
+00:10BA E8              	    54:         inx
+00:10BB E8              	    55:         inx
+00:10BC E8              	    56:         inx
+00:10BD E8              	    57:         inx
+00:10BE 4CAF10          	    58:         jmp :-                  ;no, keep looking
+00:10C1 A248            	    59: :       ldx #maxftx
 00:10C3 E8              	    60: :       inx                     ;yes...
 00:10C4 BDF416          	    61:         lda frtsptbl,x          ;...load sprite index
-00:10C7 60              	    62: :       rts
+00:10C7 60              	    62:         rts
                         	    63: 
                         	    64:         ;; Get fruit sprite shape memory offset
                         	    65:         ;; Reads:
@@ -2089,24 +2090,24 @@ Source: "fruit.asm"
                         	    73: lvlfrtspof:
 00:10C8 A200            	    74:         ldx #0
 00:10CA BDF416          	    75: :       lda frtsptbl,x
-00:10CD C9FF            	    76:         cmp #$ff        
-00:10CF F017            	    77:         beq :++                 ;end marker?
-00:10D1 C5A8            	    78:         cmp lvlnum
-00:10D3 F009            	    79:         beq :+                  ;found row for level?
-00:10D5 E8              	    80:         inx
-00:10D6 E8              	    81:         inx
-00:10D7 E8              	    82:         inx
-00:10D8 E8              	    83:         inx
-00:10D9 E8              	    84:         inx
-00:10DA E8              	    85:         inx
-00:10DB 4CCA10          	    86:         jmp :-                  ;no, keep looking
+00:10CD C5A8            	    76:         cmp lvlnum
+00:10CF F00D            	    77:         beq :++
+00:10D1 B009            	    78:         bcs :+                  ;found row for level?
+00:10D3 E8              	    79:         inx
+00:10D4 E8              	    80:         inx
+00:10D5 E8              	    81:         inx
+00:10D6 E8              	    82:         inx
+00:10D7 E8              	    83:         inx
+00:10D8 E8              	    84:         inx
+00:10D9 4CCA10          	    85:         jmp :-                  ;no, keep looking
+00:10DC A248            	    86: :       ldx #maxftx
 00:10DE E8              	    87: :       inx                     ;yes...
 00:10DF E8              	    88:         inx
 00:10E0 BDF416          	    89:         lda frtsptbl,x          ;load offset (lo)
 00:10E3 A8              	    90:         tay
 00:10E4 E8              	    91:         inx
 00:10E5 BDF416          	    92:         lda frtsptbl,x          ;load offset (hi)
-00:10E8 60              	    93: :       rts
+00:10E8 60              	    93:         rts
                         	    94:         
                         	    95:         ;; Check number of pellets remaining and enable fruit if
                         	    96:         ;; - 130 pellets remaining OR
@@ -3515,7 +3516,7 @@ Source: "tables.asm"
                         	   538:         ;; Fruit sprite table
                         	   539:         ;; Format:
                         	   540:         ;;  .byte lvl (level number)
-                        	   541:         ;;  .byte spx (sprite index)
+                        	   541:         ;;  .byte spi (sprite index)
                         	   542:         ;;  .word ofs (sp0mem offset)
                         	   543:         ;;  .word pts (bonus points: 4 BCD digits)
                         	   544: frtsptbl:
@@ -3579,9 +3580,7 @@ Source: "tables.asm"
 00:173D 1B
 00:173E C006            	   578:         .word $1b*$40,$5000
 00:1740 0050
-                        	   579:         ;; End Marker
-00:1742 FF              	   580:         .byte $ff
-                        	   581: 
+                        	   579: 
 
 Source: "src/startup.asm"
                         	    34:         
@@ -4331,6 +4330,7 @@ lvlfrtpts                        A:108A
 lvlfrtspix                       A:10AD
 lvlfrtspof                       A:10C8
 lvlnum                           E:00A8
+maxftx                           E:0048
 maxmen                           E:0003
 maxpell                          E:00B6
 mazegfx                          E:4BF0
@@ -4471,6 +4471,7 @@ Symbols by value:
 0026 frttim
 0031 pacstnd
 0040 sp0loc
+0048 maxftx
 0050 enzrpts
 0053 pellchr
 0054 enzrchr

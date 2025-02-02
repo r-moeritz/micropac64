@@ -538,7 +538,7 @@ plrowix:
         ;; Fruit sprite table
         ;; Format:
         ;;  .byte lvl (level number)
-        ;;  .byte spx (sprite index)
+        ;;  .byte spi (sprite index)
         ;;  .word ofs (sp0mem offset)
         ;;  .word pts (bonus points: 4 BCD digits)
 frtsptbl:
@@ -576,5 +576,3 @@ frtsptbl:
         ;; level 13 onwards: Key
         .byte $0c,$1b
         .word $1b*$40,$5000
-        ;; End Marker
-        .byte $ff

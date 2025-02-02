@@ -14,10 +14,9 @@
 lvlfrtpts:
         ldx #0
 :       lda frtsptbl,x
-        cmp #$ff
-        beq :++
         cmp lvlnum
-        beq :+
+        beq :++
+        bcs :+
         inx
         inx
         inx
@@ -25,6 +24,7 @@ lvlfrtpts:
         inx
         inx
         jmp :-
+:       ldx #maxftx
 :       inx
         inx
         inx
@@ -33,7 +33,7 @@ lvlfrtpts:
         tay
         inx
         lda frtsptbl,x          ;load points (hi)
-:       rts
+        rts
 
         ;; Get fruit sprite index by level number
         ;; Reads:
@@ -46,10 +46,9 @@ lvlfrtpts:
 lvlfrtspix:
         ldx #0
 :       lda frtsptbl,x
-        cmp #$ff        
-        beq :++                 ;end marker?
         cmp lvlnum
-        beq :+                  ;found row for level?
+        beq :++
+        bcs :+                  ;found row for level?
         inx
         inx
         inx
@@ -57,9 +56,10 @@ lvlfrtspix:
         inx
         inx
         jmp :-                  ;no, keep looking
+:       ldx #maxftx
 :       inx                     ;yes...
         lda frtsptbl,x          ;...load sprite index
-:       rts
+        rts
 
         ;; Get fruit sprite shape memory offset
         ;; Reads:
@@ -73,10 +73,9 @@ lvlfrtspix:
 lvlfrtspof:
         ldx #0
 :       lda frtsptbl,x
-        cmp #$ff        
-        beq :++                 ;end marker?
         cmp lvlnum
-        beq :+                  ;found row for level?
+        beq :++
+        bcs :+                  ;found row for level?
         inx
         inx
         inx
@@ -84,13 +83,14 @@ lvlfrtspof:
         inx
         inx
         jmp :-                  ;no, keep looking
+:       ldx #maxftx
 :       inx                     ;yes...
         inx
         lda frtsptbl,x          ;load offset (lo)
         tay
         inx
         lda frtsptbl,x          ;load offset (hi)
-:       rts
+        rts
         
         ;; Check number of pellets remaining and enable fruit if
         ;; - 130 pellets remaining OR

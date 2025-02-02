@@ -139,6 +139,7 @@ maxmen:         .equ 3           ;maximum number of "men"
 frxpos:         .equ $67          ;fruit x loc
 frypos:         .equ $a2          ;fruit y loc
 frttim:         .equ 38           ;fruit timer: 39 x 240ms = 9.1s
+maxftx:         .equ $48          ;maximum fruit table index
 
         ;; Screen memory indexes
 scrmsdi:        .equ $185        ;most significant digit of score
