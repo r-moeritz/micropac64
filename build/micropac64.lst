@@ -2,7 +2,7 @@ Sections:
 00: "org0001:801" (801-1743)
 01: "org0002:4000" (4000-4900)
 02: "org0003:4bf0" (4BF0-4FE8)
-03: "org0004:5000" (5000-54C0)
+03: "org0004:5000" (5000-5740)
 
 
 Source: "src/startup.asm"
@@ -1285,87 +1285,88 @@ Source: "irq.asm"
                         	     3M :
                         	    38: 
                         	    39:         ;; Handle sprite-sprite collision
-00:0C46 A51C            	    40: spcol:  lda irqwrd1+1           ;read saved sprite-sprite collision register
-00:0C48 2901            	    41:         and #%00000001          ;only interested if Pac-Man sprite was involved
-                        	    42:         jeq fincol
+                        	    40:         ;; HACK: Assume Pac-Man collision with fruit
+00:0C46 A51C            	    41: spcol:  lda irqwrd1+1           ;read saved sprite-sprite collision register
+00:0C48 2901            	    42:         and #%00000001          ;only interested if Pac-Man sprite was involved
+                        	    43:         jeq fincol
 00:0C4A D003            	     1M         bne :+
 00:0C4C 4CA60C          	     2M         jmp fincol
                         	     3M :
-00:0C4F 205511          	    43:         jsr hidefrt             ;hide the fruit
-00:0C52 204610          	    44:         jsr scrfrt              ;score the fruit
-00:0C55 207B08          	    45:         jsr printscr            ;print the score
-                        	    46:         ;; TODO: Show points earned sprite
-                        	    47:         ;; (NMI timer to hide after ~1.5s)
-00:0C58 4CA60C          	    48:         jmp fincol
-                        	    49: 
-                        	    50:         ;; Handle sprite-background collision:
-                        	    51:         ;; Assume Pac-Man collision with pellet
-00:0C5B 20100A          	    52: bgcol:  jsr findpel             ;find pellet collided with & mark as eaten
-00:0C5E A51C            	    53:         lda irqwrd1+1           ;load pellet address hi-byte
-00:0C60 C9FF            	    54:         cmp #$ff                ;pellet found?
-                        	    55:         jeq fincol              ;no, do nothing
+00:0C4F 205511          	    44:         jsr hidefrt             ;hide the fruit
+00:0C52 204610          	    45:         jsr scrfrt              ;score the fruit
+00:0C55 207B08          	    46:         jsr printscr            ;print the score
+                        	    47:         ;; TODO: Show points earned sprite
+                        	    48:         ;; (NMI timer to hide after ~1.5s)
+00:0C58 4CA60C          	    49:         jmp fincol
+                        	    50: 
+                        	    51:         ;; Handle sprite-background collision:
+                        	    52:         ;; Assume Pac-Man collision with pellet
+00:0C5B 20100A          	    53: bgcol:  jsr findpel             ;find pellet collided with & mark as eaten
+00:0C5E A51C            	    54:         lda irqwrd1+1           ;load pellet address hi-byte
+00:0C60 C9FF            	    55:         cmp #$ff                ;pellet found?
+                        	    56:         jeq fincol              ;no, do nothing
 00:0C62 D003            	     1M         bne :+
 00:0C64 4CA60C          	     2M         jmp fincol              
                         	     3M :
-00:0C67 A209            	    56:         ldx #irqblki+4
-00:0C69 202E0B          	    57:         jsr isenzr              ;yes, is it an energizer?
-00:0C6C D008            	    58:         bne :+
-00:0C6E A207            	    59:         ldx #irqblki+2
-00:0C70 205F10          	    60:         jsr screnzr             ;yes, score it
-00:0C73 4C7B0C          	    61:         jmp rmpel
-00:0C76 A207            	    62: :       ldx #irqblki+2
-00:0C78 205210          	    63:         jsr scrpel              ;no, score as regular pellet
-                        	    64: rmpel:  ldwptr irqwrd1, 0, irqwrd2
+00:0C67 A209            	    57:         ldx #irqblki+4
+00:0C69 202E0B          	    58:         jsr isenzr              ;yes, is it an energizer?
+00:0C6C D008            	    59:         bne :+
+00:0C6E A207            	    60:         ldx #irqblki+2
+00:0C70 205F10          	    61:         jsr screnzr             ;yes, score it
+00:0C73 4C7B0C          	    62:         jmp rmpel
+00:0C76 A207            	    63: :       ldx #irqblki+2
+00:0C78 205210          	    64:         jsr scrpel              ;no, score as regular pellet
+                        	    65: rmpel:  ldwptr irqwrd1, 0, irqwrd2
 00:0C7B A000            	     1M         ldy #0
 00:0C7D B11B            	     2M         lda (irqwrd1),y
 00:0C7F 851D            	     3M         sta irqwrd2
 00:0C81 C8              	     4M         iny
 00:0C82 B11B            	     5M         lda (irqwrd1),y
 00:0C84 851E            	     6M         sta irqwrd2+1
-00:0C86 A020            	    65:         ldy #spcechr
-00:0C88 201709          	    66:         jsr printchr            ;erase pellet
-00:0C8B 207B08          	    67:         jsr printscr            ;print score
-                        	    68:         ldbimm 6, lvlend        ;set number of level end flashes
+00:0C86 A020            	    66:         ldy #spcechr
+00:0C88 201709          	    67:         jsr printchr            ;erase pellet
+00:0C8B 207B08          	    68:         jsr printscr            ;print score
+                        	    69:         ldbimm 6, lvlend        ;set number of level end flashes
 00:0C8E A906            	     1M         lda #6
 00:0C90 859B            	     2M         sta lvlend        
-00:0C92 C6A6            	    69:         dec npelrem             ;decrement pellets remaining
-00:0C94 20E910          	    70:         jsr showfrt             ;conditionally enable bonus fruit
-00:0C97 A5A6            	    71:         lda npelrem
-                        	    72:         jne fincol
+00:0C92 C6A6            	    70:         dec npelrem             ;decrement pellets remaining
+00:0C94 20E910          	    71:         jsr showfrt             ;conditionally enable bonus fruit
+00:0C97 A5A6            	    72:         lda npelrem
+                        	    73:         jne fincol
 00:0C99 F003            	     1M         beq :+
 00:0C9B 4CA60C          	     2M         jmp fincol
                         	     3M :
-00:0C9E AD15D0          	    73:         lda spena
-00:0CA1 2901            	    74:         and #%00000001
-00:0CA3 8D15D0          	    75:         sta spena               ;disable all but Pac-Man's sprite
-00:0CA6 AD19D0          	    76: fincol: lda vicirq
-00:0CA9 2901            	    77:         and #%00000001
-00:0CAB D006            	    78:         bne rasirq              ;check for raster IRQ
-00:0CAD 0E19D0          	    79:         asl vicirq              ;acknowledge IRQ
-00:0CB0 4C7EEA          	    80:         jmp sysirq              ;return from interrupt
-                        	    81: 
-                        	    82:         ;; Handle raster IRQ
-                        	    83:         ;; Update sprite 0 (Pac-Man) x & y coordinates
-00:0CB3 A5A5            	    84: rasirq: lda pacrem
-00:0CB5 F025            	    85:         beq finras
-00:0CB7 A5A3            	    86:         lda pacdir
-00:0CB9 C904            	    87:         cmp #w
-00:0CBB D006            	    88:         bne chkpde
-00:0CBD CE00D0          	    89:         dec sp0x
-00:0CC0 4CDA0C          	    90:         jmp decrem
-00:0CC3 C905            	    91: chkpde: cmp #e
-00:0CC5 D006            	    92:         bne chkpdn
-00:0CC7 EE00D0          	    93:         inc sp0x
-00:0CCA 4CDA0C          	    94:         jmp decrem
-00:0CCD C902            	    95: chkpdn: cmp #n
-00:0CCF D006            	    96:         bne pds
-00:0CD1 CE01D0          	    97:         dec sp0y
-00:0CD4 4CDA0C          	    98:         jmp decrem
-00:0CD7 EE01D0          	    99: pds:    inc sp0y
-00:0CDA C6A5            	   100: decrem: dec pacrem
-00:0CDC 0E19D0          	   101: finras: asl vicirq              ;acknowledge IRQ
-00:0CDF 4C7EEA          	   102:         jmp sysirq              ;return from interrupt
-                        	   103: 
+00:0C9E AD15D0          	    74:         lda spena
+00:0CA1 2901            	    75:         and #%00000001
+00:0CA3 8D15D0          	    76:         sta spena               ;disable all but Pac-Man's sprite
+00:0CA6 AD19D0          	    77: fincol: lda vicirq
+00:0CA9 2901            	    78:         and #%00000001
+00:0CAB D006            	    79:         bne rasirq              ;check for raster IRQ
+00:0CAD 0E19D0          	    80:         asl vicirq              ;acknowledge IRQ
+00:0CB0 4C7EEA          	    81:         jmp sysirq              ;return from interrupt
+                        	    82: 
+                        	    83:         ;; Handle raster IRQ
+                        	    84:         ;; Update sprite 0 (Pac-Man) x & y coordinates
+00:0CB3 A5A5            	    85: rasirq: lda pacrem
+00:0CB5 F025            	    86:         beq finras
+00:0CB7 A5A3            	    87:         lda pacdir
+00:0CB9 C904            	    88:         cmp #w
+00:0CBB D006            	    89:         bne chkpde
+00:0CBD CE00D0          	    90:         dec sp0x
+00:0CC0 4CDA0C          	    91:         jmp decrem
+00:0CC3 C905            	    92: chkpde: cmp #e
+00:0CC5 D006            	    93:         bne chkpdn
+00:0CC7 EE00D0          	    94:         inc sp0x
+00:0CCA 4CDA0C          	    95:         jmp decrem
+00:0CCD C902            	    96: chkpdn: cmp #n
+00:0CCF D006            	    97:         bne pds
+00:0CD1 CE01D0          	    98:         dec sp0y
+00:0CD4 4CDA0C          	    99:         jmp decrem
+00:0CD7 EE01D0          	   100: pds:    inc sp0y
+00:0CDA C6A5            	   101: decrem: dec pacrem
+00:0CDC 0E19D0          	   102: finras: asl vicirq              ;acknowledge IRQ
+00:0CDF 4C7EEA          	   103:         jmp sysirq              ;return from interrupt
+                        	   104: 
 
 Source: "src/startup.asm"
                         	    27:         include nmi.asm
@@ -2145,7 +2146,7 @@ Source: "fruit.asm"
 00:1117 A03F            	   120:         ldy #$3f                ;index to sprite colour value
 00:1119 B11B            	   121:         lda (irqwrd1),y         ;load sprite colour value
 00:111B 290F            	   122:         and #%00001111          ;mask out hi nybble
-00:111D 8D28D0          	   123:         sta sp0col+1            ;write to sprite 1 colour register 
+00:111D 8D28D0          	   123:         sta sp0col+1            ;write to sprite 1 colour register
                         	   124:         adcwimm $0040, irqwrd1  ;Add $40 to offset to advance to next sprite
 00:1120 18              	     1M         clc
 00:1121 A51B            	     2M         lda irqwrd1  
@@ -4109,38 +4110,38 @@ Source: "src/startup.asm"
 03:5328 0000000000000000
 03:5330 0000000000000000
 03:5338 0000000000000087
-03:5340 0000000000004000
-03:5348 00F00000E50000EF
-03:5350 80006F80000F8000
-03:5358 0700000000000000
+03:5340 0700001900002200
+03:5348 0002000002000000
+03:5350 0000000000000000
+03:5358 0000000000000000
 03:5360 0000000000000000
 03:5368 0000000000000000
 03:5370 0000000000000000
-03:5378 0000000000000082
-03:5380 0700001900002200
-03:5388 0002000002000000
-03:5390 0000000000000000
-03:5398 0000000000000000
+03:5378 0000000000000089
+03:5380 0000000000006000
+03:5388 00F00000F70000EF
+03:5390 80006F80000F8000
+03:5398 0700000000000000
 03:53A0 0000000000000000
 03:53A8 0000000000000000
 03:53B0 0000000000000000
-03:53B8 0000000000000089
-03:53C0 0000000000006600
-03:53C8 00FF0000DB0000FF
-03:53D0 00007600003C0000
-03:53D8 1800000000000000
+03:53B8 0000000000000082
+03:53C0 1000003C00001800
+03:53C8 0000000024000000
+03:53D0 0000080000000000
+03:53D8 0000000000000000
 03:53E0 0000000000000000
 03:53E8 0000000000000000
 03:53F0 0000000000000000
-03:53F8 0000000000000082
-03:5400 1000003C00001800
-03:5408 0000000024000000
-03:5410 0000080000000000
-03:5418 0000000000000000
+03:53F8 0000000000000085
+03:5400 0000000000006600
+03:5408 00FF0000FF0000FF
+03:5410 00007E00003C0000
+03:5418 1800000000000000
 03:5420 0000000000000000
 03:5428 0000000000000000
 03:5430 0000000000000000
-03:5438 0000000000000085
+03:5438 0000000000000082
 03:5440 0B00000E00000800
 03:5448 0008000000000000
 03:5450 0000000000000000
@@ -4157,6 +4158,86 @@ Source: "src/startup.asm"
 03:54A8 0000000000000000
 03:54B0 0000000000000000
 03:54B8 0000000000000088
+03:54C0 0000000A00000C00
+03:54C8 0008000000000000
+03:54D0 0000000000000000
+03:54D8 0000000000000000
+03:54E0 0000000000000000
+03:54E8 0000000000000000
+03:54F0 0000000000000000
+03:54F8 0000000000000089
+03:5500 0000000000000000
+03:5508 007F0000FF8000FF
+03:5510 8000FF80007F0000
+03:5518 3600000000000000
+03:5520 0000000000000000
+03:5528 0000000000000000
+03:5530 0000000000000000
+03:5538 0000000000000082
+03:5540 0000000000000000
+03:5548 000800001400002A
+03:5550 00005500002A0000
+03:5558 1400000000000000
+03:5560 0000000000000000
+03:5568 0000000000000000
+03:5570 0000000000000000
+03:5578 000000000000008B
+03:5580 2000001C00000800
+03:5588 001C00003E00007F
+03:5590 00007F00007F0000
+03:5598 3E00000000000000
+03:55A0 0000000000000000
+03:55A8 0000000000000000
+03:55B0 0000000000000000
+03:55B8 0000000000000085
+03:55C0 0800001C0000AA80
+03:55C8 0088800080800041
+03:55D0 0000220000000000
+03:55D8 0000000000000000
+03:55E0 0000000000000000
+03:55E8 0000000000000000
+03:55F0 0000000000000000
+03:55F8 00000000000000E2
+03:5600 0000000000003E00
+03:5608 007F00007F00006B
+03:5610 0000080000080000
+03:5618 0800000000000000
+03:5620 0000000000000000
+03:5628 0000000000000000
+03:5630 0000000000000000
+03:5638 00000000000000E7
+03:5640 0000000000000800
+03:5648 0010000000000020
+03:5650 0000200000000000
+03:5658 7B00000000000000
+03:5660 0000000000000000
+03:5668 0000000000000000
+03:5670 0000000000000000
+03:5678 0000000000000086
+03:5680 1C00003E00003E00
+03:5688 007F00007F0000FF
+03:5690 8000FF8000FF8000
+03:5698 7F00000000000000
+03:56A0 0000000000000000
+03:56A8 0000000000000000
+03:56B0 0000000000000000
+03:56B8 0000000000000087
+03:56C0 1C00002200003E00
+03:56C8 003E000000000000
+03:56D0 0000000000000000
+03:56D8 0000000000000000
+03:56E0 0000000000000000
+03:56E8 0000000000000000
+03:56F0 0000000000000000
+03:56F8 000000000000008E
+03:5700 0000000000000000
+03:5708 0000000014000016
+03:5710 00001400001A0000
+03:5718 0C00000000000000
+03:5720 0000000000000000
+03:5728 0000000000000000
+03:5730 0000000000000000
+03:5738 000000000000008F
                         	    44: 
 
 

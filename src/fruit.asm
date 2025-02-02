@@ -120,7 +120,7 @@ showfrt:
         ldy #$3f                ;index to sprite colour value
         lda (irqwrd1),y         ;load sprite colour value
         and #%00001111          ;mask out hi nybble
-        sta sp0col+1            ;write to sprite 1 colour register 
+        sta sp0col+1            ;write to sprite 1 colour register
         adcwimm $0040, irqwrd1  ;Add $40 to offset to advance to next sprite
         lda (irqwrd1),y         ;load sprite colour value
         and #%00001111          ;mask out hi nybble

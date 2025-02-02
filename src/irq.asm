@@ -37,6 +37,7 @@ chkirq: lda vicirq
         jeq fincol
 
         ;; Handle sprite-sprite collision
+        ;; HACK: Assume Pac-Man collision with fruit
 spcol:  lda irqwrd1+1           ;read saved sprite-sprite collision register
         and #%00000001          ;only interested if Pac-Man sprite was involved
         jeq fincol
