@@ -32,6 +32,8 @@ just no longer feasible. So I recently (December 2024) made the
 decision to begin converting the code to vasm. This process is now
 complete and I can hopefully finish the game in 2025.
 
+![Screenshot of game](./screenshot.png)
+
 
 Prerequisites
 ---
